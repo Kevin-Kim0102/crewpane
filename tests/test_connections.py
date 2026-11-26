@@ -71,12 +71,13 @@ class ConnectionsTests(ConnectionFixture):
         with self.assertRaises(ValueError): store.set_paused('claude',False)
         self.assertTrue(store.read()['providers']['claude']['paused'])
 
-    def test_dispatch_defaults_to_claude_without_saved_default(self):
+    def test_dispatch_rejects_missing_role_before_launch(self):
         import run_agent
-        with mock.patch.object(run_agent.Connections,'snapshot',return_value={'default_provider':None}), \
-                mock.patch('os.execv') as execute:
-            run_agent.main(['--cwd', str(self.base)])
-        self.assertEqual(Path(execute.call_args[0][1][1]).name,'run_claude.py')
+        with mock.patch('os.execv') as execute:
+            for extra in ([], ['--provider','claude'], ['--provider','kiro']):
+                with self.assertRaises(SystemExit):
+                    run_agent.main(['--cwd', str(self.base), *extra])
+        execute.assert_not_called()
 
     def test_paused_saved_provider_never_falls_back_to_path(self):
         store=self.store();store.connect('claude',str(self.binary));store.set_paused('claude',True)
@@ -203,6 +204,52 @@ class ConnectionsTests(ConnectionFixture):
 
 class PanelConnectionTests(ConnectionFixture):
 
+    def test_model_settings_validate_and_save_default_and_role_override_for_kiro(self):
+        panel = self.panel()
+        self.binary.write_text(FAKE.replace('2.1.78 (Claude Code)', 'kiro-cli 3.0.0'))
+        panel.connections.connect("kiro", str(self.binary))
+        models = {"status": "ok", "models": [
+            {"id": "first", "effort": {"known": True, "supported": True, "levels": ["high"]}},
+            {"id": "second", "effort": {"known": True, "supported": False, "levels": []}},
+        ]}
+        payload = {"action": "defaults", "provider": "kiro", "model": "first", "effort": "high",
+                   "revision": panel.roles.snapshot()["revision"],
+                   "overrides": {"reviewer": {"model": "second", "effort": None}},
+                   "switch_roles": ["reviewer"]}
+        with mock.patch.object(panel, "models_view", return_value=models):
+            invalid = {**payload, "overrides": {"reviewer": {"model": "second", "effort": "high"}}}
+            with self.assertRaisesRegex(ValueError, "思考强度"):
+                panel.connection_action(invalid)
+            self.assertFalse(panel.connections.defaults_configured("kiro"))
+            self.assertFalse(panel.roles.path.exists())
+            status, result = panel.connection_action(payload)
+        self.assertEqual(status, 200)
+        self.assertEqual(result["roles_config"]["roles"][-1]["model"], "second")
+        with self.assertRaisesRegex(ValueError, "选择 CLI"):
+            panel.roles.get("architect", executable=True)
+        self.assertEqual(panel.roles.get("reviewer", executable=True)["model"], "second")
+
+    def test_model_settings_switch_role_provider_only_when_explicit(self):
+        panel = self.panel()
+        panel.connections.connect("claude", str(self.binary))
+        roles = panel.roles.snapshot()
+        coder = {**panel.roles.get("coder"), "provider": "kiro", "model": "kiro-model", "effort": "high"}
+        roles = panel.roles.mutate({"action": "save", "role": coder, "revision": roles["revision"]})
+        catalog = {"status": "ok", "models": [
+            {"id": "selected", "effort": {"known": True, "supported": True, "levels": ["low"]}},
+        ]}
+        payload = {"action": "defaults", "provider": "claude", "model": "selected", "effort": "low",
+                   "revision": roles["revision"]}
+        follow_default = {"coder": {"model": None, "effort": None}}
+        with mock.patch.object(panel, "models_view", return_value=catalog):
+            panel.connection_action(payload)
+            self.assertEqual(panel.roles.get("coder"), coder)
+            with self.assertRaisesRegex(ValueError, "CLI 已变化"):
+                panel.connection_action({**payload, "overrides": follow_default})
+            panel.connection_action({**payload, "overrides": follow_default, "switch_roles": ["coder"]})
+        updated = panel.roles.get("coder", executable=True)
+        self.assertEqual((updated["provider"], updated["model"], updated["effort"]), ("claude", "selected", "low"))
+
     def test_pause_start_api_gates_tasks_and_keeps_connection(self):
         panel=self.panel()
         panel.connection_action({'action':'connect','provider':'claude','path':str(self.binary)})
@@ -256,6 +303,8 @@ class PanelConnectionTests(ConnectionFixture):
         self.assertTrue(result["ok"])
         self.assertEqual(panel.default_provider, "claude")
         self.assertEqual(self.panel().default_provider, "claude")
+        with self.assertRaisesRegex(ValueError, "选择 CLI"):
+            panel.send({"group": "other", "text": "hello"})
         self.assertEqual(panel.models_view(provider="claude")["provider"], "claude")
         self.assertEqual(panel.connection_action({"action": "default", "provider": "claude"})[0], 200)
         panel.connection_action({"action": "disconnect", "provider": "claude"})

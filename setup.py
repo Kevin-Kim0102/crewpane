@@ -10,6 +10,10 @@ from setuptools.command.build_py import build_py
 
 HERE = Path(__file__).resolve().parent
 REQUIRED = ["scripts/watch_kiro.py", "scripts/run_kiro.py", "assets/viewer.html", "assets/vendor/marked.umd.js", "examples/settings.example.json"]
+REQUIRED += ["assets/vendor/" + name for name in (
+    "monaco-editor.js", "monaco-editor.css", "monaco-worker.js", "monaco-json-worker.js",
+    "monaco.LICENSE.txt", "monaco.ThirdPartyNotices.txt", "codicon.ttf", "codicon.LICENSE.txt",
+)]
 
 
 class BuildWithRuntime(build_py):

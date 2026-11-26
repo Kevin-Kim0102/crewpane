@@ -28,21 +28,21 @@ The panel is optional for delegation. Do not start it just to run a coding/testi
 
 ## Delegation decisions
 
-Before each delegation, run `roles list` to read the currently enabled global roles and `roles show ID` for full instructions when needed. Do not copy role configuration into this skill or assume it has not changed. A missing config supplies built-in `coder` and `tester` roles using Claude; configured roles may use either CLI. Select roles by their actual responsibilities, including user-defined roles. Simple edits may be completed directly; automatic selection does not require delegating every task.
+Before each delegation, run `roles list` to read the currently enabled global roles and `roles show ID` for full instructions when needed. Do not copy role configuration into this skill or assume it has not changed. The built-in roles, in order, are `architect`, `coder`, `tester`, and `reviewer`. Roles without an override follow their CLI’s default model and effort. Select roles by their actual responsibilities, including user-defined roles. Simple edits may be completed directly; automatic selection does not require delegating every task.
 
-Use `run --role ID ...` so the dispatcher applies the latest role's provider, model, effort, instructions, constraints and deliverables. Do not combine `--role` with provider/model/effort overrides, `--cli-path` or `--check`. If the user requests an incompatible CLI, explain the role configuration and ask them to update it or explicitly authorize a direct provider invocation; never silently replace their role settings. Disabled or missing roles are errors, not fallback triggers.
+All delegated tasks must use `run --role ID ...` so the dispatcher applies the latest role's provider, model, effort, instructions, constraints and deliverables. Do not combine `--role` with provider/model/effort overrides, `--cli-path` or `--check`. If the user requests an incompatible CLI, explain the role configuration and ask them to update it before dispatch. Use `--provider` only for a tool-free `--check`; do not bypass the role configuration through a runner. If no enabled role fits, explain which role needs to be added or configured.
 
 Codex owns the task scope, integration and acceptance checks. Supply a concrete task and use separate agent IDs. Isolate concurrent edits in separate worktrees or checkouts; do not let workers overwrite each other's changes. Read each result and actual diff before integration.
 
-## Coding and testing coordination
+## Role workflow
 
-Codex is the primary agent, not a role managed by this product. Coordinate the workflow yourself; the product does not schedule dependencies or automatically wait/retry.
+Codex defines the scope, acceptance criteria and file ownership, then chooses the roles the task needs. Respect current role settings and user instructions. Codex schedules handoffs and makes the final acceptance decision.
 
-1. Define the requirement, acceptance criteria and file ownership. Give `coder` responsibility for business implementation, and `tester` responsibility for test scripts and test feedback. Use the current role instructions if the user has customized these responsibilities.
-2. Assign the tester a **preparation-only** task to write test scripts and report commands and readiness. Do not ask it to poll or wait for another process. Coding and test preparation can overlap only with isolated or non-conflicting file ownership.
-3. Wait for coding to finish, inspect the outputs and make the implementation and test scripts available together. Resume the tester (same provider and cwd) or issue a fresh execution task to run tests and report concrete evidence.
-4. Pass failures to the coder, which fixes business implementation without weakening the tests. Have the tester rerun after the fix. A faulty test or ambiguous acceptance criterion is for Codex to judge; neither worker may silently lower the standard. Review existing modifications before any follow-up; fixes are deliberate tasks, not blind failure resubmissions.
-5. Codex reviews the actual diff, test coverage and test results and makes the final acceptance decision. No built-in reviewer or primary-agent role is required.
+1. **Architecture, before implementation when design is needed.** Give `architect` the requirements, relevant code and constraints. Ask for a read-only proposal: interfaces and module boundaries, tradeoffs, risks, and testable acceptance criteria. Codex resolves open decisions and hands the agreed plan to coding and testing.
+2. **Test preparation.** `tester` owns independent acceptance and regression coverage. If behavior and interfaces are settled, write those scripts before implementation; for a bug fix, verify when practical that the new test reproduces the bug on the old code. If interfaces are still open, outline cases and expected results first and write scripts once the contract is stable. End preparation with files, commands and readiness; Codex sends a separate task for verification. Preparation and coding may overlap with disjoint file ownership or isolated checkouts.
+3. **Implementation.** `coder` implements the agreed behavior and may add focused unit tests for its own modules within the assigned scope. Leave the tester's independent scripts and acceptance criteria under the tester's ownership.
+4. **Verification.** After integrating the implementation and scripts, explicitly ask `tester` to run them and report commands, results, and reproduction evidence. Resume only with the same provider and working directory, or start a new task. The coder fixes implementation defects; the tester fixes faulty tests and reruns relevant checks after corrections. Codex resolves ambiguous criteria and reviews the changes before sending follow-up work.
+5. **Code review, before final acceptance when independent review is useful.** Give `reviewer` the actual diff, requirements, and available test evidence. Ask for read-only review of correctness, regressions, compatibility and missing coverage. Require actionable findings with severity, file and line, and impact or triggering conditions. The responsible role fixes verified findings; Codex checks fixes and asks for focused re-review or retesting as needed.
 
 Role work constraints are prompt instructions, not a sandbox or permission grant. Keep CLI tool permissions within the user's authorization. Role edits affect subsequent delegations; there is no separate role configuration snapshot.
 
@@ -57,9 +57,7 @@ Use this checkout's absolute path from any target project; keep it available aft
 - `run --role coder --cwd /abs/project --agent-id coder --title TITLE < task.txt`: dispatch with current global coding role.
 - `run --role tester --cwd /abs/project --agent-id tester --resume-id UUID < followup.txt`: resume testing after coding completes; verify the saved provider matches the current role before resuming. If it changed, start a new conversation.
 - `register --cwd /abs/project [--root /abs/project/work/kiro-runs]`: register a project with the running panel and print its URL.
-- `run --provider claude --cwd /abs/project --agent-id ID --title TITLE < task.txt`: run Claude Code; stdin is the task, cwd is the project. Keep `--provider` explicit. Use `--provider kiro` for Kiro.
 - `run --provider claude --cwd /abs/project --check --timeout 60`: tool-free smoke request; consumes model quota.
-- `run --provider claude --cwd /abs/project --agent-id ID --resume-id UUID < followup.txt`: continue using the saved Claude `session_id` in the original cwd.
 - `start [--port N]`: start the panel detached, reuse a verified existing instance, and return its URL after readiness. Port selection is only for first configuration.
 - `serve`: foreground development/debugging on macOS/Linux; prefer `start` for normal panel use.
 - `stop`: close the panel's Python server. Tasks and history stay.
@@ -68,7 +66,7 @@ Use this checkout's absolute path from any target project; keep it available aft
 
 Saved panel connections take precedence over PATH for both providers. If disconnected or the saved path is invalid, ask the user to reconnect in panel Settings. If paused, ask the user to start the saved connection. Do not silently substitute another executable or provider. Before a connection has ever been saved, explicit CLI delegation retains PATH fallback.
 
-Use a distinct agent ID and give the task a concrete scope and acceptance command. For coding, add `--permission-mode acceptEdits` when file edits are authorized. The default `dontAsk` never prompts interactively; permissions already allowed in Claude settings apply. A denied tool makes the run fail. Add narrowly scoped `--allowed-tools RULE` only when needed and authorized; this option is repeatable. Never add a permission bypass flag.
+Use a distinct agent ID and give the task a concrete scope and acceptance command. For coding, add `--permission-mode acceptEdits` when file edits are authorized. The default `dontAsk` never prompts interactively; permissions already allowed in Claude settings apply. A permission denial is recorded even if the run completed. Verify whether any blocked action was required for acceptance. Add narrowly scoped `--allowed-tools RULE` only when needed and authorized; this option is repeatable. Never add a permission bypass flag.
 
 Use `--run-dir /abs/new-run-directory` to choose a known output location (it must not exist). Otherwise output is in `<cwd>/work/kiro-runs/<run-id>/`, shared with legacy Kiro logs for compatibility:
 
@@ -78,13 +76,13 @@ Use `--run-dir /abs/new-run-directory` to choose a known output location (it mus
 
 Only accept a run when status is completed and exit code is zero. Review the actual diff and run the acceptance checks. A submitted or interrupted task may have modified files; inspect before retrying. No automatic resubmission. Use the saved session ID for follow-ups; an agent ID alone does not resume Claude. Use `tasks stop --run-dir DIR` to cancel a task. Interrupted records are reconciled only when process identity proves the task ended; uncertain records require investigation.
 
-Role calls use the latest role model/effort. Ordinary direct Claude calls use product-saved defaults unless explicitly selected; direct resume preserves a matching recorded conversation's original model/effort. Before defaults have been saved, `sonnet`/medium remains the compatibility selection, not a discovered model directory. Honor the user's model choice; do not set fallback models. The panel reads the configured API endpoint's model directory explicitly; OAuth-only/key-helper/cloud authentication may not support directory reading. Do not extract private credential stores or replace an unavailable directory with invented aliases. Effort options describe CLI settings, not an API capability guarantee. The account credit bar is unavailable for Claude; reported task cost is not a claim of subscription billing.
+Role calls, including continuations, use the latest role model and effort. A role that follows CLI defaults picks up the pair saved in CLI settings; before saving defaults, `sonnet`/medium is the Claude compatibility pair, not a discovered model directory. Honor the user's model choice; do not set fallback models. The panel reads the configured API endpoint's model directory explicitly; OAuth-only/key-helper/cloud authentication may not support directory reading. Do not extract private credential stores or replace an unavailable directory with invented aliases. Effort options describe CLI settings, not an API capability guarantee. The account credit bar is unavailable for Claude; reported task cost is not a claim of subscription billing.
 
 Runners automatically register project and log roots even while the panel is stopped. Roles are recorded as ID/name only, with no configuration snapshots. A role continuation reads current settings; a disabled role or changed provider must be resolved before continuation. Diagnostic summaries are credential-redacted; read their category and recommended next step, but never treat role instructions or a prior tool rejection as authorization to broaden permissions.
 
 ## Kiro and shared rules
 
-- For direct Kiro calls, the default model and effort are pinned by the runner (`claude-sonnet-5.5`, `medium`). Do not choose other models yourself. For role calls, the dispatcher uses the user's saved role model/effort. Do not accept a silent fallback.
+- The Kiro runner checks that the configured role model and effort are available and confirmed before forwarding the task. Do not accept a silent fallback.
 - Do not enable automatic conversation cleanup, delete conversations or run `kiro_temp.py cleanup` unless the user asks.
 - Do not install or switch the system service without an explicit user request. `service install` is a dry run unless `--apply` is given.
 - A conversation keeps its provider; never resume a Kiro session with Claude or change its working directory.

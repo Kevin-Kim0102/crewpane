@@ -38,17 +38,62 @@ class ReliabilityPanelTests(unittest.TestCase):
             source = watch.Source(tmp, Path(tmp)/'runs')
             state = {'id':'old','agent_id':'a','provider':'claude','status':'completed',
                      'session_id':'12345678-1234-4234-8234-123456789abc','cwd':tmp,'role_id':'coder'}
-            role = {**agent_roles.DEFAULTS[0], 'model':'new-model','effort':'high'}
+            role = {**next(r for r in agent_roles.DEFAULTS if r["id"] == "coder"), 'model':'new-model','effort':'high'}
             def fake_spawn(command, **kwargs):
                 directory=Path(command[command.index('--run-dir')+1]);directory.mkdir()
                 (directory/'state.json').write_text('{}')
-                self.assertEqual(kwargs['env']['CODER_AGENTS_ROLE_ID'],'coder')
-                self.assertEqual(command[command.index('--model')+1],'new-model')
+                identity = agent_roles.identity(kwargs['env'])
+                self.assertEqual(identity['role_id'], 'coder')
+                override = '--resume-id' not in command
+                self.assertEqual(identity.get('role_execution_override', False), override)
+                self.assertEqual(command[command.index('--model')+1], 'manual' if override else 'new-model')
                 self.assertEqual(command[command.index('--effort')+1],'high')
                 self.assertIn('# 角色',kwargs['stdin'].read())
                 return mock.Mock(pid=999,wait=mock.Mock(return_value=0))
             with mock.patch.object(source,'list_runs',return_value=[state]),mock.patch.object(agent_roles,'continuation',return_value=(role,agent_roles.task_prompt(role,'follow up'))),mock.patch('subprocess.Popen',side_effect=fake_spawn):
                 source.start_turn('follow up',agent_id='a',provider='claude',cli_path='/fake/claude')
+                source.start_turn('new task', cwd=tmp, provider='kiro', cli_path='/fake/kiro',
+                                  role=role, role_override=True, selection={'model': 'manual', 'effort': 'high'})
+
+    def test_panel_role_uses_defaults_or_keeps_explicit_execution_for_continuation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            panel = watch.Panel.__new__(watch.Panel)
+            panel.fixture = None
+            panel.injected_services = False
+            panel.config_path = Path(tmp) / 'config.json'
+            panel.roles = mock.Mock()
+            role = {**next(r for r in agent_roles.DEFAULTS if r['id'] == 'coder'),
+                    'enabled': True, 'provider': 'claude', 'model': 'role-model', 'effort': 'high'}
+            panel.roles.get.return_value = role
+            panel.connections = mock.Mock()
+            panel.catalog = mock.Mock()
+            panel.catalog.refresh.return_value.projects = []
+            panel.resolve_selection = mock.Mock(side_effect=lambda data, *_args, **_kwargs:
+                                                {'model': data['model'], 'effort': data['effort']})
+            source = mock.MagicMock()
+            source.start_turn.return_value = (201, {})
+            panel.new_target = mock.Mock(return_value=(source, tmp))
+            panel.retain = mock.Mock()
+            panel.confirmed = mock.Mock()
+            base = {'text': 'implement', 'group': 'project', 'role_id': 'coder'}
+            panel.send(base)
+            self.assertEqual(source.start_turn.call_args.kwargs['provider'], 'claude')
+            self.assertEqual(source.start_turn.call_args.kwargs['selection'], {'model': 'role-model', 'effort': 'high'})
+            self.assertFalse(source.start_turn.call_args.kwargs['role_override'])
+            panel.send({**base, 'provider': 'kiro', 'model': 'manual', 'effort': None})
+            self.assertEqual(source.start_turn.call_args.kwargs['provider'], 'kiro')
+            self.assertEqual(source.start_turn.call_args.kwargs['selection'], {'model': 'manual', 'effort': None})
+            self.assertTrue(source.start_turn.call_args.kwargs['role_override'])
+            self.assertEqual(source.start_turn.call_args.kwargs['role']['id'], 'coder')
+            panel.source_by_id = mock.Mock(return_value=source)
+            panel.group_of = mock.Mock(return_value='project')
+            source.list_runs.return_value = [{'id': 'r', 'agent_id': 'a', 'provider': 'kiro', 'role_id': 'coder',
+                                              'role_execution_override': True}]
+            source.recorded_selection.return_value = ('manual', None)
+            panel.send({'text': 'continue', 'group': 'project', 'source': 's', 'agent': 'a'})
+            self.assertEqual(source.start_turn.call_args.kwargs['provider'], 'kiro')
+            self.assertEqual(source.start_turn.call_args.kwargs['selection'], {'model': 'manual', 'effort': None})
+            self.assertTrue(source.start_turn.call_args.kwargs['role_override'])
 
     def test_task_stop_requires_matching_group(self):
         panel=watch.Panel.__new__(watch.Panel)

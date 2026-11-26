@@ -26,22 +26,32 @@ def prepare_role(role_id, remaining, task):
     return role, args, task_prompt(role, task)
 
 
-def resume_selection(remaining):
-    """Use a local record only when native session AND canonical cwd match."""
+def verify_role_resume(role, remaining):
+    """Do not attach a new role or switch providers on an existing native session."""
     values = {}
     for index, value in enumerate(remaining):
         name, separator, inline = value.partition('=')
         if name in {'--resume-id', '--cwd'}:
             values[name] = inline if separator else remaining[index + 1] if index + 1 < len(remaining) else ''
     if not values.get('--resume-id') or not values.get('--cwd'):
-        return None
-    import agent_tasks
-    for state in agent_tasks.list_tasks():
-        if state.get('provider') == 'claude' and state.get('session_id') == values['--resume-id'] \
-                and isinstance(state.get('cwd'), str) and isinstance(state.get('model'), str) \
-                and Path(state['cwd']).resolve() == Path(values['--cwd']).expanduser().resolve():
-            return {'model': state['model'], 'effort': state.get('effort')}
-    return None
+        return
+    import json
+    from agent_tasks import registered_sources
+    cwd = Path(values['--cwd']).expanduser().resolve()
+    for source in registered_sources():
+        for path in Path(source['root']).glob('*/state.json'):
+            try:
+                state = json.loads(path.read_text())
+            except (OSError, ValueError):
+                continue
+            if not isinstance(state, dict) or state.get('session_id') != values['--resume-id']:
+                continue
+            if not isinstance(state.get('cwd'), str) or Path(state['cwd']).resolve() != cwd:
+                continue
+            if state.get('role_id') != role['id'] or state.get('provider', 'kiro') != role['provider']:
+                raise ValueError("原会话的角色或 CLI 不匹配，请新建会话")
+            return
+    raise ValueError("找不到与角色和工作目录匹配的会话，请新建会话")
 
 
 def main(argv=None):
@@ -53,30 +63,40 @@ def main(argv=None):
     # Inherited role metadata must not label an independent direct provider call.
     os.environ.pop('CODER_AGENTS_ROLE_ID', None)
     os.environ.pop('CODER_AGENTS_ROLE_NAME', None)
-    if args.role and "--help" not in remaining:
+    os.environ.pop('CODER_AGENTS_ROLE_OVERRIDE', None)
+    help_only = "--help" in remaining or "-h" in remaining
+    check = "--check" in remaining
+    if not args.role and not check and not help_only:
+        parser.error("派发任务必须指定 --role ID；--provider 只用于 --check")
+    if check and not args.role and not args.provider and not help_only:
+        parser.error("--check 必须明确指定 --provider")
+    if check and "--resume-id" in {arg.split("=", 1)[0] for arg in remaining}:
+        parser.error("--check 不能继续已有会话")
+    if args.role and not help_only:
         try:
             if args.provider:
                 raise ValueError("--role 与 --provider 不能同时使用，请在角色设置中选择 CLI")
             role, remaining, prompt = prepare_role(args.role, remaining, sys.stdin.read())
+            verify_role_resume(role, remaining)
             args.provider = role['provider']
             os.environ['CODER_AGENTS_ROLE_ID'] = role['id']
             os.environ['CODER_AGENTS_ROLE_NAME'] = role['name']
         except (ValueError, OSError) as error:
             parser.error(str(error))
-    args.provider = args.provider or Connections().snapshot()["default_provider"] or "claude"
-    if not args.role and args.provider == 'claude' and '--help' not in remaining:
+    args.provider = args.provider or "claude"  # help only when no provider or role was passed
+    if not args.role and not help_only:
         # Product defaults apply only when the caller did not supply a model/effort pair.
         names = {arg.split('=', 1)[0] for arg in remaining}
         has_model = '--model' in names
         has_effort = '--effort' in names or '--no-effort' in names
         if not has_model:
-            defaults = resume_selection(remaining) or Connections().defaults('claude')
+            defaults = Connections().defaults(args.provider)
             remaining += ['--model', defaults['model']]
             if not has_effort:
                 remaining += ['--effort', defaults['effort']] if defaults.get('effort') else ['--no-effort']
-    if "--help" in remaining:
-        print("Backend: --provider kiro|claude (default: saved connection, otherwise claude)", flush=True)
-        print("Roles: --role ID (reads current global role; replaces provider/model/effort)", flush=True)
+    if help_only:
+        print("Tasks: --role ID (uses the role's CLI, model and effort)", flush=True)
+        print("Diagnostics: --provider kiro|claude --check", flush=True)
     script = Path(__file__).resolve().with_name(agent_providers.provider(args.provider)["runner"])
     if prompt is not None:
         with tempfile.TemporaryFile() as stream:

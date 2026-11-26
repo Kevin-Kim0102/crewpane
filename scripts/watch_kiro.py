@@ -26,6 +26,7 @@ import uuid
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import kiro_catalog
 import kiro_review
+import project_workspace
 import kiro_temp
 import kiro_usage
 import agent_providers
@@ -87,14 +88,20 @@ TEXT_TYPE = "text/plain; charset=utf-8"
 VENDOR_ASSETS = {
     "vendor/marked.umd.js": ("assets/vendor/marked.umd.js", JS_TYPE),
     "vendor/purify.min.js": ("assets/vendor/purify.min.js", JS_TYPE),
+    "vendor/monaco-editor.js": ("assets/vendor/monaco-editor.js", JS_TYPE),
+    "vendor/monaco-editor.css": ("assets/vendor/monaco-editor.css", "text/css; charset=utf-8"),
+    "vendor/monaco-worker.js": ("assets/vendor/monaco-worker.js", JS_TYPE),
+    "vendor/monaco-json-worker.js": ("assets/vendor/monaco-json-worker.js", JS_TYPE),
+    "vendor/codicon.ttf": ("assets/vendor/codicon.ttf", "font/ttf"),
     "vendor/marked.LICENSE.txt": ("assets/vendor/marked.LICENSE.txt", TEXT_TYPE),
     "vendor/dompurify.LICENSE-Apache-2.0.txt": ("assets/vendor/dompurify.LICENSE-Apache-2.0.txt", TEXT_TYPE),
     "vendor/dompurify.LICENSE-MPL-2.0.txt": ("assets/vendor/dompurify.LICENSE-MPL-2.0.txt", TEXT_TYPE),
 }
 # The page loads only its own scripts and styles, makes only same-origin requests, and loads no
 # images, so untrusted Markdown cannot cause automatic external requests even if sanitizing failed.
-PAGE_CSP = ("default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; "
-            "connect-src 'self'; img-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
+PAGE_CSP = ("default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; "
+            "worker-src 'self'; font-src 'self'; connect-src 'self'; img-src 'none'; "
+            "base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
 
 
 def kiro_acp_scrub(text):
@@ -175,7 +182,8 @@ def group_agents(runs, now=None):
                                              "created_at": run.get("started_at"), "turn_count": 0, "activity": 0.0})
         agent.update(status=run.get("status"), updated_at=run.get("started_at", ""),
                      model=run.get("model"), effort=run.get("effort"), cwd=run.get("cwd"),
-                     provider=run.get("provider", "kiro"), role_id=run.get("role_id"), role_name=run.get("role_name"))
+                     provider=run.get("provider", "kiro"), role_id=run.get("role_id"), role_name=run.get("role_name"),
+                     role_execution_override=run.get("role_execution_override") is True)
         agent["turn_count"] += 1
         agent["activity"] = max(agent["activity"], run_activity(run, now))
         if run.get("session_id"):
@@ -343,10 +351,12 @@ def turn_summary(state, events_text):
             result = "failed"
     exit_code = state.get("exit_code")
     exit_code = exit_code if isinstance(exit_code, int) and not isinstance(exit_code, bool) and -1000 <= exit_code <= 1000 else None
+    denials = state.get("permission_denials")
     return {"result": result, "exit_code": exit_code, "stop_reason": stop_reason,
             "run_status": run_status, "task_seconds": seconds_between(state.get("started_at"), state.get("finished_at")),
             "kiro_elapsed_ms": elapsed_ms, "tokens": tokens, "credits": credits, "context_percent": context,
             "provider": state.get("provider", "kiro"),
+            "permission_denial_count": len(denials) if isinstance(denials, list) else 0,
             "cost_usd": finite_amount(state.get("cost_usd")) if state.get("provider") == "claude" else None}
 
 
@@ -705,7 +715,7 @@ class Source:
                 return "pending", state
             time.sleep(interval)
 
-    def start_turn(self, text, agent_id=None, cwd=None, selection=None, provider="kiro", cli_path=None, permission_mode=None, config_path=None):
+    def start_turn(self, text, agent_id=None, cwd=None, selection=None, provider="kiro", cli_path=None, permission_mode=None, config_path=None, role=None, role_override=False):
         """Start one CLI turn. A follow-up always runs in the conversation's recorded directory;
         a new conversation runs in `cwd`, which the panel chose from its own catalog, never from the browser."""
         if not isinstance(text, str) or not text.strip():
@@ -730,9 +740,11 @@ class Source:
                 raise ValueError("没有可用的项目目录")
             agent_id = "agent-" + uuid.uuid4().hex[:12]
         cwd = str(cwd)
-        role = None
-        if agent and agent.get("role_id"):
-            role, text = agent_roles.continuation(agent["role_id"], provider, text)
+        if role is not None:
+            text = agent_roles.task_prompt(role, text)
+        elif agent and agent.get("role_id"):
+            role, text = agent_roles.continuation(agent["role_id"], provider, text,
+                                                  connections=cli_connections.Connections(config_path.parent / "connections.json") if config_path else None)
             selection = {"model": role["model"], "effort": role["effort"]}
         self.ensure_root()  # lazily, and only because the user explicitly sent a message
         run_id = datetime.now().strftime("%Y%m%d-%H%M%S-") + uuid.uuid4().hex[:8]
@@ -760,10 +772,12 @@ class Source:
             environment = dict(os.environ)
             if config_path:
                 environment["CODER_AGENTS_CONFIG"] = str(config_path)
-            for key in ("CODER_AGENTS_ROLE_ID", "CODER_AGENTS_ROLE_NAME"):
+            for key in ("CODER_AGENTS_ROLE_ID", "CODER_AGENTS_ROLE_NAME", "CODER_AGENTS_ROLE_OVERRIDE"):
                 environment.pop(key, None)
             if role:
                 environment.update(CODER_AGENTS_ROLE_ID=role["id"], CODER_AGENTS_ROLE_NAME=role["name"])
+                if role_override:
+                    environment["CODER_AGENTS_ROLE_OVERRIDE"] = "1"
             process = subprocess.Popen(command, cwd=cwd, stdin=task, stdout=output, stderr=subprocess.STDOUT,
                                        env=environment, start_new_session=True)
         # Reap children even after the HTTP request has returned.
@@ -804,7 +818,7 @@ class Panel:
         self.catalog = Catalog(codex_state or config.get("codex_state") or CODEX_STATE)
         self.fixture = config.get("fixture") if isinstance(config.get("fixture"), dict) else None
         self.connections = cli_connections.Connections(config_path.parent / "connections.json")
-        self.roles = agent_roles.RoleStore()
+        self.roles = agent_roles.RoleStore(connections=self.connections)
         self.default_provider = self.connections.snapshot()["default_provider"]
         self.connection_slots = threading.BoundedSemaphore(1)
         self.injected_services = self.fixture is not None or models is not None
@@ -826,6 +840,7 @@ class Panel:
         self.cleanup_lock = threading.Lock()
         self.temp_lock = threading.Lock()  # one managed-temp cleanup (single or bulk) at a time
         self.review_slots = threading.BoundedSemaphore(3)  # read-only file/Git reviews running at once
+        self.workspace_writer = threading.Lock()
         self.cleanup_path = config_path.parent / "cleanup.json"
         self.last_cleanup = {}
         if self.cleanup_path.is_file():
@@ -1129,9 +1144,13 @@ class Panel:
                 selected["config"] = ({"model": recorded[0], "effort": recorded[1], "source": "conversation"} if recorded else None)
                 if agent.get("role_id"):
                     try:
-                        role = self.roles.get(agent["role_id"], executable=True)
-                        selected["role_error"] = "角色已更换 CLI，请新建对话" if role["provider"] != agent["provider"] else ""
-                        selected["config"] = {"model": role["model"], "effort": role["effort"], "source": "role"}
+                        if agent["role_execution_override"]:
+                            self.enabled_role(agent["role_id"])
+                            selected["role_error"] = "" if recorded else "没有记录可继续使用的模型，请新建对话"
+                        else:
+                            role = self.roles.get(agent["role_id"], executable=True, connections=self.connections)
+                            selected["role_error"] = "角色已更换 CLI，请新建对话" if role["provider"] != agent["provider"] else ""
+                            selected["config"] = {"model": role["model"], "effort": role["effort"], "source": "role"}
                     except ValueError as error:
                         selected["role_error"] = str(error)
                 selected["context"] = conversation_context(context_entries)
@@ -1141,14 +1160,21 @@ class Panel:
             auto_cleanup = flag if isinstance(flag, bool) else None
         except (OSError, ValueError, AttributeError):
             auto_cleanup = None
+        composer_roles = []
+        if not agent_id:
+            try:
+                composer_roles = [{key: role[key] for key in ("id", "name", "provider", "model", "effort")}
+                                  for role in self.roles.snapshot()["roles"] if role["enabled"]]
+            except ValueError:
+                pass  # role settings report configuration errors; ordinary conversations remain available
         viewer = {"version": VERSION, "cleanup": self.last_cleanup, "memory_mb": memory_mb(),
                   "auto_cleanup_enabled": auto_cleanup, "retention_days": RETENTION_DAYS,
                   "idle_timeout_seconds": self.config.get("idle_timeout", 120), "active_tasks": active,
                   "preview": self.fixture.get("label") if self.fixture else None,
                   "sends_disabled": bool(self.fixture and self.fixture.get("sends_disabled")),
                   "providers": self.connections.snapshot()["providers"], "default_provider": self.default_provider,
-                  "connections_required": not self.injected_services,
-                  "account": self.account_view(selected.get("provider") if selected else (draft_provider if draft_provider in {"claude", "kiro"} else self.default_provider),
+                  "connections_required": not self.injected_services, "composer_roles": composer_roles,
+                  "account": self.account_view(selected.get("provider") if selected else (draft_provider if draft_provider in {"claude", "kiro"} else None),
                                                cwd=self.context_cwd(group_id, source_id, strict=False))}
         return {"groups": groups, "selected": selected, "turns": turns, "root": log_root,
                 "source_groups": group_of_source,
@@ -1157,6 +1183,42 @@ class Panel:
                 "catalog": {"status": snapshot.status, "message": snapshot.message}, "viewer": viewer}
 
     # -- Read-only review: file viewing and Git working-tree changes ----------------------------------
+    def workspace_root(self, group, *, write=False):
+        snapshot = self.catalog.refresh()
+        if write and snapshot.status != "ok":
+            raise kiro_review.ReviewError(409, "项目列表暂不可用，无法确认写入位置")
+        project = snapshot.by_group.get(group) if isinstance(group, str) else None
+        if not project or not project.roots:
+            raise kiro_review.ReviewError(404, "找不到项目目录，请刷新页面")
+        main = str(project.roots[0])
+        root = kiro_review.authorised_directory(main)
+        if root != main or kiro_review.is_sensitive(root.split(os.sep)):
+            raise kiro_review.ReviewError(403, "项目根目录不可用")
+        return root
+
+    def workspace(self, kind, params):
+        group = params.get("group", "")
+        if not self.review_slots.acquire(blocking=False):
+            return 429, {"error": "文件请求过多，请稍后重试"}
+        try:
+            if kind == "write":
+                with self.workspace_writer:
+                    root = self.workspace_root(group, write=True)
+                    result = project_workspace.mutate(root, params)
+            else:
+                root = self.workspace_root(group)
+                result = project_workspace.read(root, kind, params)
+            return 200, {"ok": True, "group": group, "cwd": root, **result}
+        except kiro_review.ReviewError as error:
+            return error.status, {"error": error.message}
+        except OSError as error:
+            status, message = project_workspace.os_error(error)
+            return status, {"error": message}
+        except ValueError:
+            return 400, {"error": "文件名称或内容无效"}
+        finally:
+            self.review_slots.release()
+
     def review_target(self, group_id, source_id, agent_id):
         """(real working directory, recorded spelling) of one conversation, validated entirely by the panel.
 
@@ -1185,14 +1247,22 @@ class Panel:
         if not self.review_slots.acquire(blocking=False):
             return 429, {"error": "审阅请求过多，请稍后重试", **echo}
         try:
-            cwd, logical = self.review_target(echo["group"], echo["source"], echo["agent"])
+            project_scope = query.get("scope") == "project"
+            if project_scope:
+                cwd, logical = self.workspace_root(echo["group"]), None
+            else:
+                cwd, logical = self.review_target(echo["group"], echo["source"], echo["agent"])
             if kind == "status":
                 body = kiro_review.git_status(cwd)
             elif kind == "file":
-                rel = kiro_review.clean_relative(cwd, query.get("path", ""), logical)
+                rel = (project_workspace.project_path(cwd, query.get("path", "")) if project_scope
+                       else kiro_review.clean_relative(cwd, query.get("path", ""), logical))
                 body = kiro_review.read_text(cwd, rel)
             elif kind == "diff":
-                body = kiro_review.git_diff(cwd, query.get("area", ""), query.get("path", ""))
+                path = query.get("path", "")
+                if project_scope:
+                    path = project_workspace.project_path(cwd, path)
+                body = kiro_review.git_diff(cwd, query.get("area", ""), path)
             else:
                 return 404, {"error": "未知的审阅请求", **echo}
             body["cwd"] = cwd
@@ -1261,6 +1331,8 @@ class Panel:
         return None
 
     def account_view(self, provider, cwd=None):
+        if provider is None:
+            return None
         if not self.injected_services:
             try:
                 self.connections.executable(provider)
@@ -1285,11 +1357,10 @@ class Panel:
         has_model, has_effort = "model" in payload, "effort" in payload
         if not has_model and not has_effort:
             if recorded is None:
-                if provider == "claude":
-                    defaults = self.connections.defaults("claude")
-                    model, effort = defaults["model"], defaults["effort"]
-                else:
+                if provider == "kiro" and not self.connections.defaults_configured(provider):
                     return None  # Kiro selection is verified by the startup relay
+                defaults = self.connections.defaults(provider)
+                model, effort = defaults["model"], defaults["effort"]
             else:
                 model, effort = recorded
         elif has_model and has_effort:
@@ -1346,6 +1417,12 @@ class Panel:
         return 409, {"error": text + (f"。详情：{tail}" if tail else ""), "refused": True, "reason": reason,
                      "agent_id": agent_id, "run_id": run_id, "source": source.id}
 
+    def enabled_role(self, role_id):
+        role = self.roles.get(role_id)
+        if not role["enabled"]:
+            raise ValueError("角色已停用，请在设置中启用：" + role_id)
+        return role
+
     def send(self, payload):
         if self.fixture and self.fixture.get("sends_disabled"):
             return 403, {"error": "这是测试预览，已禁用发送；不会启动 Kiro"}
@@ -1355,8 +1432,30 @@ class Panel:
         if not isinstance(group_id, str):
             raise ValueError("缺少项目分组")
         # Connection is checked before creating directories or querying any CLI metadata.
-        if not payload.get("agent") and not self.injected_services:
-            self.connections.executable(payload.get("provider") or self.default_provider)
+        provider = payload.get("provider")
+        role = None
+        role_override = False
+        if "role_id" in payload:
+            if payload.get("agent"):
+                raise ValueError("已有对话不能更换角色")
+            role_id = payload["role_id"]
+            if not isinstance(role_id, str) or not role_id:
+                raise ValueError("角色 ID 无效")
+            role_override = "model" in payload or "effort" in payload
+            if role_override:
+                role = self.enabled_role(role_id)
+                provider = provider if "provider" in payload else role["provider"]
+            else:
+                role = self.roles.get(role_id, executable=True, connections=self.connections)
+                if "provider" in payload and provider != role["provider"]:
+                    raise ValueError("更换 CLI 时，请同时选择模型和思考强度")
+                provider = role["provider"]
+                payload = {**payload, "model": role["model"], "effort": role["effort"]}
+        if not payload.get("agent"):
+            if not provider:
+                raise ValueError("请先选择 CLI")
+            if not self.injected_services:
+                self.connections.executable(provider)
         snapshot = self.catalog.refresh()
         agent_id, source_id = payload.get("agent"), payload.get("source")
         if agent_id:
@@ -1375,17 +1474,24 @@ class Panel:
                     raise ValueError("已有对话不能更换后端")
                 recorded = source.recorded_selection(runs, agent_id)
             if agent.get("role_id"):
-                role, _ = agent_roles.continuation(agent["role_id"], provider, text)
-                payload = {**payload, "model": role["model"], "effort": role["effort"]}
+                if agent["role_execution_override"]:
+                    role = self.enabled_role(agent["role_id"])
+                    role_override = True
+                    if recorded is None:
+                        raise ValueError("没有记录可继续使用的模型，请新建对话")
+                    payload = {**payload, "model": recorded[0], "effort": recorded[1]}
+                else:
+                    configured_role, _ = agent_roles.continuation(agent["role_id"], provider, text, self.roles, self.connections)
+                    payload = {**payload, "model": configured_role["model"], "effort": configured_role["effort"]}
             selection = self.resolve_selection(payload, recorded, provider, cwd=agent.get("cwd"), role=bool(agent.get("role_id")))  # no source lock held
             cli_path = self.connections.executable(provider) if not self.injected_services else None
             with source.lock:
                 result = source.start_turn(text, agent_id=agent_id, selection=selection, provider=provider, cli_path=cli_path,
-                                           permission_mode=permission_selection(payload, provider), config_path=self.config_path)
+                                           permission_mode=permission_selection(payload, provider), config_path=self.config_path,
+                                           role=role, role_override=role_override)
             return self.confirmed(source, result)
-        provider = payload.get("provider", self.default_provider)
         agent_providers.provider(provider)
-        selection = self.resolve_selection(payload, None, provider, cwd=next((str(p.roots[0]) for p in snapshot.projects if p.group_id == group_id and p.roots), None))
+        selection = self.resolve_selection(payload, None, provider, cwd=next((str(p.roots[0]) for p in snapshot.projects if p.group_id == group_id and p.roots), None), role=role is not None and not role_override)
         cli_path = self.connections.executable(provider) if not self.injected_services else None
         source, cwd = self.new_target(group_id, snapshot)
         daily = group_id == OTHER_GROUP
@@ -1394,7 +1500,8 @@ class Panel:
             with source.lock:
                 try:
                     result = source.start_turn(text, cwd=cwd, selection=selection, provider=provider, cli_path=cli_path,
-                                               permission_mode=permission_selection(payload, provider), config_path=self.config_path)
+                                               permission_mode=permission_selection(payload, provider), config_path=self.config_path,
+                                               role=role, role_override=role_override)
                 except ValueError:
                     left_run = daily and bool(source.list_runs())
                     raise
@@ -1441,10 +1548,16 @@ class Panel:
                         "error": "请先在设置中连接 CLI"}
         agent_providers.provider(provider)
         if provider == "claude":
-            return self.claude_models.snapshot(force=refresh, cwd=cwd)
+            catalog = self.claude_models.snapshot(force=refresh, cwd=cwd)
+            return self.catalog_with_saved_default(provider, catalog)
         if not self.injected_services and not refresh:
             if self.models is not None and self.models.current is not None:
-                return self.models.view(time.time())  # cached view only; never refresh credentials
+                return self.catalog_with_saved_default(provider, self.models.view(time.time()))  # cache only
+            defaults = self.connections.defaults(provider)
+            if self.connections.defaults_configured(provider) and defaults != {
+                    "model": kiro_catalog.DEFAULT_MODEL, "effort": kiro_catalog.DEFAULT_EFFORT}:
+                return {"provider": provider, "status": "idle", "models": [],
+                        "default": {**defaults, "available": False}, "message": "请在设置中读取模型目录。"}
             return {"provider": "kiro", "status": "ok", "source": "pinned-default",
                     "message": "默认模型在任务启动时由 Kiro 门禁验证；其他模型请在设置中主动读取目录。",
                     "default": {"model": kiro_catalog.DEFAULT_MODEL, "effort": kiro_catalog.DEFAULT_EFFORT, "available": True},
@@ -1454,7 +1567,15 @@ class Panel:
         self.kiro_services()
         if not self.models:
             return {"status": "error", "models": [], "error": "测试预览没有模型目录", "default": {"available": False}}
-        return self.models.snapshot(force=refresh)
+        return self.catalog_with_saved_default(provider, self.models.snapshot(force=refresh))
+
+    def catalog_with_saved_default(self, provider, catalog):
+        if not self.connections.defaults_configured(provider):
+            return catalog
+        selection = self.connections.defaults(provider)
+        available = any(m["id"] == selection["model"] and m.get("selectable") is not False
+                        for m in catalog.get("models", []))
+        return {**catalog, "default": {**selection, "available": available}}
 
     def usage_refresh(self, provider=None, cwd=None):
         provider = provider or self.default_provider
@@ -1487,13 +1608,43 @@ class Panel:
             elif action == "default":
                 result = {"ok": True, "message": "已设为默认 CLI", **self.connections.set_default(provider)}
             elif action == "defaults":
-                if provider != "claude":
-                    raise ValueError("目前仅支持 Claude 默认模型设置")
-                model, effort = self.claude_models.validate(payload.get("model"), payload.get("effort"))
-                catalog = self.claude_models.snapshot()
-                if not any(m["id"] == model for m in catalog.get("models", [])):
-                    raise ValueError("请先读取当前 API 的模型目录并选择模型")
-                result = {"ok": True, "message": "默认模型与思考强度已保存，新对话生效", **self.connections.set_defaults(provider, model, effort)}
+                self.connections.executable(provider)
+                catalog = self.models_view(provider=provider)
+                def validate_pair(pair):
+                    model, effort = pair.get("model"), pair.get("effort")
+                    entry = next((m for m in catalog.get("models", []) if m["id"] == model and m.get("selectable") is not False), None)
+                    if catalog.get("status") != "ok" or not entry or catalog.get("source") == "pinned-default":
+                        raise ValueError("请先读取当前 CLI 的模型目录并选择可用模型")
+                    options = entry.get("effort") or {}
+                    if not options.get("known") or (effort is None and options.get("supported") and provider == "kiro") or (
+                            effort is not None and (not options.get("supported") or effort not in options.get("levels", []))):
+                        raise ValueError("请选择该模型支持的思考强度")
+                    if provider == "claude":
+                        self.claude_models.validate(model, effort)
+                    return model, effort
+
+                model, effort = validate_pair(payload)
+                overrides = payload.get("overrides", {})
+                if not isinstance(overrides, dict):
+                    raise ValueError("无效的角色模型配置")
+                switch_roles = payload.get("switch_roles", [])
+                if not isinstance(switch_roles, list) or any(not isinstance(role_id, str) or role_id not in overrides
+                                                             for role_id in switch_roles):
+                    raise ValueError("无效的角色 CLI 切换")
+                for pair in overrides.values():
+                    if not isinstance(pair, dict) or set(pair) != {"model", "effort"}:
+                        raise ValueError("无效的角色模型配置")
+                    if pair != {"model": None, "effort": None}:
+                        validate_pair(pair)
+                roles = None
+                if overrides or payload.get("revision") == "missing":
+                    roles = self.roles.mutate({"action": "models", "provider": provider,
+                                               "revision": payload.get("revision"), "overrides": overrides,
+                                               "switch_roles": switch_roles}, model_settings=True)
+                result = {"ok": True, "message": "模型设置已保存，下次任务生效",
+                          **self.connections.set_defaults(provider, model, effort)}
+                if roles is not None:
+                    result["roles_config"] = roles
             elif action in {"pause", "start"}:
                 result = {"ok": True, "message": "已暂停，新任务将停止使用此 CLI；正在运行的任务继续执行" if action == "pause" else "已启动 CLI",
                           **self.connections.set_paused(provider, action == "pause")}
@@ -1505,7 +1656,7 @@ class Panel:
                 return self.test_connection(provider)
             if result.get("ok"):
                 self.default_provider = self.connections.snapshot()["default_provider"]
-                if provider == "kiro":
+                if provider == "kiro" and action in {"connect", "disconnect", "pause", "start"}:
                     with self.provider_lock:
                         self.models = self.usage = None
                 if action == "connect":
@@ -1527,13 +1678,10 @@ class Panel:
             runner = SKILL / "scripts" / agent_providers.provider(provider)["runner"]
             command = [sys.executable, str(runner), "--cwd", directory, "--run-dir", str(Path(directory) / "run"),
                        "--cli-path", binary, "--check"]
-            if provider == "claude":
-                command += ["--timeout", "30"]
-                defaults = self.connections.defaults("claude")
-                command += ["--model", defaults["model"]]
-                command += ["--effort", defaults["effort"]] if defaults["effort"] else ["--no-effort"]
-            else:
-                command += ["--timeout", "30"]
+            command += ["--timeout", "30"]
+            defaults = self.connections.defaults(provider)
+            command += ["--model", defaults["model"]]
+            command += ["--effort", defaults["effort"]] if defaults["effort"] else ["--no-effort"]
             process = subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
                                        stderr=subprocess.DEVNULL, start_new_session=True)
             try:
@@ -1818,10 +1966,10 @@ def make_handler(panel):
                 return False
             return True
 
-        def payload(self):
+        def payload(self, limit=131072):
             length = int(self.headers.get("Content-Length", "0"))
-            if not 0 < length <= 131072:
-                raise ValueError("消息不能为空，且需要小于 128 KB")
+            if not 0 < length <= limit:
+                raise ValueError("消息不能为空，且需要小于 128 KB" if limit == 131072 else "文件请求体过大或为空")
             payload = json.loads(self.rfile.read(length))
             if not isinstance(payload, dict):
                 raise ValueError("Invalid message")
@@ -1852,6 +2000,11 @@ def make_handler(panel):
                         self.send_body({"url": panel.address + "/", "project_id": source.id})
                     else:
                         self.send_error(404)
+                elif path == "/api/workspace":
+                    if not self.browser_post_ok():
+                        return
+                    status, result = panel.workspace("write", self.payload(6 * kiro_review.MAX_FILE_BYTES + 32768))
+                    self.send_body(result, status=status)
                 elif path in {"/api/send", "/api/delete", "/api/stop", "/api/tasks/stop", "/api/usage/refresh", "/api/temp", "/api/temp/bulk", "/api/connections", "/api/roles"}:
                     if not self.browser_post_ok():
                         return
@@ -1907,13 +2060,16 @@ def make_handler(panel):
                 query = parse_qs(parts.query)
                 first = lambda name: (query.get(name) or [""])[0][:200]
                 self.send_body(panel.view(first("group"), first("source"), first("agent"), first("provider")))
-            elif path in {"/api/review", "/api/review/file", "/api/review/diff"}:
+            elif path in {"/api/workspace/tree", "/api/workspace/file", "/api/review", "/api/review/file", "/api/review/diff"}:
                 if not self.authenticated():
                     self.send_body({"error": "登录状态已失效，请重新打开固定入口 http://127.0.0.1:%d/" % panel.port}, status=401)
                     return
                 query = {key: values[0][:4096] for key, values in parse_qs(parts.query).items() if values}
-                kind = {"/api/review": "status", "/api/review/file": "file", "/api/review/diff": "diff"}[path]
-                status, body = panel.review(kind, query)
+                if path.startswith("/api/workspace/"):
+                    status, body = panel.workspace(path.rsplit("/", 1)[1], query)
+                else:
+                    kind = {"/api/review": "status", "/api/review/file": "file", "/api/review/diff": "diff"}[path]
+                    status, body = panel.review(kind, query)
                 self.send_body(body, status=status)
             elif path == "/api/temp/overview":
                 if not self.authenticated():

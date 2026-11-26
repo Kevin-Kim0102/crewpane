@@ -119,7 +119,8 @@ class Connections:
                 rows.append({"id": name, "name": meta["name"], "available": available and not paused,
                              "paused": paused,
                              "connected": bool(record.get("enabled")), "path": record.get("path", ""),
-                             "defaults": self.defaults(name) if name == "claude" else None,
+                             "defaults": self.defaults(name),
+                             "defaults_configured": record.get("defaults") is not None,
                              "version": record.get("version", ""), "checked_at": record.get("checked_at"),
                              "status": "paused" if available and paused else "connected" if available else "invalid" if record.get("enabled") else "disconnected",
                              "error": error, "login_command": "claude auth login" if name == "claude" else "kiro-cli login"})
@@ -194,21 +195,34 @@ class Connections:
             self.save(data)
         return self.snapshot()
 
-    def defaults(self, name="claude"):
-        provider(name)
+    def defaults(self, name="claude", *, require_configured=False):
+        meta = provider(name)
         record = self.read()["providers"].get(name) or {}
         value = record.get("defaults")
         if value is None:
-            return {"model": "sonnet", "effort": "medium"} if name == "claude" else None
+            if require_configured:
+                raise ValueError(f"请先在设置中保存 {meta['name']} 的默认模型，或为角色单独选择模型")
+            if name == "claude":
+                return {"model": "sonnet", "effort": "medium"}
+            from kiro_catalog import DEFAULT_MODEL, DEFAULT_EFFORT
+            return {"model": DEFAULT_MODEL, "effort": DEFAULT_EFFORT}
         if not isinstance(value, dict) or set(value) != {"model", "effort"}:
             raise ValueError("CLI 默认模型配置无效，请在设置中重新保存")
         return dict(value)
 
+    def defaults_configured(self, name):
+        return (self.read()["providers"].get(name) or {}).get("defaults") is not None
+
     def set_defaults(self, name, model, effort):
-        if name != "claude":
-            raise ValueError("默认模型配置目前仅支持 Claude")
-        from agent_providers import ClaudeModels
-        ClaudeModels().validate(model, effort)
+        provider(name)
+        if name == "claude":
+            from agent_providers import ClaudeModels
+            ClaudeModels().validate(model, effort)
+        else:
+            from kiro_catalog import MODEL_ID, EFFORT_ID
+            if not isinstance(model, str) or not MODEL_ID.fullmatch(model) or (
+                    effort is not None and (not isinstance(effort, str) or not EFFORT_ID.fullmatch(effort))):
+                raise ValueError("Kiro 默认模型或思考强度无效")
         with self.lock:
             data = self.read()
             record = data["providers"].get(name) or {}

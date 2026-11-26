@@ -54,11 +54,13 @@ class ClaudeFixture(unittest.TestCase):
         self.capture = self.base / "capture.json"
         self.env = {**os.environ, "PATH": str(self.base) + os.pathsep + os.environ.get("PATH", ""),
                     "CAPTURE": str(self.capture), "PYTHONDONTWRITEBYTECODE": "1",
-                    "CODER_AGENTS_CONFIG": str(self.base / "config.json")}
+                    "CODER_AGENTS_CONFIG": str(self.base / "config.json"),
+                    "XDG_CONFIG_HOME": str(self.base / "user-config")}
 
     def run_task(self, mode="success", extra=()):
         directory = self.base / ("run-" + mode)
-        done = subprocess.run([sys.executable, "-m", "coder_agents", "run", "--provider", "claude",
+        backend = ["--provider", "claude"] if "--check" in extra else ["--role", "coder"]
+        done = subprocess.run([sys.executable, "-m", "coder_agents", "run", *backend,
                                "--cwd", str(self.base), "--run-dir", str(directory), "--agent-id", "reader",
                                *extra], input="read only: 你好", text=True, capture_output=True,
                               cwd=ROOT, env={**self.env, "FAKE_MODE": mode}, timeout=15)
@@ -67,6 +69,46 @@ class ClaudeFixture(unittest.TestCase):
 
 
 class ClaudeRunnerTests(ClaudeFixture):
+    def setUp(self):
+        super().setUp()
+        from agent_roles import RoleStore
+
+        with mock.patch.dict(os.environ, self.env):
+            store = RoleStore()
+            role = {**store.get("coder"), "provider": "claude", "model": "sonnet", "effort": "medium"}
+            store.mutate({"action": "save", "role": role, "revision": store.snapshot()["revision"]})
+
+    def test_task_and_check_preserve_cli_environment_without_kiro_proxy_defaults(self):
+        settings = self.base / "settings.json"
+        settings.write_text(json.dumps({"proxy_defaults": {
+            "HTTP_PROXY": "http://kiro-proxy.invalid:3128",
+            "HTTPS_PROXY": "http://kiro-proxy.invalid:3128",
+            "ALL_PROXY": "socks5://kiro-proxy.invalid:3128",
+        }}))
+        variables = ("HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY")
+        proxy_keys = (*variables, *(key.lower() for key in variables))
+        for key in proxy_keys:
+            self.env.pop(key, None)
+        self.env.update(CODER_AGENTS_SETTINGS=str(settings),
+                        ANTHROPIC_BASE_URL="https://claude-gateway.invalid")
+        self.binary.write_text(FAKE.replace(
+            '"cwd":os.getcwd()', '"cwd":os.getcwd(),"network":'
+            f'{{key:os.environ[key] for key in {(*proxy_keys, "ANTHROPIC_BASE_URL")!r} if key in os.environ}}'
+        ))
+
+        done, _, _ = self.run_task()
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual(json.loads(self.capture.read_text())["network"],
+                         {"ANTHROPIC_BASE_URL": "https://claude-gateway.invalid"})
+
+        self.env["https_proxy"] = "http://explicit-proxy.invalid:8080"
+        done, _, _ = self.run_task("check", ("--check",))
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual(json.loads(self.capture.read_text())["network"], {
+            "ANTHROPIC_BASE_URL": "https://claude-gateway.invalid",
+            "https_proxy": "http://explicit-proxy.invalid:8080",
+        })
+
     def test_claude_test_scratch_is_managed_and_kept_for_unified_cleanup(self):
         original = self.binary.read_text()
         self.binary.write_text(original.replace('"cwd":os.getcwd()', '"cwd":os.getcwd(),"tmpdir":os.environ.get("TMPDIR")'))
@@ -92,15 +134,24 @@ class ClaudeRunnerTests(ClaudeFixture):
         for name in ("state.json", "task.txt", "events.jsonl", "raw-events.jsonl", "stderr.log", "result.txt"):
             self.assertEqual((directory / name).stat().st_mode & 0o777, 0o600)
         captured = json.loads(self.capture.read_text())
-        self.assertEqual(captured["prompt"], "read only: 你好")
+        self.assertTrue(captured["prompt"].endswith("# 本次任务\nread only: 你好"))
         self.assertEqual(captured["cwd"], str(self.base))
         self.assertIn("dontAsk", captured["args"])
         self.assertNotIn("--dangerously-skip-permissions", captured["args"])
 
     def test_native_resume_id_and_explicit_tool_policy(self):
         session = "12345678-1234-4234-8234-123456789abd"
+        self.env["XDG_CONFIG_HOME"] = str(self.base / "user-config")
+        with mock.patch.dict(os.environ, self.env):
+            from agent_roles import RoleStore
+            store = RoleStore()
+            role = {**store.get("coder"), "provider": "claude", "model": "haiku", "effort": None}
+            store.mutate({"action":"save", "role":role, "revision":store.snapshot()["revision"]})
+            self.run_task("prior")
+            recorded = self.base / "run-prior/state.json"
+            recorded.write_text(json.dumps({**json.loads(recorded.read_text()), "session_id": session}))
         done, _, state = self.run_task(extra=("--resume-id", session, "--permission-mode", "acceptEdits",
-                                             "--allowed-tools", "Read", "--model", "haiku", "--no-effort"))
+                                             "--allowed-tools", "Read"))
         self.assertEqual(done.returncode, 0, done.stderr)
         args = json.loads(self.capture.read_text())["args"]
         self.assertEqual(args[args.index("--resume") + 1], session)
@@ -108,8 +159,19 @@ class ClaudeRunnerTests(ClaudeFixture):
         self.assertNotIn("--effort", args)
         self.assertEqual(state["session_id"], session)
 
-    def test_incomplete_error_denied_malformed_or_nonzero_are_failed(self):
-        for mode in ("missing", "error", "denied", "malformed", "exit"):
+    def test_completed_turn_preserves_tool_denials_as_warnings(self):
+        from watch_kiro import turn_summary
+
+        done, directory, state = self.run_task("denied")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual(state["status"], "completed")
+        self.assertEqual(state["permission_denials"], [{"tool_name": "Bash"}])
+        summary = turn_summary(state, (directory / "events.jsonl").read_text())
+        self.assertEqual(summary["result"], "completed")
+        self.assertEqual(summary["permission_denial_count"], 1)
+
+    def test_incomplete_error_malformed_or_nonzero_are_failed(self):
+        for mode in ("missing", "error", "malformed", "exit"):
             with self.subTest(mode=mode):
                 done, _, state = self.run_task(mode)
                 self.assertNotEqual(done.returncode, 0)
@@ -126,7 +188,7 @@ class ClaudeRunnerTests(ClaudeFixture):
     def test_existing_directory_is_never_overwritten(self):
         self.run_task()
         before = (self.base / "run-success/state.json").read_bytes()
-        done = subprocess.run([sys.executable, "-m", "coder_agents", "run", "--provider", "claude",
+        done = subprocess.run([sys.executable, "-m", "coder_agents", "run", "--role", "coder",
                                "--cwd", str(self.base), "--run-dir", str(self.base / "run-success")],
                               input="another", text=True, capture_output=True, cwd=ROOT, env=self.env)
         self.assertNotEqual(done.returncode, 0)
@@ -151,7 +213,7 @@ class ClaudeRunnerTests(ClaudeFixture):
         with tempfile.TemporaryFile(mode="w+t") as task, tempfile.TemporaryFile(mode="w+t") as output:
             task.write("wait")
             task.seek(0)
-            process = subprocess.Popen([sys.executable, "-m", "coder_agents", "run", "--provider", "claude",
+            process = subprocess.Popen([sys.executable, "-m", "coder_agents", "run", "--role", "coder",
                                         "--cwd", str(self.base), "--run-dir", str(directory)], cwd=ROOT,
                                        env={**self.env, "FAKE_MODE": "sleep"}, stdin=task, stdout=output, stderr=output)
             self.addCleanup(lambda: process.poll() is None and process.kill())

@@ -33,7 +33,7 @@
 .tool-state.completed{color:#8fd0aa}.tool-state.failed{color:#efa7ad}.tool-state.in_progress{color:#e6c88f}.tool-state.unfinished{color:#a99f8a}
 /* Per-turn summary */
 .turn-summary{display:flex;flex-wrap:wrap;align-items:center;gap:3px 14px;margin:-12px 0 28px 40px;padding-top:7px;border-top:1px dashed #2a3136;font-size:11px;color:#9babaf}
-.turn-summary span[title]{cursor:help}.turn-summary .res{font-weight:600}.turn-summary .res.completed{color:#a5e4c7}.turn-summary .res.failed,.turn-summary .bad{color:#efa7ad}.turn-summary .res.cancelled{color:#e6c88f}.turn-summary .missing{color:#7f8c92}
+.turn-summary span[title]{cursor:help}.turn-summary .res{font-weight:600}.turn-summary .res.completed{color:#a5e4c7}.turn-summary .res.failed,.turn-summary .bad{color:#efa7ad}.turn-summary .res.cancelled,.turn-summary .warn{color:#e6c88f}.turn-summary .missing{color:#7f8c92}
 @media(max-width:480px){.turn-summary{margin-left:33px}}
 /* Project groups: a header with disclosure + new-conversation button, then compact conversation rows. */
 .group{margin:2px 0 8px}.group-head{display:flex;align-items:center;gap:2px;padding-right:2px;border-radius:7px}.group-head:hover{background:#171b1e}
@@ -76,16 +76,11 @@
 .settings-sec{padding:20px 22px}.settings-sec h4{margin:0 0 10px;font-size:14px;font-weight:600}
 .settings-sec p,.settings-sec .lead,.settings-sec p.muted{font-size:13px;line-height:1.75}
 .settings-sec p:last-child{margin-bottom:0}.settings-sec p.muted,.settings-sec .lead{font-size:12px}
-.cli-defaults-row{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
-.cli-defaults-field{display:flex;flex-direction:column;gap:8px;min-width:0}
-.cli-defaults-field:first-child{flex:1 1 220px}
-.cli-defaults-field .cfg{width:100%;max-width:none;height:35px;margin:0}
-.cli-defaults-row>button{flex-shrink:0;white-space:nowrap}
 .settings-sec:has(#cli-list){background:transparent;border:0;padding:0}
 #cli-list{display:flex;flex-direction:column;gap:12px}
 .cli-row{border:1px solid var(--line);border-radius:12px;padding:20px 22px;gap:14px;background:var(--panel)}
 .cli-card-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px}.cli-card-head h4{margin:0;font-size:15px}
-.cli-status{font-size:12px}.cli-row[data-default=true]{border-color:#466352}
+.cli-status{font-size:12px}
 .cli-path-options{font-size:12px;color:var(--muted)}.cli-path-options summary{cursor:pointer;padding:5px 0}
 .cli-path-options label{display:block;margin:10px 0 6px}.cli-row input{font-size:13px}
 .settings .cli-actions button,.settings .temp-actions button{min-height:40px}
@@ -98,13 +93,19 @@
 /* Compact provider overview and provider-specific configuration. */
 .cli-group+.cli-group{margin-top:32px}.cli-group>h4{margin:0 0 6px;font-size:14px}.cli-group>h4 span{margin-left:6px;font-weight:400;color:var(--muted)}.cli-group>p{margin:0 0 16px;font-size:12px;color:var(--muted)}
 .cli-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.cli-empty{padding:20px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);font-size:13px}
-.cli-small-card{border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden}.cli-small-card[data-default=true]{border-color:#466352}.cli-small-card[data-paused=true]{border-style:dashed}
+.cli-small-card{border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden}.cli-small-card[data-paused=true]{border-style:dashed}
 .cli-card-open{display:flex;align-items:center;gap:14px;width:100%;min-height:112px;padding:22px;text-align:left;background:transparent;border:0;cursor:pointer}.cli-card-open:hover{background:#22292a}.cli-card-open:focus-visible{outline-offset:-4px}
 .cli-logo{width:44px;height:44px;flex:none;stroke:none;fill:none;border-radius:10px}.cli-card-label{display:flex;flex-direction:column;gap:5px;min-width:0}.cli-card-label strong{font-size:15px;font-weight:600}.cli-card-label>span{color:var(--muted);font-size:12px}
 .cli-card-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 22px 18px;font-size:12px;color:var(--muted);min-height:48px}.cli-card-foot button{min-width:64px;min-height:36px}
+.cli-card-foot .cli-actions{justify-content:flex-end}.cli-card-label .cli-default-badge{color:var(--accent);font-size:11px;margin-inline-start:8px;font-weight:500}
 .cli-config{display:flex;flex-direction:column;gap:18px}.cli-config[hidden],#cli-detail[hidden],#cli-overview[hidden],.cli-empty[hidden]{display:none}
 .cli-back{padding:4px 0;margin-bottom:18px;font-size:12px;color:var(--muted)}.cli-config-heading{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:2px}.cli-config-heading h4{font-size:20px;font-weight:600;margin:0}.cli-config-heading>.cli-status{flex-basis:100%;margin:0;color:var(--muted)}
-.cli-config .settings-sec>label{display:block;margin:18px 0 8px;font-size:12px;color:var(--text)}.cli-path-input{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg);color:var(--text);font:12px/1.6 ui-monospace,monospace}.cli-config .settings-sec>input+p{margin-top:8px}
+.cli-path-input{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg);color:var(--text);font:12px/1.6 ui-monospace,monospace}
+.cli-config-heading>.cli-actions{margin-inline-start:auto;justify-content:flex-end}
+#cli-model-form details{border-block:1px solid var(--line);padding:12px 0}#cli-model-form summary{cursor:pointer}
+#cli-model-form details .role-fields{margin-top:10px}#cli-model-form .cli-actions{justify-content:flex-end}#cli-model-form .muted{white-space:pre-wrap}
+.cli-model-dialog{width:min(640px,calc(100% - 32px));max-height:85vh;overflow:auto;padding:24px;border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--text)}
+.cli-model-dialog::backdrop{background:#0009}.cli-model-dialog h3{margin:0 0 16px}
 .cli-detail-feedback{white-space:pre-wrap;margin-top:12px!important}.cli-detail-feedback:empty{display:none}.cli-model-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.cli-model-head h4{margin:0}.cli-model-head h4 span{font-size:12px;font-weight:400;color:var(--muted);margin-left:10px}
 .cli-model-list{padding:0;margin:0;list-style:none;max-height:420px;overflow:auto}.cli-model-item{display:grid;grid-template-columns:minmax(80px,1fr) minmax(100px,1.2fr) minmax(200px,1.8fr);align-items:center;gap:16px;padding:12px 0;border-top:1px solid var(--line);overflow-wrap:anywhere}.cli-model-item strong{font-size:13px;font-weight:500}.cli-model-item code,.cli-model-item span{color:var(--muted);font-size:12px}.cli-model-item span{text-align:right}.cli-config .install-guide{margin-bottom:12px}
 .cli-install-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}.cli-install-head h4{margin:0}.cli-install-head a{font-size:12px;white-space:nowrap}.cli-install-command{display:flex;align-items:center;gap:12px;padding:12px 14px;margin:10px 0 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}.cli-install-command code{flex:1;min-width:0;white-space:pre-wrap;font:12px/1.7 ui-monospace,monospace;user-select:all}.cli-install-command button{flex:none;font-size:12px;min-height:36px}.cli-install-method{margin:0;font-size:13px}
@@ -161,19 +162,123 @@
 .rv-viewtools{display:inline-flex;flex-wrap:wrap;gap:6px;margin-left:auto}.rv-viewtools button{border:1px solid #3f5a50;background:transparent;color:#c2e9d8;border-radius:7px;font-size:11px;padding:2px 10px}.rv-viewtools button[aria-pressed=true]{background:#25493b;border-color:#4f7d6a}.rv-viewtools [hidden]{display:none}
 .rv-status{margin:0;padding:6px 16px;font-size:12px;color:var(--muted);overflow-wrap:anywhere}.rv-status:empty{display:none}.rv-status.warn{color:#e6c88f}
 .rv-code{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;font:12px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;outline-offset:-2px}
+.rv-code-area{display:flex;flex:1;min-height:0;min-width:0}.rv-code-area .rv-code{min-width:0}
+.rv-diff-overview{position:relative;flex:0 0 13px;min-height:0;padding:0;border:0;border-inline-start:1px solid var(--line);background:var(--bg)}
+.rv-diff-overview[hidden]{display:none}
+.rv-diff-overview svg{position:absolute;inset:2px 0;width:100%;height:calc(100% - 4px);stroke:none;pointer-events:none}
+.rv-diff-overview .del{fill:#e7808d}.rv-diff-overview .add{fill:#73cc98}
+.rv-diff-overview:focus-visible{outline-offset:-2px}
 .rv-lines{min-width:max-content}.ln{display:flex}.ln .no{flex:none;width:3.8em;text-align:right;padding:0 8px;color:#6c7a82;user-select:none}.ln .tx{white-space:pre;padding-right:18px;flex:1;min-height:1.6em}
 .rv-diff .no{width:3.4em}.ln.add{background:#12301f}.ln.add .tx{color:#b8e6c8}.ln.del{background:#381a20}.ln.del .tx{color:#f2c0c6}.ln.hunk{background:#1a2733}.ln.hunk .tx{color:#9cc4e4}.ln.meta .tx{color:#8fa0a7}
 .rv-more{padding:8px 16px;color:var(--muted);font-size:11px}
+.rv-diff-chunk{display:flow-root}
+.rv-code:has(.rv-diff-chunk){overflow-anchor:none}
+.rv-diff-more{display:block;margin:12px 16px;padding:4px 9px;border:1px solid var(--line);border-radius:4px;background:transparent;color:var(--text);font-size:11px;overflow-anchor:none}
+.rv-diff-more:hover{background:var(--panel)}
 .rv-repo p{margin:0 0 4px;font-size:12px;overflow-wrap:anywhere}.rv-branch{font-weight:600}.rv-root{font-size:11px}.rv-empty-title{font-weight:600}.rv-warn{color:#efa7ad;font-size:12px;margin:4px 0;overflow-wrap:anywhere}.rv-clean{padding:10px 0}
 .cl-group p{margin:4px 0;font-size:11px;color:var(--muted);overflow-wrap:anywhere}.cl-group p.rv-warn{color:#efa7ad}.rv-list .muted{color:var(--muted)}
 .cl-group h3{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:12px;margin:14px 0 6px;color:#c4d4cc}.cl-total{display:inline-flex;gap:6px;font:11px ui-monospace,monospace;margin-left:auto}
 .cl-list{list-style:none;margin:0;padding:0}.cl-row{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:1px solid transparent;background:transparent;border-radius:8px;padding:5px 7px;font-size:12px}.cl-row:hover{background:#1b2024}.cl-row[aria-pressed=true]{background:#25312d;border-color:#3d5a4e}
-.cl-code{flex:none;width:1.6em;text-align:center;font:600 11px ui-monospace,monospace;border-radius:4px;background:#252b30;color:#c4d4cc}.cl-A{color:#8fd0aa}.cl-D{color:#efa7ad}.cl-R,.cl-C{color:#9cc4e4}.cl-U{color:#e6c88f}.cl-u{color:#e6c88f}
+.cl-code{flex:none;width:1.6em;text-align:center;font:600 11px ui-monospace,monospace;border-radius:4px;background:#252b30;color:#c4d4cc}.cl-M{color:#edd095}.cl-A{color:#8fd0aa}.cl-D{color:#efa7ad}.cl-R,.cl-C{color:#9cc4e4}.cl-U{color:#e6c88f}.cl-u{color:#e6c88f}
 .cl-name{flex:1;min-width:0;overflow-wrap:anywhere;font:11px ui-monospace,monospace}.cl-stat{display:inline-flex;gap:6px;flex:none;font:11px ui-monospace,monospace}
 @media(max-width:720px){.rv-body{flex-direction:column}.rv-list{width:auto;max-height:42%;border-right:0;border-bottom:1px solid var(--line)}.rv-head{padding:12px 14px}.rv-note{padding:8px 14px}}
 @media(max-width:480px){.review-btn span{display:none}.rv-viewhead{padding:8px 12px}}
+/* Project workbench */
+.group-browse{flex:none;width:26px;height:26px;padding:0;border:0;border-radius:6px;background:transparent;color:#a9c2b6;display:grid;place-items:center}.group-browse svg{width:15px;height:15px}.group-browse:hover:enabled{background:#26332d;color:#d6efe2}
+.rv-side{width:340px;min-height:0;flex:none;display:flex;flex-direction:column}.rv-side>.rv-list{width:auto;max-height:none;flex:1}.review[data-mode=file] .rv-side,.review:not([data-mode=project]) .pf-only{display:none}
+.rv-body[hidden],.pf-body[hidden],.pf-tabs[hidden]{display:none}.review:not([data-mode=project]) #review-close{order:2}
+.review[data-mode=project]{--wb-code:var(--bg);--wb-side:var(--panel);--wb-top:#101214;--wb-line:var(--line);--wb-hover:#26282a;--wb-selected:#25312d;--wb-accent:var(--accent);--wb-text:var(--text);--wb-muted:var(--muted);--wb-width:276px;background:var(--wb-code);color:var(--wb-text)}
+.review[data-mode=project] .rv-head{flex:0 0 auto;min-height:49px;gap:10px;padding:6px 12px;background:var(--wb-top);border-color:var(--wb-line);flex-wrap:nowrap}
+.review[data-mode=project] #review-title{flex:0 1 auto;margin-left:4px;color:var(--wb-text)}.pf-chrome-title{color:var(--wb-muted);white-space:nowrap;font-size:12px}
+.review[data-mode=project] #review-close{display:flex;align-items:center;gap:6px;flex:none;border:0;background:transparent;color:var(--wb-muted);font-size:12px;padding:6px;border-radius:4px}
+.review[data-mode=project] #review-refresh,.review[data-mode=project] #rv-copy,.review[data-mode=project] #rv-copy-path{display:none}
+.pf-tabs{display:flex;gap:4px;padding-inline-start:9px;border-inline-start:1px solid var(--wb-line);flex:none}
+.pf-tab,.pf-icon{position:relative;display:inline-grid;place-items:center;flex:none;width:28px;height:28px;padding:0;background:transparent;border:0;border-radius:4px;color:var(--wb-muted);line-height:1}
+.pf-tab{width:35px;height:32px}.pf-tab[aria-selected=true],.pf-icon[aria-pressed=true]{background:var(--wb-selected);color:var(--wb-accent);box-shadow:inset 0 -2px var(--wb-accent)}
+.pf-tab:hover:enabled,.review[data-mode=project] #review-close:hover:enabled,.pf-icon:hover:enabled,.pf-menu button:hover:enabled{background:var(--wb-hover);color:var(--wb-text)}
+.pf-icon:disabled{opacity:.4}.pf-tab:focus-visible,.pf-icon:focus-visible,.pf-row:focus-visible,.pf-root:focus-visible{outline:2px solid var(--wb-accent);outline-offset:-2px}
+.pf-icon i,[data-pf-icon]{display:inline-flex;align-items:center;justify-content:center;flex:none;line-height:0}.pf-svg{width:15px;height:15px}.pf-tab .pf-svg{width:18px;height:18px}
+#pf-git-count{position:absolute;top:0;right:0;min-width:14px;padding:0 2px;background:var(--wb-accent);color:var(--wb-top);border-radius:8px;font:10px/14px ui-monospace,monospace}
+.pf-body,.review[data-mode=project] .rv-body{flex:1;min-height:0;display:flex}.pf-body[hidden],.review[data-mode=project] .rv-body[hidden]{display:none}
+.pf-side,.review[data-mode=project] .rv-side{width:var(--wb-width);flex:none;min-width:0;min-height:0;display:flex;flex-direction:column;background:var(--wb-side);border-right:1px solid var(--wb-line)}
+.pf-side-head{display:flex;align-items:center;justify-content:space-between;gap:5px;min-height:40px;padding:4px 8px 4px 12px;border-bottom:1px solid var(--wb-line);font-size:12px;white-space:nowrap}
+.pf-tools{display:flex;align-items:center;gap:1px}.pf-root-line{display:flex;align-items:center;min-height:32px;padding-right:6px}
+.pf-root{display:flex;align-items:center;gap:7px;min-width:0;flex:1;padding:6px 10px;background:transparent;border:0;text-align:left;font-size:12px;font-weight:600;color:var(--wb-text)}.pf-root span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pf-root-copy,.pf-row-actions{opacity:0;pointer-events:none}.pf-root-line:hover .pf-root-copy,.pf-root-line:focus-within .pf-root-copy,.pf-row:hover .pf-row-actions,.pf-row:focus-within .pf-row-actions{opacity:1;pointer-events:auto}
+.pf-note{margin:0;padding:6px 10px;font-size:11px;color:var(--wb-muted);overflow-wrap:anywhere}.pf-note:empty{display:none}.pf-note.warn{color:#efa7ad}
+.pf-tree{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding-bottom:4px}.pf-row{display:flex;align-items:center;gap:6px;min-height:29px;padding:0 6px 0 calc(10px + 15px * var(--depth,0));font-size:12px;cursor:pointer;white-space:nowrap}
+.pf-row:hover{background:var(--wb-hover)}.pf-row[aria-selected=true]{background:var(--wb-selected);box-shadow:inset 2px 0 var(--wb-accent)}
+.pf-row .pf-twist{color:var(--wb-muted);width:12px}.pf-twist.spacer{height:12px}.pf-name{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.pf-row[data-git]{--pf-git-color:#edd095}.pf-row:is([data-git="A"],[data-git="?"]){--pf-git-color:#8fd0aa}.pf-row:is([data-git="D"],[data-git="U"]){--pf-git-color:#efa7ad}.pf-row:is([data-git="R"],[data-git="C"]){--pf-git-color:var(--wb-accent)}
+.pf-row[data-git="ignored"]{--pf-git-color:var(--wb-muted)}.pf-row[data-git="ignored"] .pf-file-icon{color:var(--pf-git-color)}
+.pf-row[data-git] .pf-name,.pf-git-mark{color:var(--pf-git-color)}
+.pf-git-mark{flex:none;margin-inline-start:auto;min-width:14px;text-align:center;font:600 11px ui-monospace,monospace}
+.pf-git-mark+.pf-row-actions{margin-inline-start:0}
+.pf-file-icon{display:inline-grid;place-items:center;flex:none;width:16px;height:16px;color:var(--pf-file-color,var(--wb-muted))}
+.pf-file-mark{font:700 9px/1 ui-monospace,Consolas,monospace;letter-spacing:-.04em;background:color-mix(in srgb,currentColor 14%,transparent);border-radius:3px}
+.pf-row-actions{display:flex;margin-left:auto;flex:none;gap:0;width:0}.pf-row:hover .pf-row-actions,.pf-row:focus-within .pf-row-actions{width:auto}.pf-row-actions .pf-icon{width:23px;height:26px}.pf-row-actions .pf-svg{width:13px;height:13px}
+.pf-row .pf-dot,.pf-dirty{color:var(--wb-accent);font-size:10px}.pf-row-note{padding:3px 10px;font-size:11px;color:var(--wb-muted)}
+.pf-new{display:grid;gap:4px;padding:4px 8px;background:var(--wb-side)}.pf-new[hidden]{display:none}.pf-new label,.pf-new p{font-size:11px;overflow-wrap:anywhere}.pf-new label{color:var(--wb-muted)}.pf-new p{margin:0;color:#efa7ad}.pf-new p:empty{display:none}
+.pf-input-line{display:flex;align-items:center;gap:2px}.pf-new input{flex:1;min-width:0;border:1px solid var(--wb-accent);border-radius:3px;padding:5px 7px;background:var(--wb-code);color:var(--wb-text);font:12px ui-monospace,monospace}
+.pf-main{flex:1;min-width:0;display:flex;flex-direction:column}.pf-editor-head,.review[data-mode=project] .rv-viewhead{position:relative;display:flex;align-items:center;justify-content:space-between;gap:6px;background:var(--wb-side);border-bottom:1px solid var(--wb-line);min-height:40px;padding:0 8px 0 0}
+.review[data-mode=project] #rv-name{display:flex;align-items:center;gap:8px;min-width:0;min-height:39px;padding:6px 11px;border-inline-end:1px solid var(--wb-line);border-top:2px solid var(--wb-accent);background:var(--wb-code);font-size:12px}
+.pf-editor-tabs{display:flex;flex:1;min-width:0;overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--wb-line) transparent}
+.pf-editor-tab{display:flex;align-items:center;flex:none;max-width:190px;min-height:39px;padding-inline-end:3px;background:var(--wb-top);border-inline-end:1px solid var(--wb-line);border-top:2px solid transparent;font-size:12px}
+.pf-editor-tab.active{background:var(--wb-code);border-top-color:var(--wb-accent)}
+.pf-editor-tab>.pf-tab-name{display:flex;align-items:center;gap:7px;min-width:0;align-self:stretch;padding:3px 6px 3px 10px;border:0;background:transparent;color:var(--wb-text)}
+.pf-tab-name span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-editor-tab.preview .pf-tab-name{font-style:italic}
+.pf-editor-tab .pf-tab-close{display:grid;width:24px;height:26px}.pf-tab-close .pf-dirty[hidden]{display:none}
+.pf-tab-close.dirty:not(:hover):not(:focus-visible) svg{display:none}.pf-tab-close.dirty:is(:hover,:focus-visible) .pf-dirty{display:none}
+.pf-tab-close .pf-dirty{grid-area:1/1}.pf-tab-close svg{grid-area:1/1}
+.pf-empty-tab{display:flex;align-items:center;min-height:39px;padding:0 11px;color:var(--wb-muted);font-size:12px}
+.pf-context{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:33px;padding:5px 12px;color:var(--wb-muted);border-bottom:1px solid var(--wb-line)}.pf-context p{margin:0;font-size:12px;min-width:0;overflow-wrap:anywhere}
+.pf-menu{position:absolute;top:100%;right:8px;z-index:2;min-width:165px;padding:4px 0;border:1px solid var(--wb-line);border-radius:5px;background:var(--wb-top);box-shadow:0 6px 18px #0006}.pf-menu button{display:flex;align-items:center;gap:8px;width:100%;padding:6px 9px;text-align:left;background:transparent;border:0;color:var(--wb-text);font-size:12px}.pf-menu button:disabled{opacity:.4}.pf-menu button.pf-danger{color:#f0a2a8;border-top:1px solid var(--wb-line)}
+.pf-menu[hidden]{display:none}
+.pf-btn{border:1px solid var(--wb-line);background:transparent;color:var(--wb-text);border-radius:4px;font-size:11px;padding:3px 9px}.pf-btn:hover:enabled{background:var(--wb-hover)}.pf-btn:disabled{opacity:.45}
+.pf-conflict{margin:0;padding:8px 12px;border-bottom:1px solid #6a433e;background:#382b2b;color:#f2c0c6;font-size:12px}.pf-conflict[hidden]{display:none}.pf-conflict p{margin:0 0 6px;overflow-wrap:anywhere}.pf-conflict .pf-acts{display:flex;flex-wrap:wrap;gap:6px}
+.pf-editor-wrap{flex:1;min-height:0;position:relative}.pf-editor{position:absolute;inset:0}.pf-editor[hidden]{display:none}
+.pf-placeholder{padding:16px;color:var(--wb-muted);font-size:12px}.pf-placeholder[hidden]{display:none}
+.pf-statusbar{display:flex;justify-content:space-between;align-items:center;min-height:27px;padding:4px 12px;background:var(--wb-top);border-top:1px solid var(--wb-line);color:var(--wb-muted);font-size:11px}.pf-statusbar>span:first-child{display:flex;align-items:center;gap:5px}
+.review[data-mode=project] .rv-list{padding:0;border:0}.review[data-mode=project] .rv-repo{padding:10px 12px;border-bottom:1px solid var(--wb-line)}.review[data-mode=project] .rv-repo .rv-branch{display:flex;align-items:center;gap:7px}
+.review[data-mode=project] .cl-group summary{display:flex;align-items:center;gap:7px;min-height:30px;padding:4px 9px;font-size:12px;list-style:none;cursor:pointer}
+.review[data-mode=project] .cl-group summary::-webkit-details-marker{display:none}.review[data-mode=project] .cl-group[open] summary i{transform:rotate(90deg)}
+.pf-area-count{margin-left:auto;min-width:17px;padding:0 4px;border-radius:8px;background:var(--wb-hover);color:var(--wb-muted);text-align:center;font-size:11px}
+.review[data-mode=project] .cl-group p,.review[data-mode=project] .rv-clean{margin:4px 12px;color:var(--wb-muted)}.review[data-mode=project] .cl-row{padding:6px 9px 6px 25px;gap:7px;border:0;border-radius:0}.review[data-mode=project] .cl-row[aria-pressed=true]{background:var(--wb-selected);box-shadow:inset 2px 0 var(--wb-accent)}
+.review[data-mode=project] .cl-name{font:12px system-ui,sans-serif}.cl-parent{display:block;color:var(--wb-muted);font-size:11px}.review[data-mode=project] .cl-code{background:transparent}
+.review[data-mode=project] :is(.cl-R,.cl-C){color:var(--wb-accent)}
+.review[data-mode=project] .rv-viewhead{flex-wrap:wrap}.review[data-mode=project] .rv-path{padding:4px 11px 6px;margin:0;color:var(--wb-muted)}.review[data-mode=project] .rv-viewtools button{border:0;background:transparent;color:var(--wb-muted);border-radius:4px}.review[data-mode=project] .rv-viewtools button[aria-pressed=true]{background:var(--wb-selected);color:var(--wb-accent)}.review[data-mode=project] .rv-viewtools .pf-icon{padding:0}
+.pf-diff-split{min-width:0}.pf-diff-pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.pf-diff-pair>:nth-child(2){border-left:1px solid var(--wb-line)}
+.pf-diff-cell{display:flex;min-width:0}.pf-diff-cell.add{background:#253b35;color:#b7e4cb}.pf-diff-cell.del{background:#412e38;color:#f0bac0}
+.pf-diff-cell .no{width:3.2em;flex:none;text-align:right;padding-right:7px;color:var(--wb-muted);user-select:none}.pf-diff-cell .tx{white-space:pre-wrap;overflow-wrap:anywhere;min-width:0;padding:0 5px}
+.pf-diff-eof{display:block;color:var(--wb-muted);font-size:11px}
+.pf-diff-label,.pf-diff-meta{padding:3px 9px;color:var(--wb-muted);border-bottom:1px solid var(--wb-line);overflow-wrap:anywhere}.pf-diff-meta.hunk{margin-top:4px;background:var(--wb-side)}
+.review[data-mode=project] .ln.hunk{background:var(--wb-side)}.review[data-mode=project] .ln.hunk .tx{color:var(--wb-muted)}
+@media(max-width:720px){.rv-side{width:auto;max-height:42%;border-bottom:1px solid var(--line)}.pf-body,.review[data-mode=project] .rv-body{flex-direction:column}.pf-side,.review[data-mode=project] .rv-side{width:auto;max-height:40%;border-right:0;border-bottom:1px solid var(--wb-line)}.pf-main{flex:1;min-height:0}.pf-chrome-title{display:none}}
+@media(max-width:390px){.review[data-mode=project] #rv-close-label{display:none}}
+@media(hover:none){.pf-root-copy,.pf-row-actions{opacity:1;pointer-events:auto}.pf-row-actions{width:auto}.pf-icon,.pf-row-actions .pf-icon{width:30px;height:33px}}
 .skill-prompt{display:block;width:100%;min-height:320px;max-height:65vh;resize:vertical;margin-top:14px;padding:16px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font:12px/1.85 ui-monospace,monospace;tab-size:2}.skill-prompt:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .roles-list{display:grid;gap:10px;margin-top:18px}.role-card{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:10px;padding:6px 12px;background:var(--bg)}.role-card:focus-within,.role-card:hover{border-color:var(--accent)}.role-card-main{flex:1;min-width:0;text-align:left;border:0;background:transparent;color:var(--text);padding:12px 4px;cursor:pointer}.role-card-main strong,.role-card-main span{display:block}.role-card-main strong{font-size:14px}.role-card-main span{font-size:12px;line-height:1.7;color:var(--muted);margin-top:5px;overflow-wrap:anywhere}.role-card[data-enabled="false"] strong{color:var(--muted)}.role-card>button.secondary{flex:none;min-height:36px}.role-form{display:grid;gap:16px}.role-form label{display:grid;gap:8px;font-size:12px;min-width:0}.role-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px}.role-form input:not([type="checkbox"]),.role-form textarea,.role-form select{width:100%;min-width:0;border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--bg);color:var(--text);font-family:inherit;font-size:13px;line-height:1.6}.role-form textarea{resize:vertical;line-height:1.7}.role-form input:disabled{opacity:.6}.role-form label.role-enabled{display:flex;align-items:center;gap:8px}.role-form input[type="checkbox"]{accent-color:var(--accent)}.role-form label>.muted{font-size:11px;color:var(--muted)}#roles-feedback:empty,#role-editor-feedback:empty{display:none}#roles-feedback,#role-editor-feedback{margin-top:14px;white-space:pre-wrap}#roles-feedback[data-error="true"],#role-editor-feedback[data-error="true"]{color:#efa7ad}@media(max-width:480px){.role-fields{grid-template-columns:1fr}.role-card{gap:8px}}
+.role-items{min-width:0;margin:0;padding:0;border:0;display:grid;gap:8px;font-size:12px}
+.settings-content:has(.settings-page:not([hidden]) :is(#role-detail,#cli-detail):not([hidden])){padding-top:0}
+.settings-sticky{position:sticky;top:0;z-index:1;padding:8px 0 12px;background:var(--bg)}
+.settings-sticky .cli-back{margin:0}
+.role-toolbar,.role-toolbar-actions,.role-toolbar .role-enabled{display:flex;align-items:center;gap:8px}
+.role-toolbar{justify-content:space-between}
+.role-toolbar .role-enabled{font-size:12px;white-space:nowrap}
+.role-toolbar input{accent-color:var(--accent)}
+#role-form :is(input,select,textarea){scroll-margin-top:80px}
+#role-form :is(label,legend){font-size:15px;font-weight:600}
+.role-heading-note{margin-inline-start:8px;color:var(--muted);font-size:12px;font-weight:400}
+#role-delete{justify-self:start}
+#role-editor-title{margin:0 0 16px;font-size:22px;font-weight:600}
+@media(max-width:480px){.role-toolbar .cli-back,.role-toolbar .primary{padding-inline:8px;font-size:12px}}
+.role-items legend{padding:0;margin-bottom:8px}
+.role-items>button{justify-self:center}
+.role-item-list{display:grid;gap:8px;list-style:none;padding:0;margin:0;counter-reset:role-item}
+.role-item-list:empty{display:none}
+.role-item-list li{display:grid;grid-template-columns:2.5ch minmax(0,1fr) auto;gap:8px;align-items:start;counter-increment:role-item}
+.role-item-list li::before{content:counter(role-item) ".";padding-top:11px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
+.role-item-list textarea{field-sizing:content;min-height:40px}
 </style>
 </head>
 <body>
@@ -212,7 +317,7 @@
  <button id="latest" hidden>↓ 回到最新消息</button>
  <div id="notice" class="notice" role="alert"></div>
  <div id="copy-status" class="sr-only" role="status" aria-live="polite"></div>
- <div class="composer-wrap"><form id="composer-form" class="composer"><div id="target" class="target" hidden></div><textarea id="prompt" rows="2" aria-label="发送给 Subagent 的消息" placeholder="向这个 Subagent 发送消息…"></textarea><div class="composer-bottom"><span id="composer-hint" role="status" aria-live="polite"></span><select id="permission-select" class="cfg" aria-label="Claude 工具权限" title="仅本次任务使用；不绕过 CLI 权限" hidden><option value="dontAsk">使用已有授权</option><option value="acceptEdits">允许文件编辑</option><option value="plan">只读规划</option></select><select id="provider-select" class="cfg" aria-label="CLI 后端" title="新对话使用的 CLI 后端；已有对话固定后端"></select><select id="model-select" class="cfg" aria-label="模型" title="本次发送使用的模型"></select><select id="effort-select" class="cfg" aria-label="思考强度" title="该模型支持的思考强度"></select><button id="context-ring" class="ctx" type="button" aria-label="当前对话上下文占用"><svg class="ring" viewBox="0 0 24 24" aria-hidden="true"><circle class="track" cx="12" cy="12" r="9.5" pathLength="100"/><circle id="ring-bar" class="bar" cx="12" cy="12" r="9.5" pathLength="100" stroke-dasharray="0 100"/></svg><b id="ctx-text">—</b></button><button id="send" class="send" type="submit" aria-label="发送消息" disabled><svg viewBox="0 0 24 24"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button></div></form><div id="account" class="account" role="status" aria-live="polite"></div></div>
+ <div class="composer-wrap"><form id="composer-form" class="composer"><div id="target" class="target" hidden></div><textarea id="prompt" rows="2" aria-label="发送给 Subagent 的消息" placeholder="向这个 Subagent 发送消息…"></textarea><div class="composer-bottom"><span id="composer-hint" role="status" aria-live="polite"></span><select id="composer-role" class="cfg" aria-label="选择角色" title="带出角色的默认 CLI、模型和思考强度，可为当前对话修改"><option value="">选择角色</option></select><select id="provider-select" class="cfg" aria-label="CLI 后端" title="新对话使用的 CLI 后端；已有对话固定后端"></select><select id="model-select" class="cfg" aria-label="模型" title="本次发送使用的模型"></select><select id="effort-select" class="cfg" aria-label="思考强度" title="该模型支持的思考强度"></select><button id="context-ring" class="ctx" type="button" aria-label="当前对话上下文占用"><svg class="ring" viewBox="0 0 24 24" aria-hidden="true"><circle class="track" cx="12" cy="12" r="9.5" pathLength="100"/><circle id="ring-bar" class="bar" cx="12" cy="12" r="9.5" pathLength="100" stroke-dasharray="0 100"/></svg><b id="ctx-text">—</b></button><button id="send" class="send" type="submit" aria-label="发送消息" disabled><svg viewBox="0 0 24 24"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button></div></form><div id="account" class="account" role="status" aria-live="polite"></div></div>
  <span id="connection" hidden>正在连接…</span>
  <section id="debug" class="debug" hidden aria-label="诊断日志"><div class="debug-head"><h2>执行记录</h2><button id="diagnostics-copy" class="text-button" type="button">复制诊断</button><button id="debug-close" class="text-button">返回对话</button></div><details><summary id="raw-title">原始执行事件</summary><pre id="raw"></pre></details><details><summary>连接与诊断日志</summary><pre id="diagnostics"></pre></details></section>
 </main>
@@ -230,12 +335,23 @@
  </div>
  <div id="settings-content" class="settings-content"><div class="settings-inner">
   <div id="settings-page-cli" class="settings-page" role="tabpanel" aria-labelledby="settings-tab-cli" tabindex="0">
-   <header id="cli-overview-head" class="settings-page-head"><h3 id="cli-title">CLI 连接</h3><p>连接本机的 AI 工具，选择后续新对话使用的默认后端。</p></header>
+   <header id="cli-overview-head" class="settings-page-head"><h3 id="cli-title">CLI 连接</h3><p>连接本机的 CLI，供新对话和角色选择。</p></header>
    <div id="cli-overview">
     <section class="cli-group" aria-labelledby="cli-connected-title"><h4 id="cli-connected-title">已连接 <span id="cli-connected-count"></span></h4><div id="cli-connected-list" class="cli-grid"></div><p id="cli-connected-empty" class="cli-empty">还没有连接的 CLI，从下方选择一个开始。</p></section>
     <section class="cli-group" aria-labelledby="cli-disconnected-title"><h4 id="cli-disconnected-title">未连接 <span id="cli-disconnected-count"></span></h4><div id="cli-disconnected-list" class="cli-grid"></div></section>
    </div>
-   <div id="cli-detail" hidden><button id="cli-config-back" class="text-button cli-back" type="button">← 所有 CLI</button><div id="cli-list"></div></div>
+   <div id="cli-detail" hidden><div class="settings-sticky"><button id="cli-config-back" class="text-button cli-back" type="button">← 所有 CLI</button></div><div id="cli-list"></div>
+    <section id="cli-model-card" class="settings-sec cli-model-card" aria-labelledby="cli-model-title" hidden>
+     <div id="cli-model-card-head" class="cli-model-head">
+      <h4 id="cli-model-title">模型与思考强度</h4>
+      <div id="cli-model-actions" class="cli-actions"><button id="cli-model-reload" type="button" class="secondary" hidden>重新读取目录</button><button id="cli-model-save" type="submit" form="cli-model-form" class="primary" disabled>保存</button></div>
+     </div>
+     <form id="cli-model-form" class="role-form">
+      <div id="cli-model-defaults"></div>
+      <p id="cli-model-feedback" class="muted" role="status" aria-live="polite" hidden></p>
+     </form>
+    </section>
+   </div>
    <p id="cli-overview-error" role="alert" hidden></p>
   </div>
   <div id="settings-page-storage" class="settings-page" role="tabpanel" aria-labelledby="settings-tab-storage" tabindex="0" hidden>
@@ -246,27 +362,38 @@
   <div id="settings-page-service" class="settings-page" role="tabpanel" aria-labelledby="settings-tab-service" tabindex="0" hidden>
    <header class="settings-page-head"><h3 id="svc-title">服务与资源</h3><p>查看面板的资源占用与运行行为。</p></header>
    <section class="settings-sec" aria-labelledby="service-status-title"><h4 id="service-status-title">运行状态</h4><p id="memory">读取资源信息…</p><p id="cleanup-status" class="muted"></p></section>
-   <section class="settings-sec" aria-labelledby="service-idle-title"><h4 id="service-idle-title">空闲退出</h4><p>关闭面板且没有运行中任务时，空闲 2 分钟后退出 Python 服务。固定入口可随时重新启动。</p></section>
    <section class="settings-sec service-stop" aria-labelledby="service-stop-title"><div><h4 id="service-stop-title">关闭面板服务</h4><p class="muted">结束面板 Python 服务，正在运行的 CLI 任务继续执行。</p></div><button id="stop-viewer" type="button" class="close-service"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg><span>关闭服务</span></button></section>
   </div>
   <div id="settings-page-roles" class="settings-page" role="tabpanel" aria-labelledby="settings-tab-roles" tabindex="0" hidden>
-   <header class="settings-page-head"><h3>Subagent 角色</h3><p>配置全局角色的职责与执行方式，Codex 在委派时读取最新配置。</p></header>
-   <section class="settings-sec"><div class="cli-install-head"><h4>全局角色</h4><div class="cli-actions"><button id="roles-refresh" class="secondary" type="button">刷新列表</button><button id="role-new" class="primary" type="button" disabled>新增角色</button></div></div><p class="muted">编码负责业务实现，测试负责测试脚本与执行反馈。工作顺序、修复协调及最终验收由 Codex 安排。</p><div id="roles-list" class="roles-list"></div><p id="roles-feedback" role="status" aria-live="polite"></p></section>
-   <section id="role-editor" class="settings-sec" aria-labelledby="role-editor-title" hidden>
-    <h4 id="role-editor-title">编辑角色</h4>
+   <div id="roles-overview" class="settings-page">
+    <header class="settings-page-head"><h3>Subagent 角色</h3></header>
+    <section class="settings-sec"><div class="cli-install-head"><h4>全局角色</h4><div class="cli-actions"><button id="roles-refresh" class="secondary" type="button">刷新列表</button><button id="role-new" class="primary" type="button" disabled>新增角色</button></div></div><div id="roles-list" class="roles-list"></div><p id="roles-feedback" role="status" aria-live="polite"></p></section>
+   </div>
+   <div id="role-detail" hidden>
+    <div class="settings-sticky">
+     <div class="role-toolbar">
+      <button id="role-detail-back" class="text-button cli-back" type="button">← 全部角色</button>
+      <div class="role-toolbar-actions">
+       <label class="role-enabled"><input id="role-enabled" type="checkbox" form="role-form" checked>启用此角色</label>
+       <button id="role-save" class="primary" type="submit" form="role-form">保存角色</button>
+      </div>
+     </div>
+     <p id="role-editor-feedback" role="status" aria-live="polite"></p>
+    </div>
+    <section id="role-editor" class="settings-sec" aria-labelledby="role-editor-title">
+    <h3 id="role-editor-title">新增角色</h3>
     <form id="role-form" class="role-form">
      <div class="role-fields"><label>名称<input id="role-name" required maxlength="80" autocomplete="off"></label><label>角色 ID<input id="role-id" required maxlength="64" pattern="[a-z][a-z0-9-]*" placeholder="例如 frontend-dev" autocomplete="off"></label></div>
      <label>职责简介<input id="role-description" required maxlength="1000" placeholder="帮助 Codex 判断何时使用这个角色"></label>
-     <div class="role-fields"><label>CLI<select id="role-provider"><option value="claude">Claude Code</option><option value="kiro">Kiro CLI</option></select></label><label>模型<select id="role-model" required disabled><option value="">请选择模型</option></select></label><label>思考强度<select id="role-effort" disabled><option value="">不设置</option></select></label></div>
+     <div class="role-fields"><label>CLI<select id="role-provider"><option value="">请选择 CLI</option><option value="claude">Claude Code</option><option value="kiro">Kiro CLI</option></select></label><label>模型<select id="role-model" required disabled><option value="">请选择模型</option></select></label><label>思考强度<select id="role-effort" disabled><option value="">不设置</option></select></label></div>
      <p id="role-model-note" class="muted" role="status">从所选 CLI 的模型列表中选择，思考强度随模型更新。</p>
-     <label>执行说明<textarea id="role-instructions" rows="5" required maxlength="16000" placeholder="描述这个角色应如何完成工作"></textarea></label>
-     <label>工作约束<span class="muted">每行一项</span><textarea id="role-constraints" rows="4" placeholder="例如：只修改测试脚本，不修改业务实现"></textarea></label>
-     <p class="muted">工作约束用于指导执行，工具权限仍由 CLI 与本次任务授权控制。</p>
-     <label>交付要求<span class="muted">每行一项</span><textarea id="role-deliverables" rows="3" placeholder="例如：执行命令、测试结果和失败原因"></textarea></label>
-     <label class="role-enabled"><input id="role-enabled" type="checkbox" checked>启用此角色</label>
-     <div class="cli-actions"><button id="role-save" class="primary" type="submit">保存角色</button><button id="role-cancel" class="secondary" type="button">取消</button><button id="role-delete" class="secondary" type="button" hidden>删除角色</button></div><p id="role-editor-feedback" role="status" aria-live="polite"></p>
+     <label><span>执行说明<span class="role-heading-note">说明角色应该怎样完成任务。</span></span><textarea id="role-instructions" rows="5" required maxlength="16000" placeholder="描述这个角色应如何完成工作"></textarea></label>
+     <fieldset class="role-items"><legend>工作约束<span class="role-heading-note">说明执行时必须遵守的规则和边界。</span></legend><ol id="role-constraints" class="role-item-list" role="list"></ol><button id="role-constraints-add" class="secondary" type="button" aria-label="添加工作约束">＋ 添加一项</button></fieldset>
+     <fieldset class="role-items"><legend>交付要求<span class="role-heading-note">说明任务结束时应提交哪些成果。</span></legend><ol id="role-deliverables" class="role-item-list" role="list"></ol><button id="role-deliverables-add" class="secondary" type="button" aria-label="添加交付要求">＋ 添加一项</button></fieldset>
+     <button id="role-delete" class="secondary" type="button" hidden>删除角色</button>
     </form>
-   </section>
+    </section>
+   </div>
   </div>
   <div id="settings-page-skill" class="settings-page" role="tabpanel" aria-labelledby="settings-tab-skill" tabindex="0" hidden>
    <header class="settings-page-head"><h3>Codex 技能</h3><p>让 Codex 调用本机 Claude Code 或 Kiro CLI，委派编码与审阅任务。</p></header>
@@ -276,17 +403,50 @@
   <div id="settings-page-help" class="settings-page" role="tabpanel" aria-labelledby="settings-tab-help" tabindex="0" hidden>
    <header class="settings-page-head"><h3>帮助</h3><p>连接、模型与对话的常见问题。</p></header>
    <section class="settings-sec"><h4>使用定位</h4><p>本项目是 Subagent 工作台，仅用于执行主 Agent 委派的任务，不建议直接作为主 Agent 独立完成开发。建议由 Codex 等主 Agent 拆解需求、派发任务、协调编码与测试，并审核和最终验收。面板中的直接消息用于补充指令和排查问题。</p></section>
-   <section class="settings-sec help-questions" aria-label="常见问题"><details open><summary>已连接，为什么模型调用仍然失败？</summary><p>连接会检查 CLI 版本和登录状态，模型请求还需要网络、模型权限与可用额度。在 CLI 连接页点击“测试调用”可单独验证，会消耗少量额度。</p></details><details><summary>为什么没有显示其他 Kiro 模型？</summary><p>连接成功后会自动读取账户模型目录。读取失败时，在 CLI 连接页点击“读取模型目录”重试；未读取前只显示固定默认模型。</p></details><details><summary>切换默认 CLI 会改变已有对话吗？</summary><p>默认 CLI 用于新对话，已有对话继续使用原来的后端。断开连接后历史仍可查看，继续发送前需重新连接对应 CLI。</p></details><details><summary>Claude 的模型列表与 Kiro 有什么区别？</summary><p>Claude 从当前配置的 API 地址读取模型目录，思考强度为 CLI 配置选项；Kiro 从当前账户读取模型目录及思考强度。</p></details></section>
+   <section class="settings-sec help-questions" aria-label="常见问题">
+    <details><summary>第一次使用，怎么开始对话？</summary><p>在「设置 → CLI 连接」连接 Claude Code 或 Kiro CLI，并保存默认模型。回到对话页，点击项目旁的「＋」，在输入框下方选择已连接的 CLI，再发送消息。</p></details>
+    <details><summary>为什么 Codex 无法派发任务给角色？</summary><p>在「设置 → Subagent 角色」确认角色已启用，并选择可用的 CLI。模型可以单独指定，也可以跟随该 CLI 已保存的默认模型。</p></details>
+    <details><summary>面板打不开，怎么重新启动？</summary><p>告诉 Codex「启动 Coder-Agents，打开面板」，或在项目目录运行 <code>python3 -m coder_agents start</code>，再打开命令返回的地址。</p></details>
+   </section>
   </div>
  </div></div>
 </div>
 <div id="pick-backdrop" class="pick-backdrop" hidden><div id="pick" class="pick" role="dialog" aria-modal="true" aria-labelledby="pick-title" aria-describedby="pick-desc" tabindex="-1"><h3 id="pick-title">选择对话，清理任务数据</h3><p id="pick-desc" class="muted">默认全选。清理所选对话中已结束任务的结果、日志和受管理临时文件；仅跳过正在进行的任务，项目文件保留。</p><div class="pick-tools"><button id="pick-all" class="secondary" type="button">全选</button><button id="pick-none" class="secondary" type="button">全不选</button><span id="pick-count" role="status" aria-live="polite"></span></div><div id="pick-list" class="pick-list"></div><p id="pick-error" class="pick-error" role="alert" hidden></p><div class="pick-foot"><button id="pick-cancel" class="secondary" type="button">取消</button><button id="pick-ok" class="primary" type="button" disabled>清理所选任务数据</button></div></div></div></section>
+<dialog id="cli-model-dialog" class="cli-model-dialog" aria-labelledby="cli-model-dialog-title">
+ <h3 id="cli-model-dialog-title">模型与思考强度</h3>
+ <div id="cli-model-dialog-content"><details id="cli-model-advanced" hidden><summary>角色模型与思考强度</summary><div id="cli-model-roles"></div></details></div>
+</dialog>
 <section id="review" class="review" hidden role="dialog" aria-modal="true" aria-labelledby="review-title" data-mode="changes">
- <div class="rv-head"><h2 id="review-title">当前工作区改动</h2><button id="review-refresh" class="text-button" type="button">刷新</button><button id="review-close" class="text-button" type="button">关闭</button></div>
+ <div class="rv-head"><button id="review-close" class="text-button" type="button"><i class="pf-only" data-pf-icon="back"></i><span id="rv-close-label">关闭</span></button>
+  <div id="pf-tabs" class="pf-tabs" role="tablist" aria-label="项目浏览" hidden>
+   <button id="pf-tab-files" class="pf-tab" type="button" role="tab" aria-label="文件" aria-selected="true" aria-controls="pf-body" title="文件"><i data-pf-icon="files"></i></button>
+   <button id="pf-tab-git" class="pf-tab" type="button" role="tab" aria-label="Git 改动" aria-selected="false" aria-controls="rv-body" title="Git 改动" tabindex="-1"><i data-pf-icon="branch"></i><span id="pf-git-count" aria-hidden="true" hidden></span></button>
+  </div>
+  <h2 id="review-title">当前工作区改动</h2><span class="pf-only pf-chrome-title">/ 项目工作区</span><button id="review-refresh" class="text-button" type="button">刷新</button>
+ </div>
  <p id="review-note" class="rv-note" hidden></p>
- <div class="rv-body"><nav id="rv-list" class="rv-list" aria-label="改动文件"></nav>
-  <div class="rv-view"><div class="rv-viewhead"><strong id="rv-name"></strong><span id="rv-meta" class="rv-meta"></span><span class="rv-viewtools"><span id="rv-tabs" hidden><button id="rv-tab-diff" type="button" aria-pressed="true">Diff</button> <button id="rv-tab-text" type="button" aria-pressed="false">当前文本</button></span><button id="rv-copy-path" type="button" hidden>复制路径</button><button id="rv-copy" type="button" hidden>复制内容</button></span><p id="rv-path" class="rv-path"></p></div>
-   <p id="rv-status" class="rv-status" role="status" aria-live="polite"></p><div id="rv-code" class="rv-code" tabindex="0" role="region" aria-label="只读内容"></div></div></div>
+ <p id="pf-stale" class="rv-note" role="alert" hidden>项目目录已变化（可能被切换或替换），已停止新建、保存和删除。请关闭后重新打开项目浏览。</p>
+ <div id="rv-body" class="rv-body"><div class="rv-side"><div class="pf-side-head pf-only"><strong>源代码管理</strong><button id="pf-git-refresh" class="pf-icon" type="button" title="刷新 Git 改动" aria-label="刷新 Git 改动"><i data-pf-icon="refresh"></i></button></div><nav id="rv-list" class="rv-list" aria-label="改动文件"></nav></div>
+  <div class="rv-view"><div class="rv-viewhead"><strong id="rv-name"></strong><span id="rv-meta" class="rv-meta"></span><span class="rv-viewtools"><span id="rv-tabs" hidden><button id="rv-tab-diff" type="button" aria-pressed="true">Diff</button> <button id="rv-tab-text" type="button" aria-pressed="false">当前文本</button></span><button id="pf-split" class="pf-only pf-icon" type="button" title="切换左右对照 / 行内 Diff" aria-label="左右对照" aria-pressed="true" hidden><i data-pf-icon="columns"></i></button><button id="pf-copy-diff" class="pf-only pf-icon" type="button" title="复制内容" aria-label="复制内容" hidden><i data-pf-icon="copy"></i></button><button id="rv-copy-path" type="button" hidden>复制路径</button><button id="rv-copy" type="button" hidden>复制内容</button></span><p id="rv-path" class="rv-path"></p></div>
+   <p id="rv-status" class="rv-status" role="status" aria-live="polite"></p><div class="rv-code-area"><div id="rv-code" class="rv-code" tabindex="0" role="region" aria-label="只读内容"></div><button id="rv-diff-overview" class="rv-diff-overview" type="button" aria-controls="rv-code" aria-label="改动概览，跳转到下一处改动" title="红色：删除；绿色：新增。点击跳转。" hidden></button></div></div></div>
+ <div id="pf-body" class="pf-body" hidden>
+  <div class="pf-side">
+   <div class="pf-side-head"><strong>资源管理器</strong><div class="pf-tools" role="group" aria-label="文件操作"><button id="pf-new-file" class="pf-icon" type="button" title="新建文件" aria-label="新建文件"><i data-pf-icon="new-file"></i></button><button id="pf-new-dir" class="pf-icon" type="button" title="新建文件夹" aria-label="新建文件夹"><i data-pf-icon="new-folder"></i></button><button id="pf-refresh" class="pf-icon" type="button" title="刷新文件树" aria-label="刷新文件树"><i data-pf-icon="refresh"></i></button><button id="pf-collapse" class="pf-icon" type="button" title="折叠文件夹" aria-label="折叠文件夹"><i data-pf-icon="collapse"></i></button></div></div>
+   <div class="pf-root-line"><button id="pf-root" class="pf-root" type="button" aria-pressed="false"></button><button id="pf-root-copy" class="pf-icon pf-root-copy" type="button" title="复制项目绝对路径" aria-label="复制项目绝对路径"><i data-pf-icon="copy"></i></button></div>
+   <div id="pf-new-home"><form id="pf-new" class="pf-new" hidden><label id="pf-new-label" for="pf-new-name"></label><div class="pf-input-line"><span id="pf-new-slot"></span><button id="pf-new-ok" class="pf-icon" type="submit" title="创建" aria-label="创建"><i data-pf-icon="check"></i></button><button id="pf-new-cancel" class="pf-icon" type="button" title="取消" aria-label="取消"><i data-pf-icon="close"></i></button></div><p id="pf-new-error" role="alert"></p></form></div><p id="pf-tree-note" class="pf-note" role="status"></p>
+   <p id="pf-git-tree-note" class="pf-note"></p><div id="pf-tree" class="pf-tree" role="tree" aria-label="项目文件"></div>
+  </div>
+  <div class="pf-main">
+   <div class="pf-editor-head"><div id="pf-file-tabs" class="pf-editor-tabs" role="tablist" aria-label="已打开的文件"></div><div class="pf-tools"><button id="pf-save" class="pf-icon" type="button" disabled title="保存（Ctrl/Cmd+S）" aria-label="保存"><i data-pf-icon="save"></i></button><button id="pf-more" class="pf-icon" type="button" title="更多操作" aria-label="更多操作" aria-expanded="false" aria-controls="pf-menu" disabled><i data-pf-icon="more"></i></button></div>
+    <div id="pf-menu" class="pf-menu" hidden><button id="pf-reload" type="button" disabled><i data-pf-icon="refresh"></i>重新载入</button><button id="pf-copy-file" type="button"><i data-pf-icon="copy"></i>复制绝对路径</button><button id="pf-trash" class="pf-danger" type="button" disabled><i data-pf-icon="trash"></i>移到回收站…</button></div>
+   </div>
+   <div class="pf-context"><p id="pf-file-path"></p><span id="pf-file-meta" class="rv-meta"></span></div>
+   <div id="pf-conflict" class="pf-conflict" role="alert" hidden><p id="pf-conflict-text"></p><div class="pf-acts"><button id="pf-conflict-copy" class="pf-btn" type="button">复制我的内容</button><button id="pf-conflict-reload" class="pf-btn" type="button">载入磁盘版本（放弃我的修改）</button><button id="pf-conflict-force" class="pf-btn" type="button">用我的内容覆盖</button></div></div>
+   <p id="pf-msg" class="rv-status" role="status" aria-live="polite"></p>
+   <div id="pf-editor-panel" class="pf-editor-wrap" role="tabpanel" aria-label="文件编辑器"><div id="pf-placeholder" class="pf-placeholder">从左侧选择文件开始编辑。编辑器内 Tab 键输入缩进，按 Ctrl+M（Mac 为 Ctrl+Shift+M）切换为 Tab 移出焦点。</div><div id="pf-editor" class="pf-editor" hidden></div></div>
+  </div>
+ </div>
+ <footer id="pf-statusbar" class="pf-only pf-statusbar"><span><i data-pf-icon="branch"></i><span id="pf-branch"></span></span><span id="pf-editor-status"></span></footer>
 </section>
 </div>
 <script src="/vendor/purify.min.js"></script>
@@ -301,7 +461,8 @@ let sel={group:'',source:'',agent:''},currentKey='',lastSignature='',lastSidebar
 let lastData=null,nodes=new Map(),drafts=new Map(),groupsData=[],sourceGroups={},refreshController=null,refreshEpoch=0,sendsDisabled=false,legacyUsed=false;
 const deleting=new Set(),forcedOpen=new Set(),grace=new Map();
 let connectionsRequired=false,cliData=null,cliBusy=false,cliLoading=false;const cliDirty=new Set();
-let providerItems=[],draftProvider='',selectedProvider='',modelsTimer=null,modelsSeq=0;
+let providerItems=[],defaultProvider='',draftProvider='',selectedProvider='',modelsTimer=null,modelsSeq=0;
+let composerRoles=[],draftRole='',roleProvider='',roleSelection=null;
 let modelsData=null,accountData=null,selectedConfig=null,selectedContext=null,configSignature='',accountBusy=false,accountNote='';const pendingSel=new Map();
 const legacySource=(document.querySelector('meta[name="kiro-initial-source"]')||{}).content||'';
 try{if(location.pathname!=='/'||location.search||location.hash)history.replaceState(null,'','/')}catch{}
@@ -1023,21 +1184,28 @@ function showReview(mode,title){
   review.opener=document.activeElement;reviewInert(true);$('review').hidden=false;$('review-open').setAttribute('aria-expanded','true');
  }
  review.mode=mode;$('review').dataset.mode=mode;$('review-title').textContent=title;
+ $('rv-close-label').textContent=mode==='project'?'返回对话':'关闭';$('review-close').setAttribute('aria-label',$('rv-close-label').textContent);
+ $('pf-git-refresh').hidden=mode!=='project';
  $('review-note').textContent=mode==='changes'?REVIEW_NOTE:'';$('review-note').hidden=mode!=='changes';
- $('review-refresh').hidden=mode!=='changes';
+ $('review-refresh').hidden=mode==='file';
  $('review-close').focus({preventScroll:true});
 }
 function closeReview(options={}){
+ if(reviewOpen()&&review.mode==='project'&&!options.force&&(pw.ws?.busy||!discardOk()))return false;
  review.listToken++;review.viewToken++;review.listCtl?.abort();review.viewCtl?.abort();review.listCtl=review.viewCtl=null;
- if(!reviewOpen())return;
+ review.diffCleanup?.();review.diffCleanup=null;
+ if(!reviewOpen())return true;
+ const wasProject=review.mode==='project',browseGroup=pw.openerGroup;
+ if(wasProject)teardownProject();
  $('review').hidden=true;reviewInert(false);$('review-open').setAttribute('aria-expanded','false');
  review.list=null;review.sel=null;review.view=null;review.target=null;
  $('rv-list').replaceChildren();$('rv-code').replaceChildren();$('rv-name').textContent='';$('rv-meta').textContent='';$('rv-path').textContent='';$('rv-status').textContent='';
  if(options.restore!==false){
-  const back=review.opener&&review.opener.isConnected&&!review.opener.disabled&&!review.opener.closest('[inert]')?review.opener:$('review-open');
+  const stored=review.opener&&review.opener.isConnected&&!review.opener.disabled&&!review.opener.closest('[inert]')?review.opener:null;
+  const back=stored||(wasProject&&[...document.querySelectorAll('[data-browse]')].find(n=>n.dataset.browse===browseGroup))||$('review-open');
   try{back.focus({preventScroll:true})}catch{}
  }
- review.opener=null;
+ review.opener=null;return true;
 }
 async function reviewFetch(path,params,kind){
  const target=review.target;if(!target)return null;
@@ -1045,7 +1213,8 @@ async function reviewFetch(path,params,kind){
  const previous=kind==='list'?review.listCtl:review.viewCtl;previous?.abort();
  const ctl=new AbortController();if(kind==='list')review.listCtl=ctl;else review.viewCtl=ctl;
  try{
-  const response=await fetch(path+'?'+new URLSearchParams({...target,...params}),{cache:'no-store',signal:ctl.signal});
+  const base=target.scope==='project'?{scope:'project',group:target.group}:target;
+  const response=await fetch(path+'?'+new URLSearchParams({...base,...params}),{cache:'no-store',signal:ctl.signal});
   const data=await response.json().catch(()=>({error:'返回内容无法解析'}));
   const fresh=token===(kind==='list'?review.listToken:review.viewToken)&&reviewOpen()&&review.target===target&&sameTarget(data,target);
   if(!fresh)return null;
@@ -1063,32 +1232,160 @@ function linesNode(text,limit){
  if(lines.length>limit)wrap.append(elt('div','rv-more','… 还有 '+(lines.length-limit)+' 行未显示（“复制内容”会复制全部）'));
  return wrap;
 }
-function diffNode(text,limit){
- const wrap=elt('div','rv-lines rv-diff'),lines=text.split('\n');if(lines.length&&lines[lines.length-1]==='')lines.pop();
- let oldNo=0,newNo=0,inHunk=false,shown=0;
+const DIFF_DELETE=1,DIFF_ADD=2,DIFF_CHUNK=320;
+function* diffRows(lines){
+ let oldNo=0,newNo=0,inHunk=false;
  for(const line of lines){
-  if(shown>=limit){wrap.append(elt('div','rv-more','… 还有 '+(lines.length-shown)+' 行未显示（“复制内容”会复制全部）'));break}
   let kind='meta',a='',b='',m;
   if((m=/^@@ -(\d+)(?:,\d+)? \+(\d+)/.exec(line))){inHunk=true;oldNo=+m[1];newNo=+m[2];kind='hunk'}
   else if(/^diff --git /.test(line)){inHunk=false}
   else if(inHunk&&line[0]==='+'){kind='add';b=String(newNo++)}
   else if(inHunk&&line[0]==='-'){kind='del';a=String(oldNo++)}
   else if(inHunk&&line[0]===' '){kind='ctx';a=String(oldNo++);b=String(newNo++)}
-  const row=elt('div','ln '+kind);row.append(elt('span','no',a),elt('span','no',b),elt('span','tx',line));wrap.append(row);shown++;
+  yield [kind==='add'?DIFF_ADD:kind==='del'?DIFF_DELETE:0,kind,line,a,b];
  }
- return wrap;
+}
+function* splitDiffRows(lines){
+ const marker='\\ No newline at end of file';
+ yield [0,'labels'];
+ let oldNo=0,newNo=0,inHunk=false,removed=[],added=[];
+ const flush=function*(){
+  for(let i=0;i<Math.max(removed.length,added.length);i++){
+   yield [(removed[i]?DIFF_DELETE:0)|(added[i]?DIFF_ADD:0),'pair',removed[i],added[i]];
+  }
+  removed=[];added=[];
+ };
+ for(let i=0;i<lines.length;i++){
+  const line=lines[i],noEol=lines[i+1]===marker;
+  const hunk=/^@@ -(\d+)(?:,\d+)? \+(\d+)\b/.exec(line);
+  if(hunk){yield* flush();oldNo=+hunk[1];newNo=+hunk[2];inHunk=true;yield [0,'hunk',line]}
+  else if(inHunk&&line[0]==='-')removed.push([oldNo++,line.slice(1),'del',noEol]);
+  else if(inHunk&&line[0]==='+')added.push([newNo++,line.slice(1),'add',noEol]);
+  else if(inHunk&&line[0]===' '){yield* flush();yield [0,'ctx',line.slice(1),oldNo++,newNo++,noEol]}
+  else if(!(inHunk&&line===marker)){yield* flush();inHunk=false;yield [0,'meta',line]}
+ }
+ yield* flush();
+}
+function renderDiffRow(row,split){
+ const [,kind,value,a,b,noEol]=row;
+ if(!split){
+  const el=elt('div','ln '+kind);el.append(elt('span','no',a),elt('span','no',b),elt('span','tx',value));return el;
+ }
+ if(kind!=='labels'&&kind!=='pair'&&kind!=='ctx')return elt('div','pf-diff-meta '+kind,value);
+ const pair=elt('div','pf-diff-pair');
+ const cell=([number,text,type='',eof=false]=['',''])=>{
+  const node=elt('div','pf-diff-cell '+type),content=elt('span','tx',text);
+  if(eof)content.append(elt('span','pf-diff-eof','文件末尾无换行'));
+  node.append(elt('span','no',String(number)),content);return node;
+ };
+ if(kind==='labels')pair.append(elt('div','pf-diff-label','改动前'),elt('div','pf-diff-label','改动后'));
+ else if(kind==='ctx')pair.append(cell([a,value,'',noEol]),cell([b,value,'',noEol]));
+ else pair.append(cell(value),cell(a));
+ return pair;
+}
+function resetDiffOverview(){
+ const rail=$('rv-diff-overview');
+ rail.hidden=true;rail.onclick=rail.onwheel=null;rail.replaceChildren();
+}
+function mountDiffOverview(code,rows,reveal){
+ const rail=$('rv-diff-overview'),changes=[];
+ // Cover each row's full interval so consecutive rows form one solid mark.
+ const bands=250,levels=new Uint8Array(bands);
+ for(let i=0;i<rows.length;i++){
+  const mask=rows[i][0];if(!mask)continue;
+  const end=Math.ceil((i+1)*bands/rows.length);
+  for(let band=Math.floor(i*bands/rows.length);band<end;band++)levels[band]|=mask;
+  const last=changes.at(-1);
+  if(last&&last.end===i)last.end++;else changes.push({start:i,end:i+1});
+ }
+ if(!changes.length)return null;
+ const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');
+ svg.setAttribute('viewBox','0 0 12 1000');svg.setAttribute('preserveAspectRatio','none');svg.setAttribute('aria-hidden','true');
+ for(const [mask,name,x] of [[DIFF_DELETE,'del',1],[DIFF_ADD,'add',6]]){
+  for(let i=0;i<bands;){
+   if(!(levels[i]&mask)){i++;continue}
+   const from=i;do{i++}while(i<bands&&(levels[i]&mask));
+   const rect=document.createElementNS(ns,'rect');
+   const h=Math.max(5,(i-from)*1000/bands);
+   rect.setAttribute('class',name);rect.setAttribute('x',x);rect.setAttribute('width','4');
+   rect.setAttribute('y',Math.min(1000-h,from*1000/bands));rect.setAttribute('height',h);svg.append(rect);
+  }
+ }
+ rail.append(svg);rail.hidden=false;
+ let lastJump=0;
+ rail.onclick=event=>{
+  if(!event.detail){lastJump=(lastJump+1)%changes.length;reveal(changes[lastJump].start);return}
+  const box=svg.getBoundingClientRect();if(!box.height)return;
+  const row=Math.max(0,Math.min(rows.length-1,Math.floor((event.clientY-box.top)*rows.length/box.height)));
+  let nearest=Infinity,target=0;
+  for(const [i,change] of changes.entries()){
+   const index=Math.max(change.start,Math.min(change.end-1,row)),delta=Math.abs(row-index);
+   if(delta<nearest){nearest=delta;target=index;lastJump=i}
+   if(change.start>row)break;
+  }
+  reveal(target);
+ };
+ rail.onwheel=event=>{
+  event.preventDefault();
+  code.scrollTop+=event.deltaY*(event.deltaMode===1?20:event.deltaMode===2?code.clientHeight:1);
+ };
+ return changes[0].start;
+}
+function mountDiff(code,text,split,overview){
+ const wrap=elt('div',split?'pf-diff-split':'rv-lines rv-diff'),lines=splitLines(text);
+ const rows=[...(split?splitDiffRows(lines):diffRows(lines))],chunks=[];
+ let observer=null;
+ function fill(chunk){
+  if(!chunk?.firstElementChild?.classList.contains('rv-diff-more'))return;
+  const resize=chunk.getBoundingClientRect(),above=resize.bottom<=code.getBoundingClientRect().top;
+  observer?.unobserve(chunk);
+  const fragment=document.createDocumentFragment(),start=Number(chunk.dataset.start);
+  for(let i=start;i<Math.min(start+DIFF_CHUNK,rows.length);i++)fragment.append(renderDiffRow(rows[i],split));
+  const focused=chunk.contains(document.activeElement);
+  chunk.replaceChildren(fragment);chunk.style.height='';
+  if(above)code.scrollTop+=chunk.getBoundingClientRect().height-resize.height;
+  if(focused)code.focus({preventScroll:true});
+ }
+ for(let start=0;start<rows.length;start+=DIFF_CHUNK){
+  const chunk=elt('div','rv-diff-chunk');chunk.dataset.start=String(start);
+  chunk.style.height=(Math.min(DIFF_CHUNK,rows.length-start)*1.6)+'em';
+  chunk.append(button('显示这一段',()=>fill(chunk),'rv-diff-more'));chunks.push(chunk);
+ }
+ wrap.append(...chunks);code.append(wrap);fill(chunks[0]);
+ if(typeof IntersectionObserver==='function'){
+  observer=new IntersectionObserver(entries=>{
+   for(const entry of entries)if(entry.isIntersecting)fill(entry.target);
+  },{root:code,rootMargin:'400px 0px'});
+  for(const chunk of chunks.slice(1))observer.observe(chunk);
+ }
+ function reveal(index){
+  const at=Math.floor(index/DIFF_CHUNK),chunk=chunks[at];
+  if(index%DIFF_CHUNK<5)fill(chunks[at-1]);
+  fill(chunk);
+  const target=chunk?.children[index%DIFF_CHUNK];if(!target)return;
+  code.scrollTop+=target.getBoundingClientRect().top-code.getBoundingClientRect().top-58;
+ }
+ if(overview){
+  const first=mountDiffOverview(code,rows,reveal);
+  if(first!==null&&!code.closest('[hidden]'))reveal(first);
+ }
+ review.diffCleanup=()=>{observer?.disconnect();resetDiffOverview()};
 }
 // view: {name,path,meta,message,kind:'text'|'diff'|'none',text,copy,loading}
 function paintViewer(view){
  review.view=view;
- $('rv-name').textContent=view.name||'';$('rv-name').title=view.path||'';$('rv-path').textContent=view.path||'';$('rv-meta').textContent=view.meta||'';
+ const project=review.mode==='project';
+ $('rv-name').textContent=view.name||(project?'差异预览':'');$('rv-name').title=view.path||'';$('rv-path').textContent=project?breadcrumb(view.path):view.path||'';$('rv-meta').textContent=view.meta||'';
+ if(project&&view.path)$('rv-name').prepend(workspaceFileIcon(view.path));
  $('rv-status').textContent=view.loading?'正在读取…':view.message||'';$('rv-status').className='rv-status'+(view.message&&!view.loading?' warn':'');
- const code=$('rv-code');code.replaceChildren();
- if(view.kind==='text'&&typeof view.text==='string')code.append(linesNode(view.text,ROW_LIMIT));
- else if(view.kind==='diff'&&typeof view.text==='string')code.append(diffNode(view.text,ROW_LIMIT*2));
+ const code=$('rv-code');review.diffCleanup?.();review.diffCleanup=null;code.replaceChildren();
  code.scrollTop=0;code.scrollLeft=0;
+ if(view.kind==='text'&&typeof view.text==='string')code.append(linesNode(view.text,ROW_LIMIT));
+ else if(view.kind==='diff'&&typeof view.text==='string')mountDiff(code,view.text,project&&pw.splitDiff,review.mode!=='file');
  $('rv-copy-path').hidden=!view.path;$('rv-copy').hidden=typeof view.copy!=='string';
- $('rv-tabs').hidden=review.mode!=='changes'||!review.sel;
+ $('pf-split').hidden=!project||view.kind!=='diff';$('pf-split').setAttribute('aria-pressed',String(pw.splitDiff));
+ $('pf-copy-diff').hidden=!project||typeof view.copy!=='string';
+ $('rv-tabs').hidden=review.mode==='file'||!review.sel;
  for(const tab of ['diff','text']){const b=$('rv-tab-'+tab);b.setAttribute('aria-pressed',String(review.tab===tab));b.disabled=!review.sel}
 }
 const fileMeta=data=>(data.lines!==undefined?data.lines+' 行 · ':'')+(data.size!==undefined?formatBytes(data.size):'');
@@ -1115,8 +1412,17 @@ async function loadDiff(){
  const view={name:baseName(item.path),path:item.path,meta:AREA_NAMES[item.area]+' · '+(CODE_NAMES[data.code||item.code]||'')+(data.old_path?'（原 '+data.old_path+'）':'')};
  if(data.state!=='ok'){view.kind='none';view.message=data.message||'无法读取 diff'}
  else if(data.binary){view.kind='none';view.message='二进制文件，不显示 diff，也不统计行数'}
- else if(!data.diff){view.kind='none';view.message='这个文件在此类别下没有可显示的文本改动（可能仅权限或模式变化）'}
- else{view.kind='diff';view.text=data.diff;view.copy=data.diff;if(data.added!==null&&data.added!==undefined)view.meta+=' · +'+data.added+' −'+data.deleted;if(data.truncated)view.message='diff 过大，已截断显示前 '+Math.round(600000/1000)+' KB'}
+ else if(!data.diff&&typeof data.unchanged!=='string'){view.kind='none';view.message='这个文件在此类别下没有可显示的文本改动（可能仅权限或模式变化）'}
+ else{
+  view.kind='diff';view.text=view.copy=data.diff||'';
+  if(data.unchanged){
+   const lines=splitLines(data.unchanged),count=lines.length;
+   view.text+=(view.text&&!view.text.endsWith('\n')?'\n':'')+'@@ -1,'+count+' +1,'+count+' @@\n '+lines.join('\n ')+'\n';
+   if(!data.unchanged.endsWith('\n'))view.text+='\\ No newline at end of file\n';
+  }
+  if(data.added!==null&&data.added!==undefined)view.meta+=' · +'+data.added+' −'+data.deleted;
+  if(data.truncated)view.message='Diff 超过大小上限，文件内容未完整显示。';
+ }
  paintViewer(view);
 }
 async function loadCurrentText(){
@@ -1143,23 +1449,29 @@ function statSpan(entry){
 }
 function renderChanges(){
  const data=review.list,box=$('rv-list');box.replaceChildren();
+ const ws=review.mode==='project'?pw.ws:null;
  const repo=data.repo;
  const head=elt('div','rv-repo');
  if(data.kind!=='git'||!repo){
-  head.append(elt('p','rv-empty-title',data.kind==='nogit'?'这个目录不是 Git 仓库':'无法显示 Git 改动'),elt('p','muted',data.message||''),elt('p','muted','对话目录：'+data.cwd),elt('p','muted','仍可在工具卡片里点“查看文件”，查看对话目录内的文件。'));
+  head.append(elt('p','rv-empty-title',data.kind==='nogit'?'这个目录不是 Git 仓库':'无法显示 Git 改动'),elt('p','muted',data.message||''),elt('p','muted',(review.target&&review.target.scope==='project'?'项目目录：':'对话目录：')+data.cwd),...(review.target&&review.target.scope==='project'?[]:[elt('p','muted','仍可在工具卡片里点“查看文件”，查看对话目录内的文件。')]));
   box.append(head);return;
  }
  const branch=repo.detached?'游离 HEAD（'+repo.head+'）':repo.branch?repo.branch+(repo.unborn?'（尚无提交）':''):'未知分支';
- head.append(elt('p','rv-branch','分支：'+branch),elt('p','muted rv-root','仓库：'+repo.root));
- if(repo.scope)head.append(elt('p','muted','只显示子目录 '+repo.scope+' 内的改动（对话的工作目录）'));
+ if(ws){const label=elt('p','rv-branch');label.append(workspaceIcon('branch'),elt('span',null,branch));label.title=repo.root;head.append(label)}
+ else head.append(elt('p','rv-branch','分支：'+branch),elt('p','muted rv-root','仓库：'+repo.root));
+ if(repo.scope)head.append(elt('p','muted','只显示子目录 '+repo.scope+' 内的改动（'+(review.target&&review.target.scope==='project'?'项目目录':'对话的工作目录')+'）'));
  box.append(head);
  let total=0;
  for(const area of ['staged','unstaged','untracked']){
-  const group=data.areas[area],section=elt('section','cl-group'),entries=group.entries;total+=entries.length;
+  const group=data.areas[area],section=elt(ws?'details':'section','cl-group'),entries=group.entries;total+=entries.length;
   const add=entries.reduce((n,e)=>n+(e.added||0),0),del=entries.reduce((n,e)=>n+(e.deleted||0),0);
   const title=elt('h3',null,AREA_NAMES[area]+' · '+entries.length+(group.truncated?'+':''));
   if(entries.length){const s=elt('span','cl-total');s.append(elt('span','stat-add','+'+add),elt('span','stat-del','−'+del));title.append(s)}
-  section.append(title);
+  if(ws){
+   const summary=elt('summary');summary.append(workspaceIcon('right'),elt('span',null,PROJECT_AREAS[area]),elt('span','pf-area-count',entries.length+(group.truncated?'+':'')));
+   section.open=!ws.collapsed.has(area);section.ontoggle=()=>{if(section.isConnected){if(section.open)ws.collapsed.delete(area);else ws.collapsed.add(area)}};
+   section.append(summary);
+  }else section.append(title);
   if(group.error)section.append(elt('p','rv-warn',group.error));
   else if(!entries.length)section.append(elt('p','muted','没有'));
   if(group.hidden)section.append(elt('p','muted','已隐藏 '+group.hidden+' 个凭据/敏感路径'));
@@ -1169,24 +1481,31 @@ function renderChanges(){
    const li=elt('li'),b=elt('button','cl-row');b.type='button';
    const picked=review.sel&&review.sel.area===area&&review.sel.path===entry.path;b.setAttribute('aria-pressed',String(!!picked));
    const code=elt('span','cl-code cl-'+(entry.code==='?'?'u':entry.code),entry.code==='?'?'U':entry.code);code.title=CODE_NAMES[entry.code]||entry.code;
-   const name=elt('span','cl-name',entryLabel(entry));name.title=entryLabel(entry);
-   b.append(code,name,statSpan(entry));
-   b.onclick=()=>{review.sel={area,path:entry.path,code:entry.code};review.tab='diff';renderChanges();paintTabs();loadDiff()};
+   const name=elt('span','cl-name',ws&&!entry.old_path?baseName(entry.path):entryLabel(entry));name.title=entryLabel(entry);
+   if(ws){
+    if(dirOf(entry.path)&&!entry.old_path)name.append(elt('small','cl-parent',dirOf(entry.path)));
+    b.append(workspaceFileIcon(entry.path),name,code);
+   }else b.append(code,name,statSpan(entry));
+   b.onclick=()=>{review.sel={area,path:entry.path,code:entry.code};review.tab='diff';
+    if(ws){for(const row of box.querySelectorAll('.cl-row'))row.setAttribute('aria-pressed',String(row===b))}
+    else renderChanges();
+    paintTabs();loadDiff()};
    li.append(b);list.append(li);
   }
   section.append(list);box.append(section);
  }
  if(!total)box.append(elt('p','muted rv-clean','当前工作区没有未提交的改动。'));
 }
-async function loadChanges(){
- const keep=review.sel;
- $('rv-list').replaceChildren(elt('p','muted','正在读取 Git 改动…'));
+async function loadChanges(quiet=false){
+ if(!quiet)$('rv-list').replaceChildren(elt('p','muted','正在读取 Git 改动…'));
  const result=await reviewFetch('/api/review',{},'list');if(!result)return;
- if(!result.ok){$('rv-list').replaceChildren(elt('p','rv-warn',result.data.error||'读取失败'));return}
+ if(!result.ok){if(!quiet||!review.list)$('rv-list').replaceChildren(elt('p','rv-warn',result.data.error||'读取失败'));return}
+ const keep=review.sel;
  review.list=result.data;
+ if(review.mode==='project'){paintGitBadge(result.data);updateTreeGit(result.data)}
  if(keep){const found=(review.list.areas&&review.list.areas[keep.area]||{entries:[]}).entries.find(e=>e.path===keep.path);if(!found)review.sel=null}
  renderChanges();
- if(review.sel){paintTabs();if(review.tab==='diff')loadDiff();else loadCurrentText()}
+ if(review.sel){paintTabs();if(!quiet){if(review.tab==='diff')loadDiff();else loadCurrentText()}}
  else if(keep)paintViewer({kind:'none',message:'之前选中的文件已不在改动列表中'});
 }
 // -- entry points --
@@ -1214,6 +1533,701 @@ function openToolDiff(file){
  openLocalView({title:'本次修改（工具自带的前后内容）',name:baseName(file.path),path:file.path,kind:'diff',text:unifiedFromOps(file.path,d.ops),meta:'+'+d.added+' −'+d.deleted+(file.created?' · 新建文件':'')});
 }
 
+// ---- 项目浏览：Git 改动（只读）+ 文件（Monaco 编辑） ----
+const pw={ws:null,monaco:null,monacoLoad:null,editor:null,openerGroup:'',splitDiff:true};
+const PROJECT_AREAS={staged:'已暂存',unstaged:'未暂存',untracked:'未跟踪'};
+const PF_DRAW={
+ back:'M19 12H5m7 7-7-7 7-7',files:'M15 20H5a2 2 0 0 1-2-2V8m6-4h7l4 4v8a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z',
+ branch:'M6 8v8m12-6a6 6 0 0 1-6 6H6M6 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm0 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM18 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z',
+ refresh:'M20 5v5h-5m5 0a8 8 0 0 0-14-3m-2 12v-5h5m-5 0a8 8 0 0 0 14 3',
+ 'new-file':'M13 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9m-7-6v6h7l-7-6Zm-1 9v6m-3-3h6',
+ 'new-folder':'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Zm9 3v6m-3-3h6',
+ code:'M13 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9m-7-6v6h7l-7-6ZM9 12l-2 2 2 2m6-4 2 2-2 2',
+ file:'M13 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9m-7-6v6h7l-7-6Z',
+ text:'M13 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9m-7-6v6h7l-7-6ZM8 13h8m-8 4h6',
+ image:'M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm3 12 4-5 3 3 2-2 3 3M9 8h.01',
+ archive:'M5 7h14v13H5zm-2-4h18v4H3zm6 9h6',
+ table:'M4 4h16v16H4zm0 5h16M4 14h16M10 9v11',
+ media:'M4 5h16v14H4zm6 4v6l5-3-5-3Z',
+ collapse:'m8 5 4 4 4-4m-8 14 4-4 4 4',right:'m9 6 6 6-6 6',down:'m6 9 6 6 6-6',
+ save:'M5 3h12l4 4v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm2 0v6h10V3M7 21v-8h10v8',
+ more:'M5 12h.01M12 12h.01M19 12h.01',copy:'M8 16H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2m-4 0h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z',
+ trash:'M4 7h16m-10 4v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3',check:'m5 12 4 4L19 6',close:'m6 6 12 12M6 18 18 6',
+ columns:'M12 4v16M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z'
+};
+function workspaceIcon(name,cls){
+ const icon=elt('i',cls);icon.setAttribute('aria-hidden','true');
+ const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg'),path=document.createElementNS(ns,'path');
+ svg.setAttribute('class','pf-svg');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('fill','none');svg.setAttribute('stroke','currentColor');svg.setAttribute('stroke-width',name==='more'?'3':'1.65');svg.setAttribute('stroke-linecap','round');svg.setAttribute('stroke-linejoin','round');svg.setAttribute('focusable','false');
+ path.setAttribute('d',PF_DRAW[name]);svg.append(path);icon.append(svg);return icon;
+}
+for(const node of $('review').querySelectorAll('[data-pf-icon]')){node.setAttribute('aria-hidden','true');node.append(workspaceIcon(node.dataset.pfIcon).firstChild)}
+const FILE_ICONS=[
+ ['JS','#efd473','js mjs cjs'],['TS','#83cfc5','ts mts cts'],['◇','#9edbd0','jsx tsx'],
+ ['PY','#e7c879','py pyi pyw'],['< >','#e9a384','html htm xhtml vue svelte'],['#','#d4ade6','css scss sass less'],
+ ['{ }','#e3cc8b','json jsonc json5'],['YM','#e2a1ad','yaml yml'],['≡','#bcb8bd','toml ini cfg conf env properties'],
+ ['M↓','#d2b9ed','md mdx markdown'],[':text','','txt rst log'],['>_','#a5d6a7','sh bash zsh fish ps1 bat cmd'],
+ ['C','#dbb3dd','c h'],['C+','#dbb3dd','cpp cc cxx hpp hh hxx'],['C#','#d5b8e7','cs'],
+ ['GO','#9fd8c7','go'],['RS','#e6a384','rs'],['RB','#e69ea8','rb'],['λ','#e4b3dd','java kt kts scala'],
+ ['PHP','#c4b8e9','php'],['SQL','#e0bf93','sql'],['PDF','#e69ea8','pdf'],
+ [':image','#d5aee4','png jpg jpeg gif webp avif svg ico bmp tiff'],[':table','#a7d8aa','csv tsv xls xlsx ods'],
+ [':archive','#e0bf93','zip tar gz bz2 xz tgz 7z rar'],[':media','#e6b5c3','mp3 wav flac ogg mp4 webm mov']
+];
+const FILE_ICON_BY_EXT=new Map(FILE_ICONS.flatMap(([mark,color,exts])=>exts.split(' ').map(ext=>[ext,[mark,color]])));
+const FILE_ICON_BY_NAME=new Map([
+ ['.gitignore',[':branch','#e5aa92']],['.gitattributes',[':branch','#e5aa92']],['.gitmodules',[':branch','#e5aa92']],
+ ['dockerfile',['▦','#9fd8c7']],['makefile',['>_','#a5d6a7']],['license',[':text','#e3cc8b']],['.env',['≡','#bcb8bd']]
+]);
+function workspaceFileIcon(path){
+ const name=baseName(path).toLowerCase(),dot=name.lastIndexOf('.');
+ const [mark,color]=FILE_ICON_BY_NAME.get(name)||(name.startsWith('dockerfile.')?FILE_ICON_BY_NAME.get('dockerfile'):FILE_ICON_BY_EXT.get(dot>0?name.slice(dot+1):''))||[':file',''];
+ const icon=mark.startsWith(':')?workspaceIcon(mark.slice(1),'pf-file-icon'):elt('span','pf-file-icon pf-file-mark',mark);
+ icon.setAttribute('aria-hidden','true');
+ if(color)icon.style.setProperty('--pf-file-color',color);
+ return icon;
+}
+const breadcrumb=path=>path?path.split('/').join(' › '):'';
+function paintGitBadge(data){
+ const repo=data?.repo,areas=Object.values(data?.areas||{}),count=new Set(areas.flatMap(group=>group.entries.map(entry=>entry.path))).size;
+ $('pf-git-count').hidden=!count;$('pf-git-count').textContent=count>99?'99+':count+(areas.some(group=>group.truncated)?'+':'');
+ $('pf-tab-git').setAttribute('aria-label',count?'Git 改动，'+count+' 个文件':'Git 改动');
+ $('pf-branch').textContent=repo?.branch||(repo?.head?'HEAD '+repo.head:data?.kind==='nogit'?'非 Git 目录':'');
+}
+const pwDirty=(f=pw.ws?.file)=>!!(f?.model&&!f.readOnly&&f.model.getAlternativeVersionId()!==f.savedAlt);
+const dirtyFiles=()=>[...(pw.ws?.files.values()||[])].filter(pwDirty);
+function discardOk(){
+ const dirty=dirtyFiles();
+ return !dirty.length||confirm(dirty.length+' 个文件有未保存的修改。放弃修改并关闭项目工作区吗？');
+}
+const dirOf=path=>path.includes('/')?path.slice(0,path.lastIndexOf('/')):'';
+const joinPath=(dir,name)=>dir?dir+'/'+name:name;
+function entryAt(ws,path){const node=ws.nodes.get(dirOf(path));return node&&node.entries?node.entries.find(e=>e.name===path.slice(path.lastIndexOf('/')+1))||null:null}
+function loadMonaco(){
+ if(pw.monaco)return Promise.resolve(pw.monaco);
+ if(!pw.monacoLoad){
+  pw.monacoLoad=(async()=>{
+   if(!document.getElementById('monaco-css')){
+    await new Promise((resolve,reject)=>{const link=document.createElement('link');link.id='monaco-css';link.rel='stylesheet';link.href='/vendor/monaco-editor.css';link.onload=resolve;link.onerror=()=>{link.remove();reject(new Error('样式加载失败'))};document.head.append(link)});
+   }
+   return import('/vendor/monaco-editor.js');
+  })().then(module=>pw.monaco=module,error=>{pw.monacoLoad=null;throw error});
+ }
+ return pw.monacoLoad;
+}
+async function workspaceResponse(response){
+ const data=await response.json().catch(()=>null);
+ if(data&&typeof data==='object'&&!Array.isArray(data))return data;
+ return {error:response.status===404?'当前面板服务不支持项目浏览。请重启 Coder-Agents 面板后刷新页面。':
+  '项目接口返回了无法识别的内容（HTTP '+response.status+'）'};
+}
+async function wsGet(ws,kind,params){
+ try{
+  const response=await fetch('/api/workspace/'+kind+'?'+new URLSearchParams({group:ws.group,...params}),{cache:'no-store',signal:ws.ctl.signal});
+  const data=await workspaceResponse(response);
+  if(ws.closed)return null;
+  if(response.ok&&data.group!==undefined&&data.group!==ws.group)return {ok:false,status:0,data:{error:'返回的项目与当前不一致'}};
+  if(response.ok&&data.root_revision){
+   if(!ws.rootRev)ws.rootRev=data.root_revision;
+   else if(ws.rootRev!==data.root_revision){ws.stale=true;paintProject();return {ok:false,status:409,data:{error:'项目目录已变化，请重新打开'}}}
+  }
+  return {ok:response.ok&&!data.error,status:response.status,data};
+ }catch(error){
+  if(ws.closed||error.name==='AbortError')return null;
+  return {ok:false,status:0,data:{error:'暂时无法连接面板服务'}};
+ }
+}
+async function wsPost(ws,body){
+ if(!ws.rootRev)return {ok:false,status:0,data:{error:'项目目录尚未读取成功，请先点“刷新”'}};
+ try{
+  const response=await fetch('/api/workspace',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({group:ws.group,root_revision:ws.rootRev,...body})});
+  const data=await workspaceResponse(response);
+  const result={ok:response.ok&&!data.error&&data.ok===true,status:response.status,data};
+  if(!result.ok&&!data.error)data.error='操作失败（HTTP '+response.status+'）';
+  if(!result.ok&&response.status===409&&/重新打开/.test(data.error)&&!ws.stale){ws.stale=true;paintProject()}
+  return result;
+ }catch{return {ok:false,status:0,data:{error:'暂时无法连接面板服务，操作未完成'}}}
+}
+function setMsg(text,warn){const node=$('pf-msg');node.textContent=text||'';node.className='rv-status'+(warn?' warn':'')}
+function setProjectMenu(open,restore=false){
+ $('pf-menu').hidden=!open;$('pf-more').setAttribute('aria-expanded',String(open));
+ if(restore)$('pf-more').focus();
+}
+async function copyWorkspacePath(path){
+ const ws=pw.ws;if(!ws||!ws.rootRev||ws.stale||!ws.cwd||typeof path!=='string')return;
+ const sep=/^[A-Z]:\\|^\\\\/i.test(ws.cwd)?'\\':'/';
+ const absolute=path?ws.cwd.replace(sep==='\\'?/[\\/]+$/:/\/+$/,'')+sep+path.split('/').join(sep):ws.cwd;
+ const ok=await writeClipboard(absolute);
+ if(pw.ws===ws)setMsg(ok?'已复制绝对路径：'+absolute:'复制绝对路径失败',!ok);
+}
+// -- open / close --
+function openProject(group,opener){
+ if(!group||stopped||settingsOpen()||reviewOpen())return;
+ const ws={group:group.id,name:group.name,tab:'files',rootRev:'',stale:false,busy:false,closed:false,ctl:new AbortController(),nodes:new Map(),open:new Set(['']),collapsed:new Set(),sel:null,focus:'',file:null,files:new Map(),cwd:group.path||'',newKind:'',newDir:''};
+ pw.ws=ws;pw.openerGroup=group.id;
+ review.target={group:group.id,source:'',agent:'',scope:'project'};review.list=null;review.sel=null;review.tab='diff';
+ showReview('project',group.name);
+ review.opener=opener||review.opener;
+ $('pf-tabs').hidden=false;$('pf-stale').hidden=true;$('pf-new').hidden=true;$('pf-tree').replaceChildren();$('pf-tree-note').textContent='';$('pf-git-tree-note').textContent='';$('pf-root').textContent='';
+ paintGitBadge(null);setMsg('');paintFile();
+ $('rv-name').textContent='';paintViewer({kind:'none',message:'选择左侧文件查看 diff 与当前文本'});
+ setProjectTab('files');
+ loadChanges(true);
+}
+function teardownProject(){
+ const ws=pw.ws;if(ws){ws.closed=true;ws.ctl.abort();for(const f of ws.files.values())releaseFile(ws,f)}
+ if(pw.editor){pw.editor.dispose();pw.editor=null}
+ pw.ws=null;
+ $('review-close').disabled=false;
+ $('pf-tabs').hidden=true;$('pf-stale').hidden=true;$('rv-body').hidden=false;$('pf-body').hidden=true;
+ $('pf-new').hidden=true;$('pf-new-home').append($('pf-new'));$('pf-tree').replaceChildren();setProjectMenu(false);$('review').removeAttribute('data-tab');
+}
+function setProjectTab(tab,focus){
+ const ws=pw.ws;if(!ws||ws.busy)return;
+ setProjectMenu(false);
+ ws.tab=tab;$('review').dataset.tab=tab;
+ for(const name of ['git','files']){const b=$('pf-tab-'+name);b.setAttribute('aria-selected',String(name===tab));b.tabIndex=name===tab?0:-1}
+ $('rv-body').hidden=tab!=='git';$('pf-body').hidden=tab!=='files';
+ $('review-refresh').hidden=true;
+ if(focus)$('pf-tab-'+tab).focus();
+ if(tab==='git'){$('pf-editor-status').textContent='Git 只读';loadChanges()}
+ else{
+  paintProject();
+  if(!ws.nodes.has(''))loadDir(ws,'');
+  else renderTree();
+  if(pw.editor)pw.editor.layout();
+ }
+}
+function paintProject(){
+ const ws=pw.ws;if(!ws)return;
+ $('pf-stale').hidden=!ws.stale;
+ if(!$('pf-root').firstChild)$('pf-root').append(workspaceIcon('down'),elt('span',null,ws.name));
+ $('pf-root').title=ws.cwd||'项目根';
+ $('pf-root').setAttribute('aria-pressed',String(!ws.sel));
+ $('review-close').disabled=ws.busy;
+ const off=ws.stale||ws.busy||!ws.rootRev;
+ $('pf-new-file').disabled=off;$('pf-new-dir').disabled=off;
+ $('pf-root-copy').disabled=ws.stale||!ws.rootRev;
+ for(const item of $('pf-tree').querySelectorAll('[data-tree-action]'))item.disabled=item.dataset.treeAction==='copy'?ws.stale||!ws.rootRev:off;
+ paintFile();
+}
+// -- tree --
+function updateTreeGit(data){
+ const ws=pw.ws;if(!ws)return;
+ const files=new Map(),dirs=new Set();
+ for(const area of ['staged','unstaged','untracked']){
+  for(const {path,code} of data.areas?.[area]?.entries||[]){
+   if(!Object.hasOwn(CODE_NAMES,code))continue;
+   if(files.get(path)!=='U')files.set(path,code);
+   for(let dir=dirOf(path);dir&&!dirs.has(dir);dir=dirOf(dir))dirs.add(dir);
+  }
+ }
+ ws.gitFiles=files;ws.gitDirs=dirs;
+ $('pf-git-tree-note').textContent=Object.values(data.areas||{}).some(area=>area.truncated)?'Git 改动较多，文件树只标记已加载的改动。':'';
+ for(const row of $('pf-tree').querySelectorAll('[data-path]'))paintTreeGitRow(ws,row);
+}
+function paintTreeGitRow(ws,row){
+ const path=row.dataset.path;
+ const code=row.hasAttribute('aria-expanded')
+  ?ws.gitDirs?.has(path)&&'changed':ws.gitFiles?.get(path);
+ const state=code||(row.dataset.ignored?'ignored':'');
+ if((row.dataset.git||'')===state)return;
+ if(state)row.dataset.git=state;else delete row.dataset.git;
+ row.querySelector('.pf-git-mark')?.remove();
+ const label=state==='ignored'?'Git 已忽略':state==='changed'?'包含 Git 改动':CODE_NAMES[state];
+ row.title=label?path+' · '+label:path;
+ if(label)row.setAttribute('aria-label',baseName(path)+'，'+label);else row.removeAttribute('aria-label');
+ if(code){
+  const mark=elt('span','pf-git-mark',code==='changed'?'●':code==='?'?'U':code);
+  mark.setAttribute('aria-hidden','true');row.querySelector('.pf-row-actions').before(mark);
+ }
+}
+async function loadDir(ws,path){
+ const node={...ws.nodes.get(path),loading:true,error:''};ws.nodes.set(path,node);renderTree();
+ const result=await wsGet(ws,'tree',{path});if(!result||ws.closed||ws.nodes.get(path)!==node)return;
+ node.loading=false;
+ if(!result.ok)node.error=result.data.error||'无法读取目录';
+ else{node.entries=Array.isArray(result.data.entries)?result.data.entries:[];node.truncated=!!result.data.truncated;if(result.data.cwd){ws.cwd=result.data.cwd}}
+ renderTree();paintProject();
+}
+async function refreshTreeDirs(ws,dirs){
+ for(const path of dirs){
+  if(ws.closed||ws.stale)break;
+  await loadDir(ws,path);
+ }
+}
+function refreshChangedDir(ws,path){
+ const dir=dirOf(path);
+ if(baseName(path)==='.gitignore'){
+  const descendants=[...ws.open].filter(p=>p!==dir&&(!dir||p.startsWith(dir+'/')));
+  return refreshTreeDirs(ws,[dir,...descendants]);
+ }
+ return loadDir(ws,dir);
+}
+function treeRows(ws){
+ const rows=[];
+ const walk=(dir,level)=>{
+  const node=ws.nodes.get(dir);if(!node)return;
+  for(const entry of node.entries||[]){
+   const path=joinPath(dir,entry.name);rows.push({path,name:entry.name,kind:entry.kind,ignored:entry.ignored,level});
+   if(entry.kind==='directory'&&ws.open.has(path)){
+    if(ws.newKind&&ws.newDir===path)rows.push({create:true,level:level+1});
+    const child=ws.nodes.get(path);
+    if(child&&child.loading&&!child.entries)rows.push({note:'正在读取…',level:level+1});
+    else if(child&&child.error)rows.push({note:child.error,level:level+1});
+    else if(child&&child.entries&&!child.entries.length&&!(ws.newKind&&ws.newDir===path))rows.push({note:'（空目录）',level:level+1});
+    walk(path,level+1);
+    if(child&&child.truncated)rows.push({note:'… 条目过多，只显示了一部分',level:level+1});
+   }
+  }
+ };
+ walk('',0);return rows;
+}
+function treeAction(action,path){
+ const [icon,label]={file:['new-file','在此处新建文件'],directory:['new-folder','在此处新建文件夹'],copy:['copy','复制绝对路径']}[action];
+ const b=button('',null,'pf-icon');b.dataset.treeAction=action;b.title=label;b.setAttribute('aria-label',label+'：'+path);b.append(workspaceIcon(icon));
+ const ws=pw.ws;b.disabled=ws.stale||!ws.rootRev||(action!=='copy'&&ws.busy);
+ return b;
+}
+function setTreeFocus(row,active){
+ row.tabIndex=active?0:-1;
+ for(const b of row.querySelectorAll('[data-tree-action]'))b.tabIndex=active?0:-1;
+}
+function renderTree(){
+ const ws=pw.ws;if(!ws)return;
+ const box=$('pf-tree'),focused=document.activeElement,had=box.contains(focused),root=ws.nodes.get(''),form=$('pf-new');
+ const formFocus=form.contains(focused),actionFocus=focused?.dataset.treeAction;
+ if(box.contains(form))$('pf-new-home').append(form);
+ const rows=treeRows(ws),items=rows.filter(r=>r.path!==undefined);
+ if(!items.some(r=>r.path===ws.focus))ws.focus=items.length?items[0].path:'';
+ const note=$('pf-tree-note');
+ note.className='pf-note';
+ if(!root||(root.loading&&!root.entries))note.textContent='正在读取项目…';
+ else if(root.error){note.textContent=root.error;note.className='pf-note warn'}
+ else if(!root.entries.length)note.textContent='项目目录是空的。可以新建文件或文件夹。';
+ else note.textContent=root.truncated?'项目根目录条目过多，只显示了一部分。':'';
+ box.replaceChildren(...rows.map(row=>{
+  if(row.create){const slot=elt('div','pf-create-slot');slot.style.paddingInlineStart=(row.level*15)+'px';slot.append(form);return slot}
+  const el=elt('div',row.path===undefined?'pf-row-note':'pf-row',row.path===undefined?row.note:undefined);
+  el.style.setProperty('--depth',String(row.level));
+  if(row.path===undefined){el.style.paddingInlineStart=(10+row.level*15)+'px';el.setAttribute('role','presentation');return el}
+  el.setAttribute('role','treeitem');el.dataset.path=row.path;el.setAttribute('aria-level',String(row.level+1));
+  const isDir=row.kind==='directory',open=isDir&&ws.open.has(row.path);
+  if(isDir)el.setAttribute('aria-expanded',String(open));
+  if(row.ignored)el.dataset.ignored='true';
+  el.setAttribute('aria-selected',String(!!ws.sel&&ws.sel.path===row.path));
+  el.title=row.path;
+  if(isDir)el.append(workspaceIcon(open?'down':'right','pf-twist'));
+  else el.append(elt('span','pf-twist spacer'),workspaceFileIcon(row.path));
+  el.append(elt('span','pf-name',row.name));
+  if(pwDirty(ws.files.get(row.path)||null)){const dot=elt('span','pf-dot','●');dot.title='未保存';dot.setAttribute('aria-label','未保存');el.append(dot)}
+  const actions=elt('div','pf-row-actions');
+  if(isDir)actions.append(treeAction('file',row.path),treeAction('directory',row.path));
+  actions.append(treeAction('copy',row.path));el.append(actions);paintTreeGitRow(ws,el);setTreeFocus(el,row.path===ws.focus);
+  return el;
+ }));
+ if(formFocus&&!form.hidden&&(!ws.newDir||box.contains(form)))focused?.focus({preventScroll:true});
+ else if(had){const el=treeRowEl(ws.focus);if(el)(actionFocus?el.querySelector('[data-tree-action="'+actionFocus+'"]')||el:el).focus({preventScroll:true})}
+}
+function treeRowEl(path){return [...$('pf-tree').querySelectorAll('[data-path]')].find(n=>n.dataset.path===path)||null}
+function focusRow(path){const ws=pw.ws;if(!ws)return;ws.focus=path;for(const n of $('pf-tree').querySelectorAll('[data-path]'))setTreeFocus(n,n.dataset.path===path);const el=treeRowEl(path);if(el){el.focus();el.scrollIntoView({block:'nearest'})}paintProject()}
+function toggleDir(ws,path,open){
+ const want=open===undefined?!ws.open.has(path):open;
+ if(want){ws.open.add(path);const node=ws.nodes.get(path);if(!node||(!node.loading&&(node.error||!node.entries)))loadDir(ws,path);else renderTree()}
+ else{
+  if(ws.newKind&&(ws.newDir===path||ws.newDir.startsWith(path+'/'))){if(ws.busy)return;hideNewForm(false)}
+  ws.open.delete(path);renderTree();
+ }
+}
+function activateRow(path){
+ const ws=pw.ws;if(!ws)return;const entry=entryAt(ws,path);if(!entry)return;
+ ws.focus=path;
+ if(entry.kind==='directory'){ws.sel={path,kind:'directory'};toggleDir(ws,path);paintProject()}
+ else openFile(path);
+}
+$('pf-tree').addEventListener('click',event=>{
+ const row=event.target.closest('[data-path]'),ws=pw.ws;if(!row||!ws)return;
+ const path=row.dataset.path,action=event.target.closest('[data-tree-action]')?.dataset.treeAction;
+ if(action==='copy')copyWorkspacePath(path);
+ else if(action)showNewForm(action,path);
+ else if(event.detail<2){ws.focus=path;activateRow(path)}
+});
+$('pf-tree').addEventListener('dblclick',event=>{
+ const ws=pw.ws,path=event.target.closest('[data-path]')?.dataset.path;
+ if(ws&&path&&!event.target.closest('[data-tree-action]')&&entryAt(ws,path)?.kind==='file'){
+  event.preventDefault();openFile(path,{pinned:true});
+ }
+});
+$('pf-tree').addEventListener('focusin',event=>{const row=event.target.closest('[data-path]'),ws=pw.ws;if(!row||!ws||ws.focus===row.dataset.path)return;ws.focus=row.dataset.path;for(const n of $('pf-tree').querySelectorAll('[data-path]'))setTreeFocus(n,n===row);paintProject()});
+$('pf-tree').addEventListener('keydown',event=>{
+ const ws=pw.ws,row=event.target.closest('[data-path]');if(!ws||!row||event.target.closest('[data-tree-action]')||event.ctrlKey||event.metaKey||event.altKey)return;
+ const path=row.dataset.path,entry=entryAt(ws,path),paths=[...$('pf-tree').querySelectorAll('[data-path]')].map(n=>n.dataset.path),index=paths.indexOf(path);
+ let handled=true;
+ switch(event.key){
+  case 'ArrowDown':if(index<paths.length-1)focusRow(paths[index+1]);break;
+  case 'ArrowUp':if(index>0)focusRow(paths[index-1]);break;
+  case 'Home':focusRow(paths[0]);break;
+  case 'End':focusRow(paths[paths.length-1]);break;
+  case 'ArrowRight':if(entry&&entry.kind==='directory'){if(!ws.open.has(path))toggleDir(ws,path,true);else if(paths[index+1]&&dirOf(paths[index+1])===path)focusRow(paths[index+1])}break;
+  case 'ArrowLeft':if(entry&&entry.kind==='directory'&&ws.open.has(path))toggleDir(ws,path,false);else if(path.includes('/'))focusRow(dirOf(path));break;
+  case 'Enter':if(entry?.kind==='file')openFile(path,{pinned:true});else activateRow(path);break;
+  case ' ':activateRow(path);break;
+  case 'Delete':trashPath(path);break;
+  default:handled=false;
+ }
+ if(handled)event.preventDefault();
+});
+// -- file editor --
+function releaseFile(ws,f){
+ ws.files.delete(f.path);
+ if(ws.file===f)ws.file=null;
+ if(f.model){if(pw.editor?.getModel()===f.model)pw.editor.setModel(null);f.model.dispose()}
+}
+function syncTreeSelection(ws){
+ const rows=$('pf-tree').querySelectorAll('[data-path]');
+ if([...rows].some(row=>row.dataset.path===ws.file?.path))ws.focus=ws.file.path;
+ for(const row of rows){
+  row.setAttribute('aria-selected',String(row.dataset.path===ws.sel?.path));
+  setTreeFocus(row,row.dataset.path===ws.focus);
+ }
+}
+function showFileModel(f){
+ if(!pw.editor)return;
+ pw.editor.setModel(f?.model||null);
+ if(f?.model){
+  pw.editor.updateOptions({readOnly:f.readOnly});
+  if(f.viewState)pw.editor.restoreViewState(f.viewState);
+ }
+}
+function activateFile(ws,f){
+ const previous=ws.file;
+ if(previous!==f){
+  if(previous?.model&&pw.editor?.getModel()===previous.model)previous.viewState=pw.editor.saveViewState();
+  ws.file=f;
+  showFileModel(f);
+  setMsg(f?.note,f?.warn);
+ }
+ ws.sel=f?{path:f.path,kind:'file'}:null;
+ syncTreeSelection(ws);paintProject();
+}
+function removeFileTab(ws,f){
+ const tabs=[...ws.files.values()],index=tabs.indexOf(f),wasActive=ws.file===f;
+ releaseFile(ws,f);
+ if(wasActive)activateFile(ws,tabs[index+1]||tabs[index-1]||null);
+ else paintProject();
+ renderTreeDirty(f.path);
+}
+function closeFileTab(ws,f){
+ if(ws.busy||!f)return;
+ if(pwDirty(f)&&!confirm('“'+f.path+'”有未保存的修改。放弃修改并关闭此标签页吗？'))return;
+ removeFileTab(ws,f);
+ if(!ws.file)$('pf-root').focus();
+}
+function paintFileTabs(ws){
+ const strip=$('pf-file-tabs'),files=[...ws.files.values()];
+ const signature=JSON.stringify([ws.file?.path,ws.busy,files.map(f=>[f.path,f.pinned,pwDirty(f)])]);
+ if(ws.tabsSignature===signature)return;
+ ws.tabsSignature=signature;
+ const focused=strip.contains(document.activeElement)?document.activeElement:null;
+ const keepScroll=strip.scrollLeft,previous=strip.querySelector('[aria-selected="true"]')?.closest('[data-file-tab]')?.dataset.fileTab;
+ const existing=new Map([...strip.querySelectorAll('[data-file-tab]')].map(item=>[item.dataset.fileTab,item]));
+ let active=null;
+ const keep=files.map(f=>{
+  const selected=f===ws.file,dirty=pwDirty(f),name=baseName(f.path);
+  const item=existing.get(f.path)||elt('div','pf-editor-tab');
+  item.classList.toggle('active',selected);item.classList.toggle('preview',!f.pinned);
+  item.dataset.fileTab=f.path;item.setAttribute('role','presentation');
+  const tab=item.firstChild||button('',null,'pf-tab-name');
+  tab.onclick=()=>activateFile(ws,f);
+  tab.setAttribute('role','tab');tab.setAttribute('aria-controls','pf-editor-panel');tab.setAttribute('aria-selected',String(selected));
+  tab.setAttribute('aria-label',f.path+(dirty?'，未保存':f.pinned?'':'，预览'));
+  tab.title=f.path+(f.pinned?'':'（预览，双击保留）');tab.tabIndex=selected?0:-1;tab.disabled=ws.busy;
+  if(!tab.firstChild)tab.append(workspaceFileIcon(f.path),elt('span',null,name));
+  tab.ondblclick=()=>{if(!ws.busy&&!f.pinned){f.pinned=true;paintFileTabs(ws)}};
+  const close=tab.nextSibling||button('',null,'pf-icon pf-tab-close');
+  close.onclick=()=>closeFileTab(ws,f);
+  close.classList.toggle('dirty',dirty);
+  close.disabled=ws.busy;close.tabIndex=selected?0:-1;
+  close.title='关闭 '+name;close.setAttribute('aria-label','关闭 '+f.path+(dirty?'（未保存）':''));
+  if(!close.firstChild){
+   const dot=elt('span','pf-dirty','●');dot.setAttribute('aria-hidden','true');
+   close.append(workspaceIcon('close').firstChild,dot);item.append(tab,close);
+  }
+  close.lastChild.hidden=!dirty;
+  if(selected)active=tab;
+  return item;
+ });
+ const wanted=new Set(keep);
+ for(const item of [...strip.children])if(!wanted.has(item))item.remove();
+ for(const item of keep)if(!item.parentNode)strip.append(item);
+ if(!keep.length)strip.append(elt('span','pf-empty-tab','编辑器'));
+ strip.scrollLeft=keepScroll;
+ if(focused&&!strip.contains(focused))active?.focus({preventScroll:true});
+ if(active&&previous!==ws.file.path)active.scrollIntoView({block:'nearest',inline:'nearest'});
+}
+$('pf-file-tabs').addEventListener('keydown',event=>{
+ const ws=pw.ws,tab=event.target.closest('[role="tab"]');if(!ws||ws.busy||!tab)return;
+ const files=[...ws.files.values()],index=files.indexOf(ws.file);
+ if(event.key==='Delete'){event.preventDefault();closeFileTab(ws,ws.file);return}
+ const next={ArrowLeft:(index+files.length-1)%files.length,ArrowRight:(index+1)%files.length,Home:0,End:files.length-1}[event.key];
+ if(next===undefined)return;
+ event.preventDefault();activateFile(ws,files[next]);$('pf-file-tabs').querySelector('[aria-selected="true"]')?.focus();
+});
+function paintFile(){
+ const ws=pw.ws;if(!ws)return;
+ const f=ws.file,editable=!!(f&&f.model&&!f.readOnly);
+ paintFileTabs(ws);
+ $('pf-file-path').textContent=breadcrumb(f?.path);$('pf-file-meta').textContent=f?.meta||'';
+ $('pf-editor').hidden=!(f&&f.model);$('pf-placeholder').hidden=!!(f&&f.model);
+ $('pf-placeholder').textContent=!f?'从左侧选择文件开始编辑。编辑器内 Tab 键输入缩进，按 Ctrl+M（Mac 为 Ctrl+Shift+M）切换为 Tab 移出焦点。':f.loading?'正在读取…':f.error||'';
+ const dirty=pwDirty();
+ $('pf-save').disabled=!editable||!dirty||ws.busy||ws.stale;
+ $('pf-reload').disabled=!f||f.loading||ws.busy;
+ $('pf-more').disabled=!f||f.loading||ws.busy;
+ $('pf-copy-file').disabled=!f||ws.stale||!ws.rootRev;
+ $('pf-trash').disabled=!f||ws.stale||ws.busy||!ws.rootRev||entryAt(ws,f.path)?.kind!=='file';
+ if($('pf-more').disabled)setProjectMenu(false);
+ $('pf-conflict').hidden=!(f&&f.conflict);$('pf-conflict-text').textContent=f&&f.conflict?'保存冲突：'+f.conflict+' 你的输入仍保留在编辑器里，未被覆盖。':'';
+ $('pf-conflict-force').disabled=ws.busy||ws.stale;
+ paintEditorStatus();
+}
+function paintEditorStatus(){
+ const ws=pw.ws,f=ws?.file;if(!ws||ws.tab!=='files')return;
+ const position=f?.model&&pw.editor?.getPosition();
+ $('pf-editor-status').textContent=position?'行 '+position.lineNumber+'，列 '+position.column+' · '+(f.bom?'UTF-8 BOM':'UTF-8')+' · '+(f.eol==='\r\n'?'CRLF':'LF'):'';
+}
+async function openFile(path,options={}){
+ const ws=pw.ws;if(!ws)return false;
+ if(ws.busy){setMsg('正在保存或操作中，请稍候',true);return false}
+ let f=ws.files.get(path);
+ if(f&&!options.force){
+  if(options.pinned)f.pinned=true;
+  activateFile(ws,f);return true;
+ }
+ if(f){
+  const {pinned}=f;
+  if(f.model){if(pw.editor?.getModel()===f.model)pw.editor.setModel(null);f.model.dispose()}
+  f={path,loading:true,pinned};
+ }else{
+  const preview=[...ws.files.values()].find(file=>!file.pinned&&!pwDirty(file));
+  if(preview)releaseFile(ws,preview);
+  f={path,loading:true,pinned:!!options.pinned};
+ }
+ ws.files.set(path,f);activateFile(ws,f);
+ const current=()=>!ws.closed&&ws.files.get(path)===f;
+ const fail=(error,meta='')=>{
+  Object.assign(f,{loading:false,error,meta,note:error,warn:true});
+  if(ws.file===f){setMsg(f.note,true);paintFile()}
+ };
+ const result=await wsGet(ws,'file',{path});
+ if(!result||!current())return true;
+ const data=result.data;
+ if(!result.ok){fail(data.error||'无法读取这个文件');return true}
+ if(data.state!=='ok'||typeof data.text!=='string'||!data.revision){fail(data.message||'无法编辑这个文件（读取失败或不是 UTF-8 文本）',fileMeta(data));return true}
+ let monaco;
+ try{monaco=await loadMonaco()}catch{
+  if(current())fail('编辑器加载失败，暂时无法编辑这个文件。请检查面板服务后重新打开。');
+  return true;
+ }
+ if(!current())return true;
+ let text=data.text,bom=false;
+ if(text.charCodeAt(0)===0xFEFF){bom=true;text=text.slice(1)}
+ const crlf=(text.match(/\r\n/g)||[]).length,lf=(text.match(/\n/g)||[]).length-crlf,loneCR=/\r(?!\n)/.test(text);
+ const eol=crlf>lf?'\r\n':'\n',notes=[];
+ if(loneCR)notes.push('文件含单独的 CR 换行，为避免改变文件格式，只能只读查看');
+ else if(crlf&&lf)notes.push('文件混用 LF 和 CRLF，保存时将统一为 '+(eol==='\r\n'?'CRLF':'LF'));
+ const uri=monaco.Uri.from({scheme:'coder-agents',authority:'project',path:'/'+path});
+ const stale=monaco.editor.getModel(uri);if(stale)stale.dispose();
+ let model;
+ try{model=monaco.editor.createModel(text,undefined,uri)}catch{fail('编辑器无法打开这个文件');return true}
+ if(!pw.editor){
+  const style=getComputedStyle($('review'));
+  const color=name=>style.getPropertyValue('--wb-'+name).trim();
+  monaco.editor.defineTheme('coder-agents-dark',{base:'vs-dark',inherit:true,rules:[],colors:{
+   'editor.background':color('code'),'editor.foreground':color('text'),'editorLineNumber.foreground':color('muted'),
+   'editor.lineHighlightBackground':color('side'),'editor.selectionBackground':'#395449','editor.inactiveSelectionBackground':color('selected'),
+   'editorCursor.foreground':color('accent'),'focusBorder':color('accent'),'editorWidget.background':color('side'),
+   'editorWidget.border':color('line'),'list.activeSelectionBackground':color('selected'),'list.focusBackground':color('selected')
+  }});
+  // This Monaco build can reject an in-flight word highlight when switching models.
+  pw.editor=monaco.editor.create($('pf-editor'),{model:null,theme:'coder-agents-dark',automaticLayout:true,minimap:{enabled:false},occurrencesHighlight:'off',scrollBeyondLastLine:false,fontSize:13,ariaLabel:'文件编辑器',accessibilitySupport:'auto'});
+  pw.editor.addCommand(monaco.KeyMod.CtrlCmd|monaco.KeyCode.KeyS,()=>saveFile());
+  pw.editor.onDidChangeCursorPosition(paintEditorStatus);
+  pw.editor.onDidChangeModelContent(()=>{
+   const w=pw.ws,file=w?.file;if(!file?.model||w.closed||pw.editor.getModel()!==file.model)return;
+   const dirty=pwDirty(file);if(dirty)file.pinned=true;
+   paintFile();renderTreeDirty(file.path);
+  });
+ }
+ const readOnly=loneCR;
+ Object.assign(f,{loading:false,model,revision:data.revision,bom,eol,readOnly,savedAlt:model.getAlternativeVersionId(),conflict:'',meta:fileMeta(data)+(bom?' · UTF-8 BOM':'')+' · '+(eol==='\r\n'?'CRLF':'LF'),note:notes.join('；'),warn:notes.length>0});
+ if(ws.file===f){showFileModel(f);setMsg(f.note,f.warn);paintFile()}
+ renderTreeDirty(f.path);
+ return true;
+}
+function renderTreeDirty(path){
+ const row=treeRowEl(path);
+ if(row&&pwDirty(pw.ws?.files.get(path)||null)!==!!row.querySelector('.pf-dot'))renderTree();
+}
+function serialize(f){
+ let text=f.model.getValue().replace(/\r\n/g,'\n');
+ if(f.eol==='\r\n')text=text.replace(/\n/g,'\r\n');
+ return (f.bom?'\ufeff':'')+text;
+}
+async function saveFile(options={}){
+ const ws=pw.ws,f=ws&&ws.file;
+ if(!f||!f.model||f.readOnly||ws.busy)return;
+ if(ws.stale){setMsg('项目目录已变化，不能保存。内容保留在编辑器里，请复制后重新打开。',true);return}
+ const alt=f.model.getAlternativeVersionId();
+ if(alt===f.savedAlt&&!options.revision){setMsg('没有需要保存的修改');return}
+ const text=serialize(f);
+ ws.busy=true;f.conflict='';pw.editor.updateOptions({readOnly:true});setMsg('正在保存…');paintProject();
+ const result=await wsPost(ws,{action:'save',path:f.path,revision:options.revision||f.revision,text});
+ ws.busy=false;
+ if(ws.closed||ws.file!==f)return;
+ pw.editor.updateOptions({readOnly:false});
+ if(result.ok){
+  f.revision=result.data.revision||f.revision;f.savedAlt=alt;setMsg('已保存 '+new Date().toLocaleTimeString());
+  if(ws.nodes.has(dirOf(f.path)))refreshChangedDir(ws,f.path);
+  loadChanges(true);
+ }else if(result.status===409&&!ws.stale)f.conflict=result.data.error||'文件已被其他程序修改';
+ else setMsg('保存失败：'+(result.data.error||'未知错误')+'。你的输入仍保留在编辑器里。',true);
+ paintProject();renderTree();
+ if(pw.editor&&!result.ok)pw.editor.focus();
+}
+async function reloadFile(){
+ const ws=pw.ws,f=ws&&ws.file;if(!f)return;
+ if(pwDirty()&&!confirm('重新载入会放弃当前未保存的修改，继续吗？'))return;
+ await openFile(f.path,{force:true});
+}
+async function forceSave(){
+ const ws=pw.ws,f=ws&&ws.file;if(!f||!f.model||ws.busy)return;
+ if(!confirm('用编辑器里的内容覆盖磁盘上的“'+f.path+'”？其他程序所做的修改会丢失。'))return;
+ const result=await wsGet(ws,'file',{path:f.path});
+ if(!result||ws.closed||ws.file!==f)return;
+ if(!result.ok||result.data.state!=='ok'||!result.data.revision){setMsg('无法读取磁盘上的最新版本：'+(result.data.error||result.data.message||'未知错误')+'。未覆盖。',true);return}
+ await saveFile({revision:result.data.revision});
+}
+// -- create / delete --
+function newBase(ws){return ws.sel?(ws.sel.kind==='directory'?ws.sel.path:dirOf(ws.sel.path)):''}
+function showNewForm(kind,dir){
+ const ws=pw.ws;if(!ws||ws.stale||ws.busy||!ws.rootRev)return;
+ dir=dir??newBase(ws);
+ if(dir&&entryAt(ws,dir)?.kind!=='directory'){setMsg('目标文件夹已不在文件树中，请刷新后重试',true);return}
+ const same=ws.newKind===kind&&ws.newDir===dir;
+ ws.newKind=kind;ws.newDir=dir;
+ $('pf-new-label').textContent='在 '+(ws.newDir||'项目根')+' 中新建'+(kind==='file'?'文件':'文件夹')+'：';
+ // The input is created on first use so the read-only viewer markup holds no form fields.
+ if(!$('pf-new-name')){const input=document.createElement('input');input.id='pf-new-name';input.autocomplete='off';input.spellcheck=false;$('pf-new-slot').replaceWith(input)}
+ if(!same){$('pf-new-name').value='';$('pf-new-error').textContent=''}
+ $('pf-new').hidden=false;
+ if(dir){
+  const ancestors=dir.split('/');let path='';
+  for(const name of ancestors){path=joinPath(path,name);ws.open.add(path)}
+  toggleDir(ws,dir,true);
+ }else renderTree();
+ $('pf-new-name').focus();
+}
+function hideNewForm(restore=true){
+ const ws=pw.ws;if(!ws||ws.busy)return;
+ const {newDir,newKind}=ws;
+ ws.newKind='';ws.newDir='';$('pf-new').hidden=true;renderTree();
+ if(restore){
+  if(newDir&&treeRowEl(newDir)){focusRow(newDir);return}
+  $('pf-new-'+(newKind==='directory'?'dir':'file')).focus();
+ }
+}
+$('pf-new').onsubmit=async event=>{
+ event.preventDefault();
+ const ws=pw.ws;if(!ws||!ws.newKind||ws.busy)return;
+ const name=$('pf-new-name').value.trim(),err=$('pf-new-error');
+ if(!name||name==='.'||name==='..'||name.includes('/')||name.includes('\0')||name.startsWith('.coder-agents-save-')){err.textContent='名称无效：不能为空、不能含 “/”，也不能是 . 或 ..';$('pf-new-name').focus();return}
+ const kind=ws.newKind,dir=ws.newDir||'',path=joinPath(dir,name);
+ ws.busy=true;$('pf-new-ok').disabled=true;$('pf-new-cancel').disabled=true;paintProject();
+ const result=await wsPost(ws,{action:kind==='file'?'new_file':'new_directory',path});
+ ws.busy=false;$('pf-new-ok').disabled=false;$('pf-new-cancel').disabled=false;
+ if(ws.closed)return;
+ paintProject();
+ if(!result.ok){err.textContent=(result.data.error||'创建失败')+'（名称已保留，可修改后重试）';$('pf-new-name').focus();return}
+ hideNewForm();
+ loadChanges(true);
+ if(dir)ws.open.add(dir);
+ await refreshChangedDir(ws,path);
+ if(ws.closed)return;
+ if(kind==='directory'){ws.open.add(path);ws.sel={path,kind:'directory'};ws.focus=path;await loadDir(ws,path)}
+ else{const opened=await openFile(path,{pinned:true});if(!opened){ws.focus=path;renderTree()}}
+ if(!ws.closed)setMsg('已创建 '+path);
+};
+$('pf-new-cancel').onclick=()=>hideNewForm();
+$('pf-new').addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();event.stopPropagation();hideNewForm()}});
+async function trashPath(path){
+ const ws=pw.ws;if(!ws||ws.busy)return;
+ const entry=path&&entryAt(ws,path);
+ if(!entry){setMsg('文件已不在文件树中，请刷新后重试',true);return}
+ if(entry.kind!=='file'){setMsg('不支持删除目录，只能删除文件',true);return}
+ if(ws.stale){setMsg('项目目录已变化，不能删除',true);return}
+ const open=ws.files.get(path);
+ const dirty=pwDirty(open||null);
+ if(!confirm('将“'+path+'”移到系统回收站？'+(dirty?'\n这个文件有未保存的修改，会一并丢失。':'')))return;
+ ws.busy=true;paintProject();
+ const result=await wsPost(ws,{action:'trash',path,revision:open?.revision||entry.revision});
+ ws.busy=false;if(ws.closed)return;
+ if(!result.ok){setMsg('移到回收站失败：'+(result.data.error||'未知错误'),true);paintProject();return}
+ if(open)removeFileTab(ws,open);
+ if(ws.sel&&ws.sel.path===path)ws.sel=null;
+ setMsg('已移到回收站：'+path);
+ loadChanges(true);
+ await refreshChangedDir(ws,path);paintProject();
+ if(ws.closed||ws.tab!=='files')return;
+ const el=treeRowEl(ws.focus);if(el)el.focus();else $('pf-new-file').focus();
+}
+$('pf-tab-git').onclick=()=>setProjectTab('git');$('pf-tab-files').onclick=()=>setProjectTab('files');
+$('pf-tabs').addEventListener('keydown',event=>{
+ const ws=pw.ws;if(!ws||!['ArrowRight','ArrowLeft','Home','End'].includes(event.key))return;
+ event.preventDefault();
+ setProjectTab(event.key==='Home'?'files':event.key==='End'?'git':ws.tab==='files'?'git':'files',true);
+});
+$('pf-root').onclick=()=>{const ws=pw.ws;if(ws){ws.sel=null;renderTree();paintProject()}};
+$('pf-new-file').onclick=()=>showNewForm('file');$('pf-new-dir').onclick=()=>showNewForm('directory');
+$('pf-collapse').onclick=()=>{
+ const ws=pw.ws;if(!ws||ws.busy)return;
+ if(ws.newKind&&ws.newDir)hideNewForm(false);
+ ws.open.clear();ws.open.add('');renderTree();paintProject();
+};
+$('pf-more').onclick=()=>{
+ const open=$('pf-menu').hidden;setProjectMenu(open);
+ if(open)$('pf-menu').querySelector('button:not(:disabled)')?.focus();
+};
+$('pf-root-copy').onclick=()=>copyWorkspacePath('');
+$('pf-copy-file').onclick=()=>{setProjectMenu(false,true);copyWorkspacePath(pw.ws?.file?.path)};
+$('pf-trash').onclick=()=>{setProjectMenu(false,true);trashPath(pw.ws?.file?.path)};
+$('pf-git-refresh').onclick=()=>loadChanges();
+$('pf-split').onclick=()=>{if(review.view?.kind==='diff'){pw.splitDiff=!pw.splitDiff;paintViewer(review.view)}};
+$('pf-copy-diff').onclick=async()=>{
+ const ws=pw.ws,view=review.view;if(!ws||typeof view?.copy!=='string')return;
+ const ok=await writeClipboard(view.copy);
+ if(pw.ws===ws&&review.view===view)$('rv-status').textContent=ok?'已复制内容':'复制失败';
+};
+document.addEventListener('click',event=>{
+ if(!$('pf-menu').hidden&&!event.target.closest('#pf-menu,#pf-more'))setProjectMenu(false,$('pf-menu').contains(document.activeElement));
+});
+$('pf-refresh').onclick=async()=>{
+ const ws=pw.ws;if(!ws||ws.busy||ws.refreshing)return;
+ ws.refreshing=true;setMsg('');
+ try{await Promise.all([refreshTreeDirs(ws,[...ws.open]),loadChanges(true)])}
+ finally{ws.refreshing=false}
+};
+$('pf-save').onclick=()=>saveFile();$('pf-reload').onclick=()=>{setProjectMenu(false,true);reloadFile()};
+$('pf-conflict-reload').onclick=reloadFile;$('pf-conflict-force').onclick=forceSave;
+$('pf-conflict-copy').onclick=async()=>{const f=pw.ws&&pw.ws.file;if(!f||!f.model)return;const ok=await writeClipboard(f.model.getValue());setMsg(ok?'已复制编辑器内容':'复制失败，请在编辑器中全选后手动复制',!ok)};
+document.addEventListener('keydown',event=>{
+ if(!(event.ctrlKey||event.metaKey)||event.altKey||event.shiftKey||String(event.key).toLowerCase()!=='s')return;
+ if(!reviewOpen()||review.mode!=='project'||!pw.ws||pw.ws.tab!=='files')return;
+ event.preventDefault();
+ if(event.target.closest&&event.target.closest('#pf-editor'))return;
+ saveFile();
+});
+window.addEventListener('beforeunload',event=>{if(dirtyFiles().length){event.preventDefault();event.returnValue=''}});
+
 // ---- Per-turn summary (values computed by the server from recorded events; nothing is estimated here) ----
 const resultNames={completed:'已完成',failed:'执行失败',cancelled:'已中断'},resultMarks={completed:'✓',failed:'✕',cancelled:'■'};
 function formatDuration(seconds){
@@ -1227,18 +2241,17 @@ function summaryItems(s){
  const items=[],result=s.result||'failed';
  items.push({cls:'res '+result,text:(resultMarks[result]||'')+' '+(resultNames[result]||result)});
  if(s.exit_code!==null&&s.exit_code!==undefined&&s.exit_code!==0)items.push({cls:'bad',text:'退出码 '+s.exit_code,title:'运行器进程的退出码'});
- if(s.stop_reason&&(s.stop_reason!=='end_turn'||result!=='completed'))items.push({cls:'',text:'停止原因 '+s.stop_reason,title:'CLI 报告的本轮停止原因'});
+ if(s.stop_reason&&!(s.provider==='claude'&&s.stop_reason==='success')&&(result!=='completed'||!['end_turn','success'].includes(s.stop_reason)))items.push({cls:'',text:'停止原因 '+s.stop_reason,title:'CLI 报告的本轮停止原因'});
+ if(s.permission_denial_count>0)items.push({cls:'warn',text:'工具调用被拒绝 '+s.permission_denial_count+' 次',title:'被拒绝的工具操作未执行'});
  const task=formatDuration(s.task_seconds);
  items.push({cls:task?'':'missing',text:'任务耗时 '+(task||'未知'),title:'从任务启动到结束的实际时间（started_at 到 finished_at），包含模型检查与 CLI 启动'});
- const kiro=formatDuration(typeof s.kiro_elapsed_ms==='number'?s.kiro_elapsed_ms/1000:null);
- if(kiro)items.push({cls:'',text:'Kiro 回合 '+kiro,title:'Kiro 在 turn_completion 事件中报告的本回合耗时'});
  const t=s.tokens;
  if(t&&(t.input!=null||t.output!=null||t.total!=null)){
   const parts=[];if(t.input!=null)parts.push('输入 '+formatCount(t.input));if(t.output!=null)parts.push('输出 '+formatCount(t.output));if(t.total!=null)parts.push('合计 '+formatCount(t.total));
   items.push({cls:'',text:'Token '+parts.join(' · '),title:'CLI 为本轮明确报告的 Token 用量'});
  }else items.push({cls:'missing',text:'Token 未提供',title:'CLI 没有报告本轮 Token 消耗；面板不会估算'});
- if(typeof s.cost_usd==='number')items.push({cls:'',text:'报告费用 $'+s.cost_usd.toFixed(4),title:'Claude CLI 报告的费用值，不代表订阅账户实际扣费'});
- if(s.credits&&typeof s.credits.usage==='number'){const unit=s.credits.unit==='credit'||!s.credits.unit?(s.credits.usage===1?'credit':'credits'):s.credits.unit;items.push({cls:'',text:Number(s.credits.usage.toPrecision(3))+' '+unit,title:'Kiro 报告的本轮额度消耗，不是 Token'})}
+ if(typeof s.cost_usd==='number')items.push({cls:'',text:'额度 $'+s.cost_usd.toFixed(4),title:'Claude CLI 报告的费用值，不代表订阅账户实际扣费'});
+ if(s.credits&&typeof s.credits.usage==='number'){const unit=s.credits.unit==='credit'||!s.credits.unit?(s.credits.usage===1?'credit':'credits'):s.credits.unit;items.push({cls:'',text:'额度 '+Number(s.credits.usage.toPrecision(3))+' '+unit,title:'Kiro 报告的本轮额度消耗，不是 Token'})}
  if(typeof s.context_percent==='number')items.push({cls:'',text:'上下文占用 '+s.context_percent+'%',title:'会话上下文窗口占用率，不是本轮消耗的 Token'});
  return items;
 }
@@ -1294,6 +2307,7 @@ function render(data){
  if(newAgent||nearBottom&&!away){requestAnimationFrame(()=>{scroller.scrollTop=scroller.scrollHeight});$('latest').hidden=true}else{scroller.style.scrollBehavior='auto';scroller.scrollTop=previousTop;scroller.style.scrollBehavior='';$('latest').hidden=false}
 }
 const groupOf=id=>groupsData.find(g=>g.id===id)||null;
+const otherDraft=()=>({group:'other'});
 const convKey=c=>c.source+':'+c.id,selKey=()=>sel.source+':'+sel.agent,draftKey=s=>s.group+'|'+s.source+'|'+s.agent;
 function setFlag(name,id,on){const next={...(layout[name]||{})};if(on)next[id]=true;else delete next[id];layout={...layout,[name]:next};writeStore('localStorage',LAYOUT_KEY,layout)}
 const groupOpen=id=>!(layout.collapsed||{})[id]||forcedOpen.has(id);
@@ -1303,9 +2317,10 @@ function toggleMore(id){setFlag('expanded',id,!moreOpen(id));renderSidebar()}
 // The five most recently active conversations show by default. The selected one is never hidden.
 function visibleRows(group){const expanded=moreOpen(group.id);return group.conversations.filter((c,i)=>expanded||i<VISIBLE||(c.source===sel.source&&c.id===sel.agent))}
 function select(next,options={}){
- if(reviewOpen())closeReview({restore:false});
+ if(reviewOpen()&&!closeReview({restore:false}))return;
  if(options.save!==false&&sel.group){const text=$('prompt').value;if(text)drafts.set(draftKey(sel),text);else drafts.delete(draftKey(sel))}
- sel={group:next.group,source:next.source||'',agent:next.agent||''};++modelsSeq;modelsData=null;configSignature='';clearTimeout(modelsTimer);refreshEpoch++;writeStore('sessionStorage',SELECTION_KEY,sel);
+ sel={group:next.group,source:next.source||'',agent:next.agent||''};draftRole='';roleProvider='';roleSelection=null;if(!sel.agent)draftProvider='';
+ ++modelsSeq;modelsData=null;configSignature='';clearTimeout(modelsTimer);refreshEpoch++;writeStore('sessionStorage',SELECTION_KEY,sel);
  currentKey='';lastSignature='';lastSidebar='';nodes=new Map();agentBusy=sel.agent!=='';selectedConfig=null;selectedContext=null;selectedProvider='';accountData=null;accountNote='';
  $('prompt').value=drafts.get(draftKey(sel))||'';$('notice').textContent='';$('raw').textContent='';$('diagnostics').textContent='';
  emptyConversation(sel.agent===''?groupOf(sel.group):null,sel.agent!=='');lastData=null;renderSettings(null);
@@ -1334,7 +2349,8 @@ function groupNode(group,index){
  const add=document.createElement('button');add.type='button';add.className='group-new';add.disabled=!group.can_create;add.setAttribute('aria-pressed',String(sel.group===group.id&&sel.agent===''));
  add.setAttribute('aria-label','在“'+group.name+'”中新建对话');add.title=group.can_create?'在 '+group.path+' 新建对话':(group.note||'无法新建对话');
  add.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';add.onclick=()=>{select({group:group.id});$('prompt').focus()};
- head.append(toggle,add);
+ const browsable=group.kind==='codex'&&!!group.path&&group.exists!==false;
+ if(browsable){const browse=document.createElement('button');browse.type='button';browse.className='group-browse';browse.dataset.browse=group.id;browse.setAttribute('aria-haspopup','dialog');browse.setAttribute('aria-label','浏览项目：'+group.name);browse.title='浏览项目文件与 Git 改动：'+group.path;browse.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';browse.onclick=()=>openProject(group,browse);head.append(toggle,browse,add)}else head.append(toggle,add);
  const body=document.createElement('div');body.className='group-body';body.id=bodyId;body.hidden=!open;
  if(open){
   if(!group.conversations.length){const empty=document.createElement('p');empty.className='group-empty';empty.textContent=group.exists===false?'目录不可用':'暂无对话';body.append(empty)}
@@ -1345,7 +2361,7 @@ function groupNode(group,index){
  section.append(head,body);return section;
 }
 function renderSidebar(){
- const key=JSON.stringify([sel,posting,[...deleting],layout,[...forcedOpen],groupsData.map(g=>[g.id,g.name,g.path,g.can_create,g.exists,g.note,g.conversations.map(c=>[c.source,c.id,c.status,c.title,c.deletable,c.role_id,c.role_name])])]);
+ const key=JSON.stringify([sel,posting,[...deleting],layout,[...forcedOpen],groupsData.map(g=>[g.id,g.kind,g.name,g.path,g.can_create,g.exists,g.note,g.conversations.map(c=>[c.source,c.id,c.status,c.title,c.deletable,c.role_id,c.role_name])])]);
  if(key===lastSidebar)return;lastSidebar=key;
  const nav=$('run-list');nav.replaceChildren();$('agent-count').textContent=groupsData.length;
  groupsData.forEach((group,index)=>nav.append(groupNode(group,index)));
@@ -1369,34 +2385,35 @@ async function deleteConversation(group,conv,button){
  try{
   const response=await fetch('/api/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({group:group.id,source:conv.source,agent:conv.id})});const result=await response.json();if(!response.ok)throw new Error(result.error||'删除失败');
   refreshEpoch++;drafts.delete(draftKey({group:group.id,source:conv.source,agent:conv.id}));
-  if(sel.source===conv.source&&sel.agent===conv.id)select({group:sel.group},{save:false});
-  $('notice').textContent='对话已直接删除';lastSidebar='';clearTimeout(timer);await refresh();
+  if(sel.source===conv.source&&sel.agent===conv.id)select(otherDraft(),{save:false});
+  lastSidebar='';clearTimeout(timer);await refresh();
  }catch(error){$('notice').textContent=error.message}finally{deleting.delete(key);lastSidebar='';button.disabled=false;renderSidebar();updateComposer();if(!stopped){clearTimeout(timer);timer=setTimeout(refresh,0)}}
 }
 // Decide what to show: a stored or legacy selection if it still exists, otherwise the default. Returns true if sel is already valid.
 function resolveSelection(data){
  groupsData=data.groups||[];sourceGroups=data.source_groups||{};
  const find=(source,agent)=>{for(const g of groupsData)if(g.conversations.some(c=>c.source===source&&c.id===agent))return g;return null};
- let next=null,note='';
- if(sel.group&&groupOf(sel.group)){
-  if(!sel.agent)return true;
+ let next=null;
+ if(sel.agent){
   const where=find(sel.source,sel.agent);
   if(where&&where.id===sel.group)return true;
   if(!where&&(grace.get(selKey())||0)>Date.now())return true; // just created; its log directory may not be listed yet
-  next=where?{group:where.id,source:sel.source,agent:sel.agent}:{group:sel.group};
-  if(!where){drafts.delete(draftKey(sel));note='这条对话已被删除或自动清理，请新建对话。'}
+  next=where?{group:where.id,source:sel.source,agent:sel.agent}:otherDraft();
+  if(!where)drafts.delete(draftKey(sel));
  }else{
+  if(groupOf(sel.group))return true;
   const stored=readStore('sessionStorage',SELECTION_KEY),first=g=>{const c=g.conversations[0];return c?{group:g.id,source:c.source,agent:c.id}:{group:g.id}};
   if(legacySource&&!legacyUsed){legacyUsed=true;const g=groupOf(sourceGroups[legacySource]);if(g){const c=g.conversations.find(x=>x.source===legacySource);next=c?{group:g.id,source:c.source,agent:c.id}:{group:g.id}}}
-  if(!next&&stored.group&&groupOf(stored.group)){
-   if(stored.agent&&find(stored.source,stored.agent)&&find(stored.source,stored.agent).id===stored.group)next={group:stored.group,source:stored.source,agent:stored.agent};
-   else{next={group:stored.group};if(stored.agent)note='之前选中的对话已不存在。'}
+  if(!next&&stored.agent){
+   const where=find(stored.source,stored.agent);
+   next=where?{group:where.id,source:stored.source,agent:stored.agent}:otherDraft();
   }
+  if(!next&&groupOf(stored.group))next={group:stored.group};
   if(!next){const g=groupOf(data.default&&data.default.group)||groupsData[0];if(g)next=first(g)}
   if(!next)return true;
   if(next.agent)forcedOpen.add(next.group); // a hidden selection reveals its group
  }
- select(next,{save:false});if(note)$('notice').textContent=note;return false;
+ select(next,{save:false});return false;
 }
 function sidebar(open){$('sidebar').classList.toggle('closed',!open);$('overlay').classList.toggle('open',open&&innerWidth<=640);$('history').setAttribute('aria-expanded',String(open))}
 function schedule(){clearTimeout(timer);if(stopped||document.hidden)return;timer=setTimeout(refresh,active?1000:5000)}
@@ -1405,14 +2422,14 @@ function updateComposer(){
  const group=groupOf(sel.group),draft=sel.agent==='',blocked=sendsDisabled||!sel.group||(draft&&!(group&&group.can_create)),locked=stopped||blocked||deleting.has(selKey());
  const why=lastData?.selected?.role_error||sendBlockReason();
  $('send').disabled=locked||posting||agentBusy||!$('prompt').value.trim()||!!why;$('prompt').disabled=locked;
- renderConfig(locked||posting||agentBusy);renderContext();renderAccount();$('task-stop').hidden=!agentBusy||!sel.agent;$('task-stop').disabled=stopped||posting;$('permission-select').hidden=currentProvider()!=='claude';$('permission-select').disabled=locked||posting||agentBusy;
+ renderConfig(locked||posting||agentBusy);renderContext();renderAccount();$('task-stop').hidden=!agentBusy||!sel.agent;$('task-stop').disabled=stopped||posting;
  $('composer-hint').textContent=stopped?'服务已关闭':sendsDisabled?'测试预览：发送已禁用':draft&&group&&!group.can_create?group.note:posting?'正在启动所选 CLI…':agentBusy?'正在执行本轮任务，模型与强度已锁定，你可以先编辑下一条消息':why||'';
  $('prompt').placeholder=draft?'分派一项任务，创建新的 Subagent…':'向这个 Subagent 发送消息…';
 }
 async function refresh(){
- if(busy||stopped)return;busy=true;const requestEpoch=refreshEpoch,requested={...sel};refreshController=new AbortController();
+ if(busy||stopped)return;busy=true;const requestEpoch=refreshEpoch,requested={...sel},requestedProvider=currentProvider();refreshController=new AbortController();
  try{
-  const query=new URLSearchParams();if(requested.group)query.set('group',requested.group);if(requested.source)query.set('source',requested.source);if(requested.agent)query.set('agent',requested.agent);if(!requested.agent&&draftProvider)query.set('provider',draftProvider);
+  const query=new URLSearchParams();if(requested.group)query.set('group',requested.group);if(requested.source)query.set('source',requested.source);if(requested.agent)query.set('agent',requested.agent);if(!requested.agent&&requestedProvider)query.set('provider',requestedProvider);
   const response=await fetch('/api'+(query.toString()?'?'+query:''),{cache:'no-store',signal:refreshController.signal});if(!response.ok)throw new Error('HTTP '+response.status);const data=await response.json();
   if(requestEpoch!==refreshEpoch){setTimeout(refresh,0);return} // the selection changed while this was in flight: its answer is stale
   const agent=data.selected;
@@ -1423,12 +2440,14 @@ async function refresh(){
   const catalog=data.catalog||{},note=$('catalog-note');note.hidden=!catalog.message;note.textContent=catalog.message?'Codex 项目列表：'+catalog.message:'';
   active=data.viewer?.active_tasks>0;agentBusy=!!agent&&['checking','running'].includes(agent.status);
   connectionsRequired=!!data.viewer?.connections_required;
-  providerItems=data.viewer?.providers||providerItems;
-  if(!draftProvider)draftProvider=data.viewer?.default_provider||(connectionsRequired?'':'kiro');selectedProvider=agent?.provider||'';
+  if(!requested.agent)composerRoles=data.viewer?.composer_roles||[];
+  syncComposerProviders(data.viewer?.providers||providerItems,data.viewer?.default_provider);
+  selectedProvider=agent?.provider||'';
   if(providerReady()&&(!modelsData||(modelsData.provider||'kiro')!==currentProvider()))loadModels(false);
   if(!providerReady())modelsData=null;
   selectedConfig=agent&&agent.config||null;selectedContext=agent&&agent.context||null;
-  const account=data.viewer&&data.viewer.account||null;if(currentProvider()===(agent?.provider||draftProvider||data.viewer?.default_provider||'kiro'))accountData=account;
+  if(!currentProvider())accountData=null;
+  else accountData=requested.agent||requestedProvider===currentProvider()?data.viewer?.account||null:null;
   renderSidebar();$('log-root').textContent=data.root||'';
   $('memory').textContent=data.viewer?.memory_mb==null?'当前系统暂不提供内存读数':'面板服务 '+data.viewer.memory_mb+' MB（不含浏览器和 CLI）';
   const cleanup=data.viewer?.cleanup;$('cleanup-status').textContent=cleanup?.checked_at?'最近清理：'+new Date(cleanup.checked_at).toLocaleString('zh-CN')+' · 删除 '+cleanup.deleted_conversations+' 条对话'+(cleanup.errors?.length?' · '+cleanup.errors.length+' 个来源清理失败，悬停查看原因':''):'';$('cleanup-status').title=cleanup?.errors?.length?JSON.stringify(cleanup.errors):'';
@@ -1450,7 +2469,9 @@ async function sendMessage(event){
  let heldNote='';
  const target={...sel},targetKey=draftKey(target);posting=true;$('notice').textContent='';lastSidebar='';renderSidebar();updateComposer();
  try{
-  const response=await fetch('/api/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({group:target.group,source:target.source||null,agent:target.agent||null,provider:currentProvider(),text,model:choice.model,effort:choice.effort,...(currentProvider()==='claude'?{permission_mode:$('permission-select').value}:{})})});const result=await response.json();if(!response.ok)throw new Error(result.error||'发送失败');
+  const override=draftRole&&(roleProvider||roleSelection);
+  const execution=draftRole&&!override?{role_id:draftRole}:{...(draftRole?{role_id:draftRole}:{}),provider:currentProvider(),model:choice.model,effort:choice.effort};
+  const response=await fetch('/api/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({group:target.group,source:target.source||null,agent:target.agent||null,text,...execution})});const result=await response.json();if(!response.ok)throw new Error(result.error||'发送失败');
   grace.set(result.source+':'+result.agent_id,Date.now()+30000);
   // 202 (forwarded:false): Kiro is still starting. The original text is held, keyed by the new run, until polling shows prompt_forwarded.
   if(result.forwarded===false){addHold({text,originKey:targetKey,group:target.group,source:result.source,agent:result.agent_id,runId:result.run_id,choice,at:Date.now()});heldNote='CLI 仍在启动，收到状态前会保留原文；请查看运行日志，不会自动重发'}
@@ -1543,14 +2564,44 @@ function sendBlockReasonFor(models,choice){
 }
 // </pure-helpers>
 const modelEntry=id=>modelsData&&(modelsData.models||[]).find(m=>m.id===id)||null;
-function currentProvider(){return sel.agent?(selectedProvider||groupsData.flatMap(g=>g.conversations).find(c=>c.id===sel.agent&&c.source===sel.source)?.provider||'kiro'):(draftProvider||'kiro')}
+const currentDraftRole=()=>draftRole?composerRoles.find(role=>role.id===draftRole):null;
+function composerRoleSelection(role){
+ if(role?.model)return {model:role.model,effort:role.effort??null};
+ const connection=providerItems.find(item=>item.id===role?.provider);
+ return connection?.defaults_configured?connection.defaults:null;
+}
+function currentProvider(){return sel.agent?(selectedProvider||groupsData.flatMap(g=>g.conversations).find(c=>c.id===sel.agent&&c.source===sel.source)?.provider||''):
+ draftRole?(roleProvider||currentDraftRole()?.provider||''):draftProvider||(connectedProviders().some(p=>p.id===defaultProvider)?defaultProvider:'')}
+function connectedProviders(){return providerItems.filter(p=>p.available)}
+function syncComposerProviders(items,preferred){
+ const before=currentProvider();
+ providerItems=items;defaultProvider=preferred||'';
+ if(draftProvider&&!connectedProviders().some(p=>p.id===draftProvider))draftProvider='';
+ if(!sel.agent&&before!==currentProvider()){
+  ++modelsSeq;clearTimeout(modelsTimer);modelsData=null;configSignature='';pendingSel.delete(draftKey(sel));accountData=null;accountNote='';
+ }
+}
 function chooseProvider(id){
- if(sel.agent||!providerItems.some(p=>p.id===id&&p.available))return;
- draftProvider=id;pendingSel.clear();modelsData=null;configSignature='';loadModels(false);
+ if(sel.agent||!connectedProviders().some(p=>p.id===id))return;
+ if(draftRole){roleProvider=id===currentDraftRole()?.provider?'':id;roleSelection=null}
+ else{draftProvider=id;pendingSel.delete(draftKey(sel))}
+ modelsData=null;configSignature='';loadModels(false);
  accountData=null;
  accountNote='';refreshAccount();updateComposer();
 }
+function chooseComposerRole(id){
+ if(sel.agent||(id&&!composerRoles.some(role=>role.id===id)))return;
+ draftRole=id;roleProvider='';roleSelection=null;modelsData=null;configSignature='';loadModels(false);
+ accountData=null;accountNote='';updateComposer();clearTimeout(timer);timer=setTimeout(refresh,0);
+}
 function currentSelection(){
+ if(!currentProvider())return null;
+ if(draftRole){
+  if(roleSelection)return roleSelection;
+  if(!roleProvider)return composerRoleSelection(currentDraftRole());
+  const defaults=modelsData?.provider===currentProvider()?modelsData.default:null;
+  return defaults?.available?{model:defaults.model,effort:defaults.effort}:null;
+ }
  if(lastData?.selected?.role_id&&selectedConfig)return {model:selectedConfig.model,effort:selectedConfig.effort};
  if(modelsData&&(modelsData.provider||'kiro')!==currentProvider())return null;
 
@@ -1564,35 +2615,64 @@ function selectionLabel(){
  const entry=modelEntry(choice.model);
  return (entry?entry.name:choice.model)+' · '+(choice.effort?effortLabel(choice.effort)+'强度':entry&&entry.effort.known&&!entry.effort.supported?'无思考强度':'强度未确认');
 }
-function providerReady(){return !connectionsRequired||providerItems.some(p=>p.id===currentProvider()&&p.available)}
-function sendBlockReason(){const choice=currentSelection(),recordedAlias=currentProvider()==='claude'&&selectedConfig&&['sonnet','opus','haiku'].includes(selectedConfig.model)&&choice?.model===selectedConfig.model&&choice?.effort===selectedConfig.effort;return providerReady()?(lastData?.selected?.role_id?(lastData.selected.role_error||''):recordedAlias?'':sendBlockReasonFor(modelsData,choice)):providerItems.some(p=>p.id===currentProvider()&&p.paused)?'此 CLI 已暂停，请在设置中启动，或选择其他 CLI':'请在设置中连接 CLI，或重新连接已失效的路径'}
+function providerReady(){const provider=currentProvider();return !!provider&&(!connectionsRequired||connectedProviders().some(p=>p.id===provider))}
+function sendBlockReason(){
+ const provider=currentProvider(),choice=currentSelection();
+ if(draftRole&&!currentDraftRole())return '角色已停用或删除';
+ if(!providerReady())return !provider&&connectedProviders().length?'请选择 CLI':providerItems.some(p=>p.id===provider&&p.paused)?'此 CLI 已暂停，请在设置中启动':'请在设置中连接 CLI，或重新连接已失效的路径';
+ if(lastData?.selected?.role_id)return lastData.selected.role_error||'';
+ if(draftRole&&!roleProvider&&!roleSelection&&composerRoleSelection(currentDraftRole()))return '';
+ const recordedAlias=provider==='claude'&&selectedConfig&&['sonnet','opus','haiku'].includes(selectedConfig.model)&&choice?.model===selectedConfig.model&&choice?.effort===selectedConfig.effort;
+ return recordedAlias?'':sendBlockReasonFor(modelsData,choice);
+}
 function renderConfig(locked){
  const providerBox=$('provider-select'),provider=currentProvider();
- const items=providerItems.length?providerItems:[{id:'kiro',name:'Kiro CLI',available:true}];
- const providerSignature=JSON.stringify([items,provider]);
- if(providerBox.dataset.signature!==providerSignature){providerBox.dataset.signature=providerSignature;providerBox.replaceChildren();for(const p of items){const o=document.createElement('option');o.value=p.id;o.textContent=p.name+(p.available?'':'（未安装）');o.disabled=!p.available;providerBox.append(o)}providerBox.value=provider}
- providerBox.disabled=!!locked||!!sel.agent;
+ const items=connectedProviders(),historical=!!sel.agent;
+ const roleBox=$('composer-role'),savedRole=lastData?.selected,roleLocked=historical&&!!savedRole?.role_id;
+ const roleOptions=historical?[[savedRole?.role_id||'',savedRole?.role_name||savedRole?.role_id||'无角色','']]:
+  [['','选择角色',''],...composerRoles.map(role=>[role.id,role.name,''])];
+ if(draftRole&&!currentDraftRole())roleOptions.push([draftRole,draftRole,'角色已停用或删除']);
+ const roleSignature=JSON.stringify([roleOptions,draftRole,historical]);
+ if(roleBox.dataset.signature!==roleSignature){
+  roleBox.dataset.signature=roleSignature;
+  roleBox.replaceChildren(...roleOptions.map(([id,name,issue])=>{const entry=new Option(issue?name+'（'+issue+'）':name,id);entry.disabled=!!issue;return entry}));
+  roleBox.value=historical?savedRole?.role_id||'':draftRole;
+ }
+ roleBox.disabled=!!locked||historical;
+ const providerSignature=JSON.stringify([items,provider,historical]);
+ if(providerBox.dataset.signature!==providerSignature){
+  providerBox.dataset.signature=providerSignature;
+  if(historical)providerBox.replaceChildren(new Option(cliMeta[provider]?.name||'正在载入…',provider));
+  else{
+   const placeholder=new Option(items.length?'请选择 CLI':'尚未连接 CLI','');placeholder.disabled=true;
+   providerBox.replaceChildren(placeholder,...items.map(p=>new Option(p.name,p.id)));
+  }
+  providerBox.value=provider;
+ }
+ providerBox.disabled=!!locked||historical||roleLocked||!items.length;
  $('model-select').title=modelsData?.message||'本次发送使用的模型';
  const modelBox=$('model-select'),effortBox=$('effort-select'),choice=currentSelection(),models=modelsData?modelsData.models||[]:[];
- const signature=JSON.stringify([models.map(m=>[m.id,m.selectable,m.effort.levels]),choice]);
+ const signature=JSON.stringify([provider,models.map(m=>[m.id,m.selectable,m.effort.levels]),choice,roleLocked]);
  if(signature!==configSignature){
   configSignature=signature;modelBox.replaceChildren();effortBox.replaceChildren();
   for(const m of models){const o=document.createElement('option');o.value=m.id;o.disabled=!m.selectable&&!(choice&&choice.model===m.id);o.textContent=m.name+(m.rate_multiplier!=null?' · ×'+m.rate_multiplier:'')+(m.selectable?'':'（强度信息待读取）');modelBox.append(o)}
-  if(choice&&!modelEntry(choice.model)){const o=document.createElement('option');o.value=choice.model;o.textContent=choice.model+(currentProvider()==='claude'&&['sonnet','opus','haiku'].includes(choice.model)?'（原对话 CLI 别名）':'（当前目录不可用）');o.disabled=true;modelBox.append(o)}
-  if(!choice){const o=document.createElement('option');o.value='';o.textContent=models.length?'请选择模型':'读取模型中…';modelBox.prepend(o)}
+  if(choice&&!modelEntry(choice.model)){const o=document.createElement('option');o.value=choice.model;o.textContent=choice.model+(roleLocked||draftRole?'':currentProvider()==='claude'&&['sonnet','opus','haiku'].includes(choice.model)?'（原对话 CLI 别名）':'（当前目录不可用）');o.disabled=true;modelBox.append(o)}
+  if(!choice){const o=document.createElement('option');o.value='';o.textContent=!provider||models.length?'请选择模型':'读取模型中…';modelBox.prepend(o)}
   modelBox.value=choice?choice.model:'';
   const entry=choice?modelEntry(choice.model):null;
-  if(entry&&entry.effort.known&&entry.effort.supported){if(entry.effort.source==='cli-options')effortBox.append(new Option('不设置',''));for(const level of entry.effort.levels){const o=document.createElement('option');o.value=level;o.textContent=effortLabel(level)+(level===entry.effort.default?'（默认）':'');effortBox.append(o)}effortBox.value=choice.effort||''}
+  if(choice&&(roleLocked||(draftRole&&!entry))){effortBox.append(new Option(choice.effort?effortLabel(choice.effort):'不设置',choice.effort||''))}
+  else if(entry&&entry.effort.known&&entry.effort.supported){if(entry.effort.source==='cli-options')effortBox.append(new Option('不设置',''));for(const level of entry.effort.levels){const o=document.createElement('option');o.value=level;o.textContent=effortLabel(level)+(level===entry.effort.default?'（默认）':'');effortBox.append(o)}effortBox.value=choice.effort||''}
   else{const o=document.createElement('option');o.value='';o.textContent=entry&&entry.effort.known?'该模型无思考强度':'强度未确认';effortBox.append(o)}
  }
  const entry=choice?modelEntry(choice.model):null;
- modelBox.disabled=!!locked||!!lastData?.selected?.role_id||!models.length;effortBox.disabled=!!locked||!!lastData?.selected?.role_id||!(entry&&entry.effort.known&&entry.effort.supported);
+ modelBox.disabled=!!locked||roleLocked||!models.length;effortBox.disabled=!!locked||roleLocked||!(entry&&entry.effort.known&&entry.effort.supported);
 }
 function chooseModel(id){
  const entry=modelEntry(id);if(!entry||!entry.selectable)return;
- const before=currentSelection();pendingSel.set(draftKey(sel),{model:id,effort:pickEffort(entry.effort,before&&before.effort)});updateComposer();
+ const before=currentSelection();setComposerSelection({model:id,effort:pickEffort(entry.effort,before&&before.effort)});
 }
-function chooseEffort(level){const choice=currentSelection();if(!choice)return;pendingSel.set(draftKey(sel),{model:choice.model,effort:level||null});updateComposer()}
+function setComposerSelection(choice){if(draftRole)roleSelection=choice;else pendingSel.set(draftKey(sel),choice);updateComposer()}
+function chooseEffort(level){const choice=currentSelection();if(choice)setComposerSelection({model:choice.model,effort:level||null})}
 const HOLD_KEY='kiro.holds.v1';let holds=readStore('sessionStorage',HOLD_KEY);
 function saveHolds(){writeStore('sessionStorage',HOLD_KEY,holds)}
 function addHold(hold){holds[hold.source+':'+hold.agent]=hold;saveHolds()}
@@ -1623,18 +2703,18 @@ function renderContext(){
 }
 let accountSignature='';
 function renderAccount(){
- const model=usageModel(accountData),signature=JSON.stringify([model,accountBusy,accountNote]);if(signature===accountSignature)return;accountSignature=signature;
+ const model=usageModel(accountData),signature=JSON.stringify([model,accountBusy,accountNote,providerReady()]);if(signature===accountSignature)return;accountSignature=signature;
  const box=$('account');box.replaceChildren();
  const main=document.createElement('b');main.textContent=model.main;box.append(main);
  if(model.coverage){const chip=document.createElement('span');chip.className='chip '+model.coverage.cls;chip.textContent=model.coverage.text;chip.title=model.coverage.title;box.append(chip)}
  if(model.reset){const t=document.createElement('span');t.textContent=model.reset;box.append(t)}
  if(model.stale){const chip=document.createElement('span');chip.className='chip bad';chip.textContent='旧数据';chip.title='最近一次刷新失败，保留上次成功读取的数据';box.append(chip)}
  if(model.updated){const t=document.createElement('span');t.textContent=model.updated;box.append(t)}
- const refresh=document.createElement('button');refresh.type='button';refresh.className='refresh';refresh.textContent=accountBusy?'刷新中…':'刷新';refresh.disabled=accountBusy||stopped||accountData?.status==='unsupported';refresh.title='重新读取账户额度（有最短间隔限制）';refresh.onclick=refreshAccount;box.append(refresh);
+ const refresh=document.createElement('button');refresh.type='button';refresh.className='refresh';refresh.textContent=accountBusy?'刷新中…':'刷新';refresh.disabled=accountBusy||stopped||!providerReady()||accountData?.status==='unsupported';refresh.title='重新读取账户额度（有最短间隔限制）';refresh.onclick=refreshAccount;box.append(refresh);
  const note=accountNote||model.note;if(note){const n=document.createElement('span');n.className='note'+(model.noteBad||accountNote?' bad':'');n.textContent=note;box.append(n)}
 }
 async function refreshAccount(){
- if(accountBusy)return;accountBusy=true;accountNote='';renderAccount();
+ if(accountBusy||!providerReady())return;accountBusy=true;accountNote='';renderAccount();
  const provider=currentProvider(),context=selKey();
  try{
   const response=await fetch('/api/usage/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider,group:sel.group,source:sel.source||undefined})});
@@ -1800,7 +2880,6 @@ function cliModelList(provider){
  note.textContent=catalog?(catalog.error||catalog.message||(catalog.source==='pinned-default'?'当前为默认模型，点击获取模型列表读取完整目录。':'')):'点击“获取模型列表”读取可用模型。';
  if(catalog?.config_source)note.textContent=catalog.config_source+' · '+note.textContent;
  const models=catalog?.models||[];$('cli-model-count-'+provider).textContent=models.length?models.length+' 个模型':'';
- if(provider==='claude')renderClaudeDefaults();
  if(!models.length){const empty=document.createElement('p');empty.className='muted';empty.textContent='尚无模型列表';root.append(empty);return}
  for(const model of models){
   const row=document.createElement('li');row.className='cli-model-item';
@@ -1810,32 +2889,22 @@ function cliModelList(provider){
   row.append(title,id,effort);root.append(row);
  }
 }
-let claudeDefaultsDirty=false;
-function renderClaudeDefaults(){
- const model=$('cli-default-model-claude'),effort=$('cli-default-effort-claude');if(!model)return;
- const rows=cliCatalogs.claude?.models||[],saved=cliData?.providers.find(p=>p.id==='claude')?.defaults||{};
- const desired=claudeDefaultsDirty?{model:model.value,effort:effort.value||null}:saved;
- model.replaceChildren(new Option('请选择模型',''));for(const row of rows)model.append(new Option(row.name||row.id,row.id));model.value=desired.model||'';
- const entry=rows.find(row=>row.id===model.value);effort.replaceChildren(new Option('不设置',''));
- for(const level of entry?.effort?.levels||[])effort.append(new Option(effortLabel(level),level));effort.value=desired.effort||'';
- model.disabled=cliBusy||!rows.length;effort.disabled=cliBusy||!entry?.effort?.supported;
- $('cli-defaults-save-claude').disabled=cliBusy||!entry;
-}
 function makeCliConfig(item){
  const id=item.id,meta=cliMeta[id],config=document.createElement('div');config.id='cli-config-'+id;config.className='cli-config';config.hidden=true;
- const head=document.createElement('header');head.className='cli-config-heading';const title=document.createElement('h4');title.textContent=meta.name;head.append(cliIcon(id),title);
+ const head=document.createElement('header');head.className='cli-config-heading';const title=document.createElement('h4');title.textContent=id==='claude'?'Claude Code CLI':meta.name;head.append(cliIcon(id),title);
  const status=document.createElement('p');status.id='cli-status-'+id;status.className='cli-status';status.setAttribute('role','status');head.append(status);
  const controls=document.createElement('section');controls.className='settings-sec';
  const actions=document.createElement('div');actions.className='cli-actions';
- for(const [action,label] of [['connect','连接'],['disconnect','断开'],['default','设为默认'],['test','测试调用（消耗额度）']]){
+ for(const [action,label] of [['connect','连接'],['disconnect','断开'],['test','测试调用（消耗额度）']]){
   const button=document.createElement('button');button.type='button';button.id='cli-'+action+'-'+id;button.className=action==='connect'?'primary':'secondary';button.textContent=label;button.onclick=()=>cliAction(action,id);actions.append(button);
  }
+ head.insertBefore(actions,status);
  const feedback=document.createElement('p');feedback.id='cli-feedback-'+id;feedback.className='cli-detail-feedback';feedback.setAttribute('role','status');feedback.setAttribute('aria-live','polite');
  const diagnosticCopy=document.createElement('button');diagnosticCopy.type='button';diagnosticCopy.className='secondary';diagnosticCopy.id='cli-diagnostic-copy-'+id;diagnosticCopy.textContent='复制测试诊断';diagnosticCopy.hidden=true;diagnosticCopy.onclick=()=>copyWithFeedback(diagnosticCopy,()=>Object.values(cliDiagnostics[id]||{}).join('\n'),'复制测试诊断','测试诊断');
- const label=document.createElement('label');label.htmlFor='cli-path-'+id;label.textContent='可执行文件路径';
+ const pathTitle=document.createElement('h4'),label=document.createElement('label');label.htmlFor='cli-path-'+id;label.textContent='可执行文件路径';pathTitle.append(label);
  const input=document.createElement('input');input.type='text';input.id=label.htmlFor;input.className='cli-path-input';input.autocomplete='off';input.spellcheck=false;input.placeholder='留空时，点击连接从 PATH 查找';input.oninput=()=>cliDirty.add(id);
- const help=document.createElement('p');help.className='muted';help.textContent='成功连接后保存绝对路径。暂停会保留配置并阻止新任务，启动可恢复使用。';
- controls.append(actions,feedback,diagnosticCopy,label,input,help);
+ controls.append(pathTitle,input,feedback,diagnosticCopy);
+ const modelSlot=document.createElement('div');modelSlot.id='cli-model-slot-'+id;
  const modelSection=document.createElement('section');modelSection.className='settings-sec';
  const modelHead=document.createElement('div');modelHead.className='cli-model-head';const modelTitle=document.createElement('h4');modelTitle.textContent='模型列表';const count=document.createElement('span');count.id='cli-model-count-'+id;modelTitle.append(count);
  const fetchModels=document.createElement('button');fetchModels.type='button';fetchModels.id='cli-catalog-'+id;fetchModels.className='secondary';fetchModels.textContent='获取模型列表';fetchModels.onclick=()=>cliAction('catalog',id);modelHead.append(modelTitle,fetchModels);
@@ -1851,21 +2920,7 @@ function makeCliConfig(item){
  const second=document.createElement('li');second.textContent='点击“连接”。未登录时打开终端，由 CLI 引导浏览器授权（最多等待 3 分钟）。';
  const third=document.createElement('li');third.textContent='连接成功后保存路径并自动读取模型列表，也可点击“获取模型列表”刷新。';steps.append(first,second,third);
  const login=document.createElement('p');login.className='muted';login.append('手动登录：');const command=document.createElement('code');command.textContent=meta.login;login.append(command);install.append(installHead,method,installCommand,steps,login);
- config.append(head,controls,modelSection);
- if(id==='claude'){
-  const section=document.createElement('section');section.className='settings-sec';const heading=document.createElement('h4');heading.textContent='默认模型与思考强度';
-  const modelLabel=document.createElement('label');modelLabel.textContent='默认模型';modelLabel.htmlFor='cli-default-model-claude';
-  const model=document.createElement('select');model.id=modelLabel.htmlFor;model.className='cfg';
-  const effortLabelNode=document.createElement('label');effortLabelNode.textContent='默认思考强度';effortLabelNode.htmlFor='cli-default-effort-claude';
-  const effort=document.createElement('select');effort.id=effortLabelNode.htmlFor;effort.className='cfg';
-  model.onchange=()=>{claudeDefaultsDirty=true;effort.value='';renderClaudeDefaults()};effort.onchange=()=>{claudeDefaultsDirty=true};
-  const save=document.createElement('button');save.type='button';save.id='cli-defaults-save-claude';save.className='secondary';save.textContent='保存默认配置';save.onclick=()=>cliAction('defaults','claude');
-  const row=document.createElement('div');row.className='cli-defaults-row';
-  const modelField=document.createElement('div');modelField.className='cli-defaults-field';modelField.append(modelLabel,model);
-  const effortField=document.createElement('div');effortField.className='cli-defaults-field';effortField.append(effortLabelNode,effort);
-  row.append(modelField,effortField,save);section.append(heading,row);config.append(section);
- }
- config.append(install);$('cli-list').append(config);
+ config.append(head,controls,modelSlot,modelSection,install);$('cli-list').append(config);
 }
 function renderConnections(){
  if(!cliData)return;
@@ -1876,21 +2931,27 @@ function renderConnections(){
   let card=$('cli-card-'+id);
   if(!card){
    card=document.createElement('article');card.id='cli-card-'+id;card.className='cli-small-card';
-   const open=document.createElement('button');open.type='button';open.id='cli-card-open-'+id;open.className='cli-card-open';open.setAttribute('aria-label','配置 '+item.name);open.onclick=()=>openCliConfig(id);
-   const text=document.createElement('span');text.className='cli-card-label';const title=document.createElement('strong');title.textContent=item.name;const desc=document.createElement('span');desc.textContent=cliMeta[id].description;text.append(title,desc);open.append(cliIcon(id),text);
+   const open=document.createElement('button');open.type='button';open.id='cli-card-open-'+id;open.className='cli-card-open';open.onclick=()=>openCliConfig(id);
+   const text=document.createElement('span');text.className='cli-card-label';const title=document.createElement('strong');title.textContent=item.name;const badge=document.createElement('span');badge.id='cli-default-badge-'+id;badge.className='cli-default-badge';badge.textContent='默认';title.append(badge);const desc=document.createElement('span');desc.textContent=cliMeta[id].description;text.append(title,desc);open.append(cliIcon(id),text);
    const foot=document.createElement('div');foot.className='cli-card-foot';const state=document.createElement('span');state.id='cli-card-state-'+id;
-   const toggle=document.createElement('button');toggle.type='button';toggle.id='cli-toggle-'+id;toggle.className='secondary';toggle.onclick=()=>cliAction(toggle.dataset.action,id);foot.append(state,toggle);card.append(open,foot);
+   const actions=document.createElement('div');actions.className='cli-actions';
+   const makeDefault=document.createElement('button');makeDefault.type='button';makeDefault.id='cli-default-'+id;makeDefault.className='secondary';makeDefault.textContent='设为默认';makeDefault.setAttribute('aria-label','将 '+item.name+' 设为默认 CLI');makeDefault.onclick=()=>cliAction('default',id);
+   const toggle=document.createElement('button');toggle.type='button';toggle.id='cli-toggle-'+id;toggle.className='secondary';toggle.onclick=()=>cliAction(toggle.dataset.action,id);actions.append(makeDefault,toggle);foot.append(state,actions);card.append(open,foot);
   }
   const group=item.connected?'cli-connected-list':'cli-disconnected-list';if(card.parentElement?.id!==group)$(group).append(card);if(item.connected)connected++;
-  card.dataset.default=String(cliData.default_provider===id);card.dataset.paused=String(!!item.paused);
-  $('cli-card-state-'+id).textContent=cliStatus(item)+(cliData.default_provider===id?' · 默认':'');
+  card.dataset.paused=String(!!item.paused);
+  $('cli-card-state-'+id).textContent=cliStatus(item);
+  const isDefault=item.connected&&cliData.default_provider===id,makeDefault=$('cli-default-'+id);
+  $('cli-card-open-'+id).setAttribute('aria-label','配置 '+item.name+(isDefault?'（默认 CLI）':''));
+  $('cli-default-badge-'+id).hidden=!isDefault;
+  makeDefault.hidden=!item.available||isDefault;makeDefault.disabled=cliBusy||!item.available||isDefault;
   const toggle=$('cli-toggle-'+id);toggle.hidden=!item.connected;toggle.dataset.action=item.paused?'start':'pause';toggle.textContent=item.paused?'启动':'暂停';toggle.disabled=cliBusy;
   const input=$('cli-path-'+id);if(!cliDirty.has(id)&&document.activeElement!==input)input.value=item.path||'';input.disabled=cliBusy;
-  $('cli-status-'+id).textContent=cliStatus(item)+(cliData.default_provider===id?' · 默认':'')+(item.version?' · '+item.version:'')+(item.error?' · '+item.error:'');
+  $('cli-status-'+id).textContent=cliStatus(item)+(item.version?' · '+item.version:'')+(item.error?' · '+item.error:'');
   const mainAction=item.connected?(item.paused?'start':'pause'):'connect';
   $('cli-connect-'+id).textContent=cliBusy?'处理中…':mainAction==='connect'?'连接':mainAction==='pause'?'暂停':'启动';
   $('cli-connect-'+id).onclick=()=>cliAction(mainAction,id);$('cli-connect-'+id).disabled=cliBusy;
-  $('cli-disconnect-'+id).disabled=cliBusy||!item.connected;$('cli-default-'+id).disabled=cliBusy||!item.available||cliData.default_provider===id;
+  $('cli-disconnect-'+id).disabled=cliBusy||!item.connected;
   $('cli-test-'+id).disabled=cliBusy||!item.available;$('cli-catalog-'+id).disabled=cliBusy||!item.available;
   $('cli-feedback-'+id).textContent=cliNotes[id]||'';
   $('cli-config-'+id).hidden=cliSelected!==id;cliModelList(id);
@@ -1899,18 +2960,18 @@ function renderConnections(){
  $('cli-connected-empty').hidden=connected>0;
  $('cli-overview').hidden=!!cliSelected;$('cli-detail').hidden=!cliSelected;
  $('cli-overview-head').hidden=!!cliSelected;
+ const item=items.find(p=>p.id===cliSelected);
+ if(item&&(!cliModelDraft||cliModelDraft.provider!==item.id||cliModelDraft.available!==!!item.available))openCliModelCard(item);
+ else updateCliModelSave();
 }
-async function openCliConfig(id){
+function openCliConfig(id){
  if(!cliMeta[id])return;cliSelected=id;renderConnections();$('settings-content').scrollTop=0;$('cli-config-back').focus({preventScroll:true});
- const item=cliData?.providers.find(p=>p.id===id);if(!item?.available||cliCatalogs[id])return;
- const seq=cliCatalogSeq[id]||0;
- try{
-  const response=await fetch('/api/models?'+new URLSearchParams({provider:id}),{cache:'no-store'});const data=await response.json();
-  if(seq!==(cliCatalogSeq[id]||0))return;
-  if(!response.ok)throw new Error(data.error||'无法读取模型列表');cliCatalogs[id]=data;cliModelList(id);
- }catch(error){if(seq===(cliCatalogSeq[id]||0))cliFeedback(id,'无法读取模型列表：'+error.message)}
 }
-$('cli-config-back').onclick=()=>{const previous=cliSelected;cliSelected=null;renderConnections();$('cli-card-open-'+previous)?.focus({preventScroll:true})};
+$('cli-config-back').onclick=()=>{
+ if(cliModelDraft?.saving)return;
+ const previous=cliSelected;cliSelected=null;cliModelDraft=null;
+ renderConnections();$('cli-card-open-'+previous)?.focus({preventScroll:true});
+};
 async function loadConnections(){
  if(cliLoading)return;cliLoading=true;
  try{const response=await fetch('/api/connections',{cache:'no-store'});const data=await response.json();if(!response.ok)throw new Error(data.error||'读取失败');cliData=data;$('cli-overview-error').hidden=true;renderConnections()}
@@ -1918,27 +2979,251 @@ async function loadConnections(){
  finally{cliLoading=false}
 }
 async function cliAction(action,provider){
- if(cliBusy)return;cliBusy=true;cliFeedback(provider,action==='test'?'正在测试模型调用…':action==='connect'?'正在连接并读取模型目录；若打开登录终端或浏览器，请完成授权（最多等待 3 分钟）…':action==='catalog'?'正在获取模型列表…':'正在处理…');renderConnections();
+ if(cliBusy||cliModelDraft?.saving)return;cliBusy=true;cliFeedback(provider,action==='test'?'正在测试模型调用…':action==='connect'?'正在连接并读取模型目录；若打开登录终端或浏览器，请完成授权（最多等待 3 分钟）…':action==='catalog'?'正在获取模型列表…':'正在处理…');renderConnections();
+ if(action==='default')$('cli-overview-error').hidden=true;
  cliCatalogSeq[provider]=(cliCatalogSeq[provider]||0)+1;
+ let promptForModel=false;
  try{
   const payload={action,provider};if(action==='connect')payload.path=$('cli-path-'+provider).value.trim();
-  if(action==='defaults'){payload.model=$('cli-default-model-claude').value;payload.effort=$('cli-default-effort-claude').value||null}
   const response=await fetch('/api/connections',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await response.json();
   if(action==='test'){cliDiagnostics[provider]=data.diagnostic||null;$('cli-diagnostic-copy-'+provider).hidden=!data.diagnostic}
   if(data.catalog){cliCatalogs[provider]=data.catalog;cliModelList(provider)}
   if(!response.ok||data.ok===false)throw new Error(data.message||data.error||'操作失败');
   cliFeedback(provider,data.message||'已保存');
-  if(action==='defaults')claudeDefaultsDirty=false;
-  if(data.providers){cliData=data;if(action==='connect')cliDirty.delete(provider);providerItems=data.providers;draftProvider=data.default_provider||'';modelsData=null;configSignature='';pendingSel.clear()}
+  if(data.providers){
+   ++refreshEpoch;cliData=data;if(action==='connect')cliDirty.delete(provider);
+   syncComposerProviders(data.providers,data.default_provider);
+   if(action!=='default'){modelsData=null;configSignature='';pendingSel.clear()}
+   if(action==='default')$('cli-card-open-'+provider)?.focus({preventScroll:true});
+  }
+  promptForModel=action==='connect'&&!!cliData?.providers.find(p=>p.id===provider)?.available;
   if(data.catalog&&currentProvider()===provider){++modelsSeq;clearTimeout(modelsTimer);if(provider==='kiro'){modelsData={...data.catalog,provider};configSignature=''}else{modelsData=null;loadModels(false)}}
   if(action==='disconnect'){delete cliCatalogs[provider];cliModelList(provider)}
   if(data.providers){if(!modelsData)loadModels(false);clearTimeout(timer);setTimeout(refresh,0)}
- }catch(error){cliFeedback(provider,'操作失败：'+error.message)}
+  if(action==='catalog'&&cliModelDraft?.provider===provider){
+   if(!cliModelDraft.roles)openCliModelCard(cliData.providers.find(p=>p.id===provider));
+   else{
+    for(const pair of cliModelDraft.pairs.values())fillCliModelPair(cliModelDraft,pair,readCliModelPair(pair));
+    syncInheritedCliModels(cliModelDraft);showCliModelFeedback(cliCatalogMessage(cliModelDraft));
+   }
+  }
+ }catch(error){
+  cliFeedback(provider,'操作失败：'+error.message);
+  if(action==='default'){$('cli-overview-error').textContent='无法设置默认 CLI：'+error.message;$('cli-overview-error').hidden=false}
+  if(action==='catalog'&&$('cli-model-dialog').open&&cliModelDraft?.provider===provider)showCliModelFeedback(error.message);
+ }
  finally{cliBusy=false;renderConnections();updateComposer()}
+ if(promptForModel&&settingsOpen()&&settingsTab==='cli'&&cliSelected===provider)showCliModelDialog(provider);
 }
-let rolesData=null,rolesBusy=false,roleEditing=null,roleDirty=false;
+let cliModelDraft=null;
+function showCliModelDialog(provider){
+ const dialog=$('cli-model-dialog'),draft=cliModelDraft;if(dialog.open||draft?.provider!==provider)return;
+ const form=$('cli-model-form');
+ $('cli-model-dialog-title').textContent=cliMeta[provider].name+'：模型与思考强度';
+ $('cli-model-dialog-content').append(form);
+ $('cli-model-feedback').before($('cli-model-advanced'));
+ $('cli-model-advanced').open=false;
+ form.append($('cli-model-actions'));
+ $('cli-model-reload').hidden=false;
+ renderCliModelRoles(draft);updateCliModelSave();dialog.showModal();
+}
+$('cli-model-dialog').onclose=()=>{
+ const dialog=$('cli-model-dialog');if(dialog.open)return;
+ $('cli-model-dialog-content').append($('cli-model-advanced'));
+ $('cli-model-card').append($('cli-model-form'));
+ $('cli-model-card-head').append($('cli-model-actions'));
+ $('cli-model-reload').hidden=true;
+ if(cliModelDraft){renderCliModelRoles(cliModelDraft);updateCliModelSave()}
+};
+$('cli-model-dialog').oncancel=event=>{if(cliModelDraft?.saving)event.preventDefault()};
+$('cli-model-reload').onclick=()=>{if(cliModelDraft)cliAction('catalog',cliModelDraft.provider)};
+function cliModelPair(draft, key, parent, label, initial, allowInherit=false, other=null){
+ const row=document.createElement('div');row.className='role-fields';
+ const model=document.createElement('select'),effort=document.createElement('select');
+ model.id='cli-model-select-'+(allowInherit?'role-':'')+key;effort.id='cli-effort-select-'+(allowInherit?'role-':'')+key;
+ const modelLabel=document.createElement('label'),effortLabelNode=document.createElement('label');
+ modelLabel.append(label,model);effortLabelNode.append('思考强度',effort);row.append(modelLabel,effortLabelNode);parent.append(row);
+ const previousConnection=other&&cliData?.providers.find(item=>item.defaults_configured&&(
+  other.provider?item.id===other.provider:item.id!==draft.provider));
+ const previousProvider=other?.provider||previousConnection?.id;
+ const previous=other?.model?other:previousConnection?.defaults;
+ const previewUnassigned=other?.provider===null&&!cliData?.providers.some(item=>item.id!==draft.provider&&(item.connected||item.defaults_configured));
+ if(other)model.title=(previewUnassigned?'未选择 CLI 时仅预览默认值。':'')+'为角色选择此 CLI 的模型或默认值并保存，将绑定 '+cliMeta[draft.provider].name;
+ if(allowInherit)effort.title='单独修改思考强度时，会一并保存当前显示的模型。';
+ const pair={model,effort,allowInherit,other,previous,previousProvider,previewUnassigned};draft.pairs.set(allowInherit?key:null,pair);
+ fillCliModelPair(draft,pair,initial);
+ model.onchange=()=>{fillCliModelEffort(draft,pair);syncInheritedCliModels(draft);updateCliModelSave()};
+ effort.onchange=()=>{
+  if(followsCliDefault(pair)){
+   const modelId=cliModelId(draft,pair);
+   if(cliModelOptions(draft).some(entry=>entry.id===modelId&&entry.effort.supported))model.value=modelId;
+  }
+  syncInheritedCliModels(draft);updateCliModelSave();
+ };
+}
+function followsCliDefault(pair){
+ return pair.model.value==='@default'||(pair.model.value==='@other'&&pair.previewUnassigned);
+}
+function cliModelId(draft,pair){
+ return followsCliDefault(pair)?draft.pairs.get(null)?.model.value:pair.model.value;
+}
+function syncInheritedCliModels(draft){
+ const defaults=draft.pairs.get(null);
+ if(!defaults)return;
+ const defaultLabel=defaults.model.value?(defaults.model.selectedOptions[0]?.textContent||defaults.model.value):'请选择模型';
+ for(const pair of draft.pairs.values()){
+  if(!pair.allowInherit)continue;
+  const options=[...pair.model.options],inherited=options.find(option=>option.value==='@default');
+  const preview=pair.previewUnassigned&&pair.model.value==='@other';
+  inherited.textContent=pair.other&&pair.model.value!=='@default'?'跟随此 CLI 的默认模型':defaultLabel;
+  if(pair.previewUnassigned)options.find(option=>option.value==='@other').textContent=preview?defaultLabel:'暂不选择 CLI';
+  if(followsCliDefault(pair))fillCliModelEffort(draft,pair);
+ }
+}
+function cliModelOptions(draft){
+ const catalog=cliCatalogs[draft.provider];
+ return catalog?.status==='ok'&&catalog.source!=='pinned-default'?(catalog.models||[]).filter(m=>m.selectable!==false&&m.effort?.known):[];
+}
+function fillCliModelPair(draft,pair,initial){
+ const {model,allowInherit}=pair,available=cliModelOptions(draft);
+ model.replaceChildren(new Option('请选择模型',allowInherit?'@default':''));
+ if(pair.other)model.append(new Option(pair.previousProvider?'保留 '+cliMeta[pair.previousProvider].name+' · '+(pair.previous?.model||'默认模型'):'暂不选择 CLI','@other'));
+ for(const entry of available)model.append(new Option(entry.name||entry.id,entry.id));
+ if(initial?.model&&initial.model!=='@other'&&!available.some(entry=>entry.id===initial.model)){
+  const unavailable=new Option(initial.model+'（当前不可用）',initial.model);unavailable.disabled=true;model.append(unavailable);
+ }
+ model.value=initial?.model||(allowInherit?'@default':'');
+ fillCliModelEffort(draft,pair,initial?.effort);
+}
+function fillCliModelEffort(draft,pair,desired){
+ const {model,effort}=pair,followsDefault=followsCliDefault(pair),defaults=draft.pairs.get(null);
+ const entry=cliModelOptions(draft).find(m=>m.id===cliModelId(draft,pair)),options=entry?.effort;
+ effort.replaceChildren();
+ if(!model.value||(!entry&&(followsDefault||model.value==='@other'))){
+  const previousEffort=pair.previous?.effort;
+  const retainedEffort=previousEffort?effortLabel(previousEffort):pair.previousProvider&&!pair.previous?'默认强度':'不设置';
+  const text=followsDefault&&defaults?.model.value?defaults.effort.selectedOptions[0]?.textContent:
+   model.value==='@other'&&!followsDefault?retainedEffort:'请选择模型';
+  const value=followsDefault?defaults?.effort.value||'':'';
+  effort.append(new Option(text||'不设置',value));effort.disabled=true;return;
+ }
+ if(followsDefault)desired=defaults?.effort.value||null;
+ if(!entry&&model.value&&model.value!=='@default'&&desired){
+  effort.append(new Option(effortLabel(desired)+'（当前不可用）',desired));effort.disabled=true;return;
+ }
+ const optional=draft.provider==='claude'||!options?.supported;
+ if(optional)effort.append(new Option('不设置',''));
+ for(const level of options?.levels||[])effort.append(new Option(effortLabel(level),level));
+ const value=desired===undefined?(options?.default||(!optional?options?.levels?.[0]:'')):desired;
+ effort.value=value||'';
+ if(effort.selectedIndex===-1){const placeholder=new Option(desired?effortLabel(desired)+'（当前不可用）':'请选择支持的思考强度',desired||'');placeholder.disabled=true;effort.prepend(placeholder);effort.selectedIndex=0}
+ effort.disabled=!options?.supported;
+}
+function readCliModelPair(pair){
+ if(pair.model.value==='@other')return {model:'@other',effort:null};
+ if(pair.model.value==='@default')return {model:null,effort:null};
+ return {model:pair.model.value,effort:pair.effort.value||null};
+}
+function updateCliModelSave(){
+ const draft=cliModelDraft;if(!draft)return;
+ $('cli-config-back').disabled=!!draft.saving;
+ const options=cliModelOptions(draft),defaults=draft.pairs.get(null);
+ const locked=!draft.available||draft.busy||cliBusy;
+ for(const pair of draft.pairs.values()){
+  pair.model.disabled=locked||!options.length;
+  pair.effort.disabled=locked||!options.find(m=>m.id===cliModelId(draft,pair))?.effort.supported;
+ }
+ const valid=pair=>{
+  const selection=readCliModelPair(pair),entry=options.find(m=>m.id===selection.model);
+  return pair.allowInherit&&(selection.model===null||selection.model==='@other')||!!entry&&!pair.effort.selectedOptions[0]?.disabled;
+ };
+ const changed=[...draft.pairs].filter(([key,pair])=>key!==null&&JSON.stringify(readCliModelPair(pair))!==JSON.stringify(draft.initial.get(key)));
+ $('cli-model-save').disabled=locked||!draft.roles||!defaults||!valid(defaults)||changed.some(([,pair])=>!valid(pair));
+ $('cli-model-reload').disabled=locked;
+}
+function showCliModelFeedback(message){
+ const node=$('cli-model-feedback');node.textContent=message;node.hidden=!message;
+}
+function cliCatalogMessage(draft){
+ return cliModelOptions(draft).length?'':(cliCatalogs[draft.provider]?.error||'没有可选模型，请重新读取模型列表。');
+}
+function renderCliModelFields(draft,connection){
+ draft.pairs.clear();
+ $('cli-model-defaults').replaceChildren();
+ const saved=connection?.defaults_configured===false?null:connection?.defaults;
+ cliModelPair(draft,'default',$('cli-model-defaults'),'默认模型',saved);
+ renderCliModelRoles(draft);
+}
+function renderCliModelRoles(draft){
+ const advanced=$('cli-model-advanced'),list=$('cli-model-roles');
+ for(const key of draft.initial.keys())draft.pairs.delete(key);
+ draft.initial.clear();list.replaceChildren();
+ advanced.hidden=advanced.parentElement!==$('cli-model-form')||!draft.roles?.roles.length;
+ if(advanced.hidden)return;
+ for(const id of builtinRoles){
+  const role=draft.roles?.roles.find(r=>r.id===id);if(!role)continue;
+  const other=role.provider!==draft.provider?role:null;
+  const initial=other?{model:'@other',effort:null}:{model:role.model||null,effort:role.effort??null};draft.initial.set(role.id,initial);
+  cliModelPair(draft,role.id,list,role.name,initial,true,other);
+ }
+ syncInheritedCliModels(draft);
+}
+async function openCliModelCard(connection){
+ const {id:provider,available}=connection,draft={provider,available:!!available,pairs:new Map(),initial:new Map(),busy:!!available,roles:null};cliModelDraft=draft;
+ const card=$('cli-model-card');$('cli-model-slot-'+provider).append(card);card.hidden=false;
+ $('cli-model-advanced').open=false;
+ renderCliModelFields(draft,connection);updateCliModelSave();
+ showCliModelFeedback(available?'正在读取模型和角色配置…':'连接并启动 CLI 后可设置。');
+ if(!available)return;
+ try{
+  const jobs=[fetch('/api/roles',{cache:'no-store'}).then(async response=>{if(!response.ok)throw new Error('无法读取角色配置');return response.json()})];
+  if(!cliCatalogs[provider]){
+   const seq=cliCatalogSeq[provider]||0;
+   jobs.push(fetch('/api/models?'+new URLSearchParams({provider}),{cache:'no-store'}).then(async response=>{
+    const data=await response.json();
+    if(seq!==(cliCatalogSeq[provider]||0))return;
+    if(!response.ok)throw new Error(data.error||'无法读取模型目录');
+    cliCatalogs[provider]=data;cliModelList(provider);
+   }));
+  }
+  [draft.roles]=await Promise.all(jobs);
+  if(cliModelDraft!==draft)return;
+  renderCliModelFields(draft,connection);showCliModelFeedback(cliCatalogMessage(draft));
+ }catch(error){if(cliModelDraft===draft)showCliModelFeedback(error.message)}
+ finally{draft.busy=false;if(cliModelDraft===draft)updateCliModelSave()}
+}
+$('cli-model-form').onsubmit=async event=>{
+ event.preventDefault();const draft=cliModelDraft;if(!draft||$('cli-model-save').disabled)return;
+ draft.busy=true;draft.saving=true;updateCliModelSave();showCliModelFeedback('正在保存…');
+ const overrides=Object.create(null);
+ const switch_roles=[];
+ for(const [key,pair] of draft.pairs){
+  if(key===null)continue;
+  const value=readCliModelPair(pair);
+  if(value.model==='@other'||JSON.stringify(value)===JSON.stringify(draft.initial.get(key)))continue;
+  overrides[key]=value;
+  if(pair.other)switch_roles.push(key);
+ }
+ try{
+  const response=await fetch('/api/connections',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+   action:'defaults',provider:draft.provider,...readCliModelPair(draft.pairs.get(null)),revision:draft.roles.revision,overrides,switch_roles
+  })}),data=await response.json();
+  if(!response.ok||data.ok===false)throw new Error(data.message||data.error||'保存失败');
+  if(data.providers){cliData=data;providerItems=data.providers}
+  if(data.roles_config){draft.roles=data.roles_config;rolesData=data.roles_config;renderRoleList()}
+  if(cliModelDraft===draft){
+   const connection=cliData?.providers.find(p=>p.id===draft.provider);
+   if(connection?.defaults_configured)renderCliModelFields(draft,connection);
+   showCliModelFeedback('');
+   if($('cli-model-dialog').open)$('cli-model-dialog').close();
+  }
+  renderConnections();configSignature='';loadModels(false);
+ }catch(error){if(cliModelDraft===draft)showCliModelFeedback(error.message)}
+ finally{draft.busy=false;draft.saving=false;updateCliModelSave()}
+};
+let rolesData=null,rolesBusy=false,roleEditing=null,roleDirty=false,rolesOverviewScroll=0;
 let roleModelSeq=0,roleModelsLoading=false,roleModels=[];
-const builtinRoles=new Set(['coder','tester']);
+const builtinRoles=new Set(['architect','coder','tester','reviewer']);
 function roleFeedback(message,error=false){
  for(const id of ['roles-feedback','role-editor-feedback']){$(id).textContent=message;$(id).dataset.error=String(error)}
 }
@@ -1949,12 +3234,12 @@ function renderRoleList(){
   const open=document.createElement('button');open.type='button';open.className='role-card-main';open.id='role-open-'+role.id;open.disabled=rolesBusy;
   const name=document.createElement('strong');name.textContent=role.name;
   const summary=document.createElement('span');summary.textContent=role.description;
-  const meta=document.createElement('span');meta.textContent=(builtinRoles.has(role.id)?'内置':'自定义')+' · '+(role.provider==='claude'?'Claude Code':'Kiro CLI')+' · '+role.model+' · '+(role.enabled?'已启用':'已停用');
+  const meta=document.createElement('span');meta.textContent=(builtinRoles.has(role.id)?'内置':'自定义')+' · '+(role.provider?cliMeta[role.provider].name+' · '+(role.model||'跟随 CLI 默认'):'未选择 CLI')+' · '+(role.enabled?'已启用':'已停用');
   open.append(name,summary,meta);open.onclick=()=>openRole(role);
   const toggle=document.createElement('button');toggle.type='button';toggle.className='secondary';toggle.id='role-toggle-'+role.id;toggle.textContent=role.enabled?'停用':'启用';toggle.disabled=rolesBusy;toggle.setAttribute('aria-label',toggle.textContent+' '+role.name);
   toggle.onclick=()=>roleAction({action:'save',role:{...role,enabled:!role.enabled}},'toggle');card.append(open,toggle);list.append(card);
  }
- $('role-new').disabled=rolesBusy||!rolesData;$('roles-refresh').disabled=rolesBusy;
+ $('role-new').disabled=rolesBusy||!rolesData;$('roles-refresh').disabled=rolesBusy;$('role-detail-back').disabled=rolesBusy;$('role-enabled').disabled=rolesBusy;
  for(const element of $('role-form').querySelectorAll('input,select,textarea,button'))element.disabled=rolesBusy;
  $('role-id').disabled=rolesBusy||roleEditing!==null;
  roleModelControls();
@@ -1971,7 +3256,7 @@ function roleModelControls(){
  const validEffort=!!effort&&(effort.supported?(effort.levels.includes($('role-effort').value)||effort.source==='cli-options'&&$('role-effort').value===''):$('role-effort').value==='');
  $('role-model').disabled=rolesBusy||roleModelsLoading||!roleModels.length;
  $('role-effort').disabled=rolesBusy||roleModelsLoading||!effort?.supported;
- $('role-save').disabled=rolesBusy||roleModelsLoading||!model||!validEffort;
+ $('role-save').disabled=rolesBusy||roleModelsLoading||!!$('role-provider').value&&$('role-model').value!=='@default'&&(!model||!validEffort);
 }
 function roleEffortOptions(desired){
  const effort=selectedRoleModel()?.effort,select=$('role-effort');select.replaceChildren();
@@ -1985,57 +3270,97 @@ function roleEffortOptions(desired){
  roleModelControls();
 }
 async function loadRoleModels(selection){
- const seq=++roleModelSeq,provider=$('role-provider').value;roleModels=[];roleModelsLoading=true;
- const select=$('role-model');select.replaceChildren(new Option('正在读取模型列表…',''));$('role-model-note').textContent='正在读取模型列表…';roleEffortOptions();
+ const seq=++roleModelSeq,provider=$('role-provider').value;roleModels=[];roleModelsLoading=!!provider;
+ const select=$('role-model');
+ select.replaceChildren(provider?new Option('跟随 CLI 默认','@default'):new Option('请选择模型',''));
+ $('role-model-note').textContent=provider?'正在读取模型列表…':'请先选择 CLI';roleEffortOptions();
+ if(!provider)return;
  try{
   const response=await fetch('/api/models?'+new URLSearchParams({provider}),{cache:'no-store'}),data=await response.json();
   if(seq!==roleModelSeq||provider!==$('role-provider').value)return;
   if(!response.ok||!data.models?.length)throw new Error(data.error||data.message||'没有可用模型，请在 CLI 连接中连接并读取模型列表。');
-  roleModels=data.models;select.replaceChildren();
+  roleModels=data.models;select.replaceChildren(new Option('跟随 CLI 默认','@default'));
   for(const model of roleModels){const option=new Option(model.name&&model.name!==model.id?model.name+' · '+model.id:model.id,model.id);option.disabled=model.selectable===false||model.effort?.known!==true;select.append(option)}
-  const desired=selection?.model||data.default?.model||roleModels.find(model=>model.selectable!==false&&model.effort?.known===true)?.id;
+  const desired=selection?.model;
   const match=roleModels.find(model=>model.id===desired&&model.selectable!==false&&model.effort?.known===true);
-  if(match){select.value=match.id;$('role-model-note').textContent=data.message||'模型来自所选 CLI 的列表；实际可用性在执行时校验。'}
+  if(!desired){select.value='@default';$('role-model-note').textContent='下次执行时使用此 CLI 的默认模型和思考强度。'}
+  else if(match){select.value=match.id;$('role-model-note').textContent=data.message||'模型来自所选 CLI 的列表；实际可用性在执行时校验。'}
   else{select.prepend(new Option('请选择可用模型',''));select.value='';$('role-model-note').textContent=selection?.model?'已保存的模型不在当前可选列表中，请重新选择。':'当前没有可选模型，请在 CLI 连接中读取模型列表。'}
   roleEffortOptions(selection?.effort);
- }catch(error){if(seq!==roleModelSeq)return;select.replaceChildren(new Option('无法读取模型列表',''));$('role-model-note').textContent=error.message;roleEffortOptions()}
+ }catch(error){if(seq!==roleModelSeq)return;select.replaceChildren(new Option('跟随 CLI 默认','@default'));if(selection?.model){select.prepend(new Option('已保存模型不可用',''));select.value=''}$('role-model-note').textContent=error.message;roleEffortOptions()}
  finally{if(seq===roleModelSeq){roleModelsLoading=false;roleModelControls()}}
 }
+const roleItemLabels={constraints:'工作约束',deliverables:'交付要求'};
+function labelRoleItems(key){
+ [...$('role-'+key).children].forEach((row,index)=>{
+  const label=roleItemLabels[key]+'第 '+(index+1)+' 项';
+  row.firstElementChild.setAttribute('aria-label',label);
+  row.lastElementChild.setAttribute('aria-label','删除'+label);
+ });
+}
+function appendRoleItem(key,value=''){
+ const list=$('role-'+key),row=document.createElement('li'),item=document.createElement('textarea'),remove=document.createElement('button');
+ item.rows=1;item.maxLength=2000;item.value=value;
+ remove.type='button';remove.className='secondary';remove.textContent='删除';
+ remove.onclick=()=>{
+  const next=(row.nextElementSibling||row.previousElementSibling)?.firstElementChild;
+  row.remove();labelRoleItems(key);roleDirty=true;
+  (next||$('role-'+key+'-add')).focus();
+ };
+ row.append(item,remove);list.append(row);labelRoleItems(key);
+ return item;
+}
+for(const key of Object.keys(roleItemLabels))$('role-'+key+'-add').onclick=()=>{roleDirty=true;appendRoleItem(key).focus()};
 function openRole(role=null){
  if(rolesBusy||roleDirty&&!confirm('放弃尚未保存的角色修改？'))return;
+ if(!$('roles-overview').hidden)rolesOverviewScroll=$('settings-content').scrollTop;
  roleEditing=role?.id||null;roleDirty=false;
- const value=role||{id:'',name:'',description:'',provider:'claude',model:'sonnet',effort:'medium',instructions:'',constraints:[],deliverables:[],enabled:true};
- for(const key of ['id','name','description','provider','instructions'])$('role-'+key).value=value[key];
- for(const key of ['constraints','deliverables'])$('role-'+key).value=value[key].join('\n');
+ const value=role||{id:'',name:'',description:'',provider:null,model:null,effort:null,instructions:'',constraints:[],deliverables:[],enabled:true};
+ for(const key of ['id','name','description','provider','instructions'])$('role-'+key).value=value[key]??'';
+ for(const key of Object.keys(roleItemLabels)){
+  $('role-'+key).replaceChildren();
+  for(const item of value[key])appendRoleItem(key,item);
+ }
  $('role-enabled').checked=value.enabled;$('role-id').disabled=!!role;
- $('role-editor-title').textContent=role?'编辑 '+role.name:'新增角色';$('role-delete').hidden=!role||builtinRoles.has(role.id);$('role-editor').hidden=false;roleFeedback('');loadRoleModels(value);$('role-name').focus();
+ $('role-editor-title').textContent=role?.name||'新增角色';$('role-delete').hidden=!role||builtinRoles.has(role.id);
+ $('roles-overview').hidden=true;$('role-detail').hidden=false;roleFeedback('');loadRoleModels(value);
+ $('settings-content').scrollTop=0;$('role-detail-back').focus({preventScroll:true});
 }
 function closeRole(){
- $('role-editor').hidden=true;roleEditing=null;roleDirty=false;++roleModelSeq;roleModelsLoading=false;
+ const previous=roleEditing;
+ $('role-detail').hidden=true;$('roles-overview').hidden=false;roleEditing=null;roleDirty=false;++roleModelSeq;roleModelsLoading=false;
+ if(settingsOpen()&&settingsTab==='roles'){
+  $('settings-content').scrollTop=rolesOverviewScroll;
+  ($('role-open-'+previous)||$('role-new')).focus({preventScroll:true});
+ }
 }
 function readRoleForm(){
  const role={};for(const key of ['id','name','description','provider','model','instructions'])role[key]=$('role-'+key).value.trim();
- for(const key of ['constraints','deliverables'])role[key]=$('role-'+key).value.split('\n').map(v=>v.trim()).filter(Boolean);
- role.enabled=$('role-enabled').checked;role.effort=$('role-effort').value||null;return role;
+ for(const key of Object.keys(roleItemLabels))role[key]=[...$('role-'+key).querySelectorAll('textarea')].map(item=>item.value.trim()).filter(Boolean);
+ role.enabled=$('role-enabled').checked;role.provider=role.provider||null;
+ role.effort=role.provider?$('role-effort').value||null:null;
+ if(!role.provider||role.model==='@default')role.model=null;return role;
 }
 async function roleAction(payload,mode){
  if(rolesBusy||!rolesData)return;
  if(mode==='save'&&$('role-save').disabled){roleFeedback('请先选择可用模型与思考强度。',true);return}
+ let closeAfterSave=false;
  rolesBusy=true;renderRoleList();roleFeedback('正在保存…');
  try{
   const response=await fetch('/api/roles',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...payload,revision:rolesData.revision})});
   const data=await response.json();if(!response.ok)throw new Error(data.error||'保存失败');rolesData=data;
-  if(mode!=='toggle')closeRole();else if(roleEditing===payload.role.id)$('role-enabled').checked=payload.role.enabled;
+  if(mode!=='toggle')closeAfterSave=true;else if(roleEditing===payload.role.id)$('role-enabled').checked=payload.role.enabled;
   roleFeedback(mode==='delete'?'角色已删除':mode==='toggle'?(payload.role.enabled?'角色已启用':'角色已停用'):'角色已保存，下次委派时生效。');
  }catch(error){roleFeedback('操作失败：'+error.message,true)}
- finally{rolesBusy=false;renderRoleList()}
+ finally{rolesBusy=false;renderRoleList();if(closeAfterSave)closeRole()}
 }
 $('role-new').onclick=()=>openRole();$('roles-refresh').onclick=()=>loadRoles();
 $('role-form').oninput=()=>{roleDirty=true};$('role-form').onchange=()=>{roleDirty=true};
+$('role-enabled').onchange=()=>{roleDirty=true};
 $('role-provider').onchange=()=>{roleDirty=true;loadRoleModels()};
 $('role-model').onchange=()=>{roleDirty=true;roleEffortOptions();$('role-model-note').textContent=selectedRoleModel()?'模型来自所选 CLI 的列表；实际可用性在执行时校验。':'请选择可用模型。'};
 $('role-effort').onchange=()=>{roleDirty=true;roleModelControls()};
-$('role-cancel').onclick=()=>{if(!roleDirty||confirm('放弃尚未保存的角色修改？')){closeRole();roleFeedback('')}};
+$('role-detail-back').onclick=()=>{if(!rolesBusy&&(!roleDirty||confirm('角色修改尚未保存。确定放弃修改并返回全部角色吗？'))){closeRole();roleFeedback('')}};
 $('role-form').onsubmit=event=>{event.preventDefault();roleAction({action:'save',role:readRoleForm(),create:roleEditing===null},'save')};
 $('role-delete').onclick=()=>{if(roleEditing&&!builtinRoles.has(roleEditing)&&confirm('删除此自定义角色？'))roleAction({action:'delete',id:roleEditing},'delete')};
 function renderSkillSetup(){
@@ -2082,7 +3407,7 @@ function setSettings(open){
  panel.hidden=!open;$('app').classList.toggle('settings-on',open);$('settings-open').setAttribute('aria-expanded',String(open));
  for(const node of [$('sidebar'),$('overlay'),document.querySelector('main')]){if(open)node.setAttribute('inert','');else node.removeAttribute('inert')}
  if(open){tempResult=null;renderTemp();selectSettingsTab(settingsTab);$('settings-tab-'+settingsTab).focus({preventScroll:true})}
- else{pick=null;($('sidebar').classList.contains('closed')?$('history'):$('settings-open')).focus({preventScroll:true})}
+ else{pick=null;($('sidebar').classList.contains('closed')?$('history'):$('settings-open')).focus({preventScroll:true});refresh()}
 }
 $('temp-all').onclick=()=>runBulk({scope:'all'});$('temp-pick').onclick=openPicker;
 $('pick-all').onclick=()=>{if(pick){for(const item of pick.rows.values())item.box.checked=true;updatePick()}};
@@ -2098,17 +3423,18 @@ $('pick').addEventListener('keydown',event=>{
  else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
 });
 $('provider-select').onchange=event=>chooseProvider(event.target.value);
+$('composer-role').onchange=event=>chooseComposerRole(event.target.value);
 $('model-select').onchange=event=>chooseModel(event.target.value);$('effort-select').onchange=event=>chooseEffort(event.target.value);
 $('history').onclick=()=>sidebar($('sidebar').classList.contains('closed'));$('overlay').onclick=()=>sidebar(false);
 $('settings-open').onclick=()=>setSettings($('settings').hidden);$('settings-close').onclick=()=>setSettings(false);
-document.addEventListener('keydown',event=>{if(event.key!=='Escape')return;if(pickOpen()){event.preventDefault();closePicker()}else if(settingsOpen()){event.preventDefault();setSettings(false)}else if(reviewOpen()){event.preventDefault();closeReview()}});
-$('review-open').onclick=()=>openReview('changes');$('review-close').onclick=()=>closeReview();$('review-refresh').onclick=()=>{if(review.mode==='changes')loadChanges()};
+document.addEventListener('keydown',event=>{if(event.key!=='Escape'||$('cli-model-dialog').open)return;if(pickOpen()){event.preventDefault();closePicker()}else if(settingsOpen()){event.preventDefault();setSettings(false)}else if(reviewOpen()){if(review.mode==='project'){if(!$('pf-menu').hidden){event.preventDefault();setProjectMenu(false,true);return}if(event.target.closest?.('#pf-editor'))return}event.preventDefault();closeReview()}});
+$('review-open').onclick=()=>openReview('changes');$('review-close').onclick=()=>closeReview();$('review-refresh').onclick=()=>{if(review.mode!=='file')loadChanges()};
 $('rv-tab-diff').onclick=()=>setTab('diff');$('rv-tab-text').onclick=()=>setTab('text');
 $('rv-copy-path').onclick=()=>copyWithFeedback($('rv-copy-path'),()=>review.view&&review.view.path||'','复制路径','路径');
 $('rv-copy').onclick=()=>copyWithFeedback($('rv-copy'),()=>review.view&&review.view.copy||'','复制内容','内容');
 $('review').addEventListener('keydown',event=>{
  if(event.key!=='Tab')return;
- const items=[...$('review').querySelectorAll('button,[tabindex="0"]')].filter(node=>!node.disabled&&!node.hidden&&!node.closest('[hidden]'));
+ const items=[...$('review').querySelectorAll('button,input,summary,[tabindex="0"]')].filter(node=>!node.disabled&&(node.tabIndex>=0||node.tagName==='SUMMARY')&&!node.closest('[hidden]')&&(!node.closest('details:not([open])')||node.tagName==='SUMMARY'));
  if(!items.length){event.preventDefault();return}
  const first=items[0],last=items[items.length-1];
  if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}

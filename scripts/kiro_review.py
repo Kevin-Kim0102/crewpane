@@ -5,6 +5,7 @@ writes: no `git add/commit/reset/checkout/init/fetch`, no hooks, no external dif
 no shell. Callers pass an already authorised, symlink-resolved directory; browser input is only a relative path.
 """
 import errno
+import hashlib
 import os
 import posixpath
 import re
@@ -13,10 +14,12 @@ import shutil
 import signal
 import stat
 import subprocess
+import tempfile
 import time
+from contextlib import nullcontext
 
 MAX_FILE_BYTES = 1024 * 1024        # larger files are reported, never loaded
-MAX_DIFF_BYTES = 600_000            # larger diffs are cut and flagged
+MAX_DIFF_BYTES = 4 * MAX_FILE_BYTES + 65_536  # two full text versions, line prefixes and patch headers
 MAX_LIST_BYTES = 2_000_000          # raw listing output of one git command
 MAX_ENTRIES = 400                   # files listed per category
 MAX_UNTRACKED_BYTES = 8 * 1024 * 1024   # total bytes read to count untracked lines
@@ -97,7 +100,12 @@ def describe(rel, state, message, **extra):
     return {"path": rel, "name": rel.rsplit("/", 1)[-1], "state": state, "message": message, **extra}
 
 
-def read_text(cwd, rel):
+def file_revision(info):
+    fields = (info.st_dev, info.st_ino, info.st_mode, info.st_size, info.st_mtime_ns, info.st_ctime_ns)
+    return hashlib.sha256(repr(fields).encode("ascii")).hexdigest()
+
+
+def read_text(cwd, rel, *, revision=False, root_fd=None):
     """Read one regular text file below cwd. Always returns a dict with a `state`; never raises for file problems.
 
     The path is walked with directory file descriptors: the trusted `cwd` is opened once, then every component is
@@ -128,7 +136,7 @@ def read_text(cwd, rel):
 
     try:
         try:
-            held.append(os.open(cwd, base_flags | os.O_DIRECTORY))
+            held.append(os.dup(root_fd) if root_fd is not None else os.open(cwd, base_flags | os.O_DIRECTORY))
         except OSError:
             return describe(rel, "unreadable", "无法读取这个路径")
         for part in parts[:-1]:
@@ -155,6 +163,8 @@ def read_text(cwd, rel):
                 if not chunk:
                     break
                 data += chunk
+            if revision and file_revision(os.fstat(descriptor)) != file_revision(info):
+                return describe(rel, "changed", "读取期间文件已变化，请重新打开")
         except OSError:
             return describe(rel, "unreadable", "无法读取这个文件")
     finally:
@@ -172,7 +182,8 @@ def read_text(cwd, rel):
     except UnicodeDecodeError:
         return describe(rel, "binary", "不是 UTF-8 文本，不显示内容", size=len(data))
     lines = text.count("\n") + (1 if text and not text.endswith("\n") else 0)
-    return describe(rel, "ok", "", text=text, lines=lines, size=len(data))
+    return describe(rel, "ok", "", text=text, lines=lines, size=len(data),
+                    **({"revision": file_revision(info)} if revision else {}))
 
 
 # ---- Git ---------------------------------------------------------------------------------------------
@@ -189,15 +200,19 @@ class GitResult:
         self.code, self.out, self.truncated, self.timed_out, self.err = code, out, truncated, timed_out, err
 
 
-def run_git(cwd, args, cap=None, timeout=GIT_TIMEOUT, extra=()):
+def run_git(cwd, args, cap=None, timeout=GIT_TIMEOUT, extra=(), *, stdin=None):
     """Run git with an argument array (never a shell). Output is capped and the whole process group is killed on overrun."""
     if GIT is None:
         raise ReviewError(409, GIT_ERRORS["git_missing"])
     cap = MAX_LIST_BYTES if cap is None else cap
     argv = [GIT, "--no-pager", "--no-optional-locks", "-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false",
             "-c", "protocol.allow=never", "-c", "diff.external=", *extra, *args]
-    process = subprocess.Popen(argv, cwd=cwd, env=git_environment(), stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE, start_new_session=True, close_fds=True)
+    with (tempfile.TemporaryFile() if stdin is not None else nullcontext(subprocess.DEVNULL)) as source:
+        if stdin is not None:
+            source.write(stdin)
+            source.seek(0)
+        process = subprocess.Popen(argv, cwd=cwd, env=git_environment(), stdin=source, stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE, start_new_session=True, close_fds=True)
     selector = selectors.DefaultSelector()
     selector.register(process.stdout, selectors.EVENT_READ, "out")
     selector.register(process.stderr, selectors.EVENT_READ, "err")
@@ -452,6 +467,24 @@ def synthetic_added(rel, text):
     return "\n".join(["diff --git a/%s b/%s" % (rel, rel), "new file (untracked)"] + body) + "\n"
 
 
+def unchanged_diff_text(cwd, rel):
+    """Read the regular index blob for a rename or mode change with no text changes."""
+    listing = run_git(cwd, ["ls-files", "--stage", "-z", "--", rel], cap=16_384)
+    if listing.code != 0 or listing.truncated or listing.timed_out:
+        return None
+    header, _, path = listing.out.partition(b"\t")
+    match = re.fullmatch(rb"100(?:644|755) ([0-9a-f]{40}|[0-9a-f]{64}) 0", header)
+    if not match or path != os.fsencode(rel) + b"\0":
+        return None
+    blob = run_git(cwd, ["cat-file", "blob", match[1].decode("ascii")], cap=MAX_FILE_BYTES)
+    if blob.code != 0 or blob.truncated or blob.timed_out or b"\0" in blob.out:
+        return None
+    try:
+        return blob.out.decode("utf-8")
+    except UnicodeDecodeError:
+        return None
+
+
 def git_diff(cwd, area, rel):
     """Unified diff of one listed file in one area. `rel` must be present in that area's own fresh listing."""
     if area not in ("staged", "unstaged", "untracked"):
@@ -477,12 +510,19 @@ def git_diff(cwd, area, rel):
     if entry is None:
         return {"area": area, "path": rel, "state": "missing", "message": "该文件已不在这个类别的改动中，请刷新"}
     paths = [entry["path"]] + ([entry["old_path"]] if entry.get("old_path") else [])
-    args = ["diff"] + (["--cached"] if area == "staged" else []) + DIFF_FLAGS + ["-U3", "--"] + paths
-    result = run_git(cwd, args, cap=MAX_DIFF_BYTES, extra=extra)
+    args = ["diff"] + (["--cached"] if area == "staged" else []) + DIFF_FLAGS + [
+        "--unified=%d" % MAX_DIFF_BYTES, "--"] + paths
+    result = run_git(cwd, args, cap=MAX_DIFF_BYTES, extra=[*extra, "-c", "diff.suppressBlankEmpty=false"])
     if result.timed_out or (result.code != 0 and not result.truncated):
         return {"area": area, "path": rel, "state": "error", "message": GIT_ERRORS[fail_state(result)]}
     text = decode(result.out)
     binary = bool(entry["binary"]) or bool(re.search(r"^Binary files .* differ$|^GIT binary patch", text, re.M))
-    return {"area": area, "path": rel, "old_path": entry.get("old_path"), "code": entry["code"], "state": "ok",
+    body = {"area": area, "path": rel, "old_path": entry.get("old_path"), "code": entry["code"], "state": "ok",
             "message": "", "diff": "" if binary else text, "binary": binary, "truncated": result.truncated,
             "added": entry["added"], "deleted": entry["deleted"]}
+    if (not binary and not result.truncated and entry["code"] in ("M", "R", "C")
+            and entry["added"] == entry["deleted"] == 0 and not re.search(r"^@@ ", text, re.M)):
+        unchanged = unchanged_diff_text(cwd, rel)
+        if unchanged is not None:
+            body["unchanged"] = unchanged
+    return body

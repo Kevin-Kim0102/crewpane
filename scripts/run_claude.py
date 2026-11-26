@@ -21,7 +21,7 @@ import time
 import uuid
 
 from agent_providers import ClaudeModels, ConfigError
-from run_kiro import kiro_environment, temp_settings
+from run_kiro import temp_settings
 from cli_connections import runner_executable
 
 
@@ -129,7 +129,8 @@ def execute(args, record, binary, prompt):
         with tempfile.TemporaryFile(mode="w+t", encoding="utf-8") as task:
             task.write(prompt)
             task.seek(0)
-            environment = kiro_environment()
+            # Claude uses its own CLI settings and the inherited environment.
+            environment = os.environ.copy()
             environment = kiro_temp.temp_environment(environment, record.state["temp"], bool(temp_settings().get("pytest_basetemp")))
             process = subprocess.Popen(command, cwd=args.cwd, env=environment, stdin=task,
                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
@@ -185,8 +186,10 @@ def execute(args, record, binary, prompt):
                     if not block:
                         selector.unregister(key.fileobj)
         code = process.wait(timeout=max(0.01, deadline - time.monotonic()))
-        if code or malformed or not result or result.get("is_error") or result.get("subtype") != "success" or result.get("permission_denials"):
-            record.write("stderr.log", "Claude did not complete successfully (exit/result/permissions/stream). Inspect raw-events.jsonl; do not retry blindly.\n")
+        # A tool can be denied while Claude still completes the turn. Keep the denials
+        # in the run state so the panel can show them separately from the exit status.
+        if code or malformed or not result or result.get("is_error") or result.get("subtype") != "success":
+            record.write("stderr.log", "Claude did not complete successfully (exit/result/stream). Inspect raw-events.jsonl; do not retry blindly.\n")
             if result:
                 from agent_diagnostics import redact
                 record.write('stderr.log', redact(str(result.get('result') or '') + '\n' +
@@ -201,7 +204,7 @@ def execute(args, record, binary, prompt):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     parser.add_argument("--cwd", required=True, type=Path)
     parser.add_argument("--cli-path", help="Explicit executable path supplied by saved panel connection")
     parser.add_argument("--run-dir", type=Path)

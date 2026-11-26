@@ -28,9 +28,13 @@ class RoleTests(unittest.TestCase):
     def custom(self):
         return {**self.store.get("coder"), "id": "docs", "name": "文档", "description": "维护文档"}
 
+    def choose_cli(self, role_id, cli="claude"):
+        self.store.mutate({"action": "save", "role": {**self.store.get(role_id), "provider": cli},
+                           "revision": self.store.snapshot()["revision"]})
+
     def test_continuation_uses_latest_role_and_refuses_disabled_or_changed_provider(self):
         role = self.store.get('coder')
-        role.update(name='新版编码', instructions='仅修改授权文件', model='opus', effort='high')
+        role.update(name='新版编码', instructions='仅修改授权文件', provider='claude', model='opus', effort='high')
         self.store.mutate({'action': 'save', 'role': role, 'revision': self.store.snapshot()['revision']})
         actual, prompt = agent_roles.continuation('coder', 'claude', '修复问题', store=self.store)
         self.assertEqual(actual['model'], 'opus')
@@ -43,6 +47,8 @@ class RoleTests(unittest.TestCase):
             agent_roles.continuation('coder', 'claude', '修复问题', store=self.store)
 
     def test_dispatch_sets_identity_only_and_direct_calls_clear_inherited_identity(self):
+        run_agent.Connections().set_defaults('claude', 'default-model', 'medium')
+        self.choose_cli('coder')
         class Executed(Exception): pass
         captured = []
         def execute(*args):
@@ -52,48 +58,59 @@ class RoleTests(unittest.TestCase):
                 mock.patch.object(run_agent.os, 'dup2'), mock.patch.object(run_agent.os, 'execv', side_effect=execute):
             with self.assertRaises(Executed): run_agent.main(['--role', 'coder', '--cwd', str(self.base)])
             self.assertEqual(captured[-1], ('coder', '编码'))
-            with self.assertRaises(Executed): run_agent.main(['--provider', 'claude', '--cwd', str(self.base)])
+            with self.assertRaises(SystemExit): run_agent.main(['--provider', 'claude', '--cwd', str(self.base)])
+            with self.assertRaises(Executed): run_agent.main(['--provider', 'claude', '--cwd', str(self.base), '--check'])
             self.assertEqual(captured[-1], (None, None))
 
-    def test_direct_claude_uses_saved_defaults_but_preserves_explicit_selection_and_roles(self):
-        class Executed(Exception): pass
-        calls = []
-        def execute(binary, command):
-            calls.append(command)
-            raise Executed
-        with mock.patch.object(run_agent.Connections, 'defaults', return_value={'model': 'custom-model', 'effort': 'high'}), \
-                mock.patch.object(run_agent.os, 'execv', side_effect=execute):
-            for extra, expected in [([], ['--model', 'custom-model', '--effort', 'high']),
-                    (['--effort', 'low'], ['--effort', 'low', '--model', 'custom-model']),
-                    (['--no-effort'], ['--no-effort', '--model', 'custom-model']),
-                    (['--model=opus'], ['--model=opus']),
-                    (['--model', 'opus', '--effort', 'low'], ['--model', 'opus', '--effort', 'low'])]:
-                with self.assertRaises(Executed): run_agent.main(['--provider', 'claude', *extra])
-                self.assertEqual(calls[-1][2:], expected)
-            with mock.patch.object(run_agent.sys, 'stdin', mock.Mock(read=lambda: 'task')), mock.patch.object(run_agent.os, 'dup2'):
-                with self.assertRaises(Executed): run_agent.main(['--role', 'coder'])
-            self.assertIn('sonnet', calls[-1]); self.assertNotIn('custom-model', calls[-1])
+    def test_inheritance_resolves_current_cli_defaults_but_preserves_overrides(self):
+        store = run_agent.Connections()
+        store.set_defaults('claude', 'default-model', 'high')
+        self.choose_cli('architect')
+        provider, args, _ = run_agent.role_invocation('architect', [], 'task')
+        self.assertEqual((provider, args), ('claude', ['--model', 'default-model', '--effort', 'high']))
+        self.store.mutate({'action':'models', 'provider':'claude', 'revision':self.store.snapshot()['revision'],
+                           'switch_roles':['reviewer'],
+                           'overrides':{'reviewer': {'model':'override-model', 'effort':None}}}, model_settings=True)
+        store.set_defaults('claude', 'next-model', 'low')
+        self.assertEqual(run_agent.role_invocation('architect', [], 'task')[1], ['--model', 'next-model', '--effort', 'low'])
+        self.assertEqual(run_agent.role_invocation('reviewer', [], 'task')[1], ['--model', 'override-model', '--no-effort'])
 
-    def test_direct_resume_prefers_original_session_pair_in_same_workdir(self):
-        import agent_tasks
-        class Executed(Exception): pass
-        calls = []
-        def execute(binary, command): calls.append(command); raise Executed
-        previous = {'provider':'claude', 'session_id':'session', 'cwd':str(self.base),
-                    'model':'original-model', 'effort':'low'}
-        with mock.patch.object(agent_tasks, 'list_tasks', return_value=[previous]), \
-                mock.patch.object(run_agent.Connections, 'defaults', return_value={'model':'new-default', 'effort':'high'}), \
-                mock.patch.object(run_agent.os, 'execv', side_effect=execute):
-            with self.assertRaises(Executed): run_agent.main(['--provider','claude','--resume-id','session','--cwd',str(self.base)])
-            self.assertEqual(calls[-1][-4:], ['--model','original-model','--effort','low'])
-            with self.assertRaises(Executed): run_agent.main(['--provider','claude','--resume-id','session','--cwd','/different'])
-            self.assertEqual(calls[-1][-4:], ['--model','new-default','--effort','high'])
+    def test_roles_require_a_saved_cli_default_or_an_explicit_model(self):
+        for provider in ('claude', 'kiro'):
+            for role_id in agent_roles.BUILTINS:
+                role = {**self.store.get(role_id), 'provider': provider}
+                self.store.mutate({'action': 'save', 'role': role, 'revision': self.store.snapshot()['revision']})
+                with self.assertRaisesRegex(ValueError, '默认模型'):
+                    self.store.get(role_id, executable=True)
+                role.update(model='selected-model', effort=None)
+                self.store.mutate({'action': 'save', 'role': role, 'revision': self.store.snapshot()['revision']})
+                self.assertEqual(self.store.get(role_id, executable=True)['model'], 'selected-model')
+                role.update(model=None)
+                self.store.mutate({'action': 'save', 'role': role, 'revision': self.store.snapshot()['revision']})
+
+    def test_legacy_roles_are_preserved_and_new_builtins_are_inserted_in_order(self):
+        existing = [{**self.store.get('coder'), 'provider':'claude', 'model':'old-model', 'effort':'high'},
+                    {**self.store.get('tester'), 'name':'我的测试'}, self.custom()]
+        self.store.path.parent.mkdir(parents=True)
+        raw = json.dumps({'version':1,'roles':existing}).encode()
+        self.store.path.write_bytes(raw)
+        data = self.store.snapshot()
+        self.assertEqual([r['id'] for r in data['roles']], ['architect','coder','tester','reviewer','docs'])
+        self.assertEqual([data['roles'][i] for i in (1,2,4)], existing)
+        self.assertEqual(self.store.path.read_bytes(), raw)
+        for role_id in ('architect', 'reviewer'):
+            with self.assertRaisesRegex(ValueError, '内置'):
+                self.store.mutate({'action':'delete', 'id':role_id, 'revision':data['revision']})
 
     def test_default_read_is_global_and_has_no_write_or_process_side_effect(self):
         with mock.patch("subprocess.run", side_effect=AssertionError("process")):
             data = self.store.snapshot()
         self.assertEqual(self.store.path, self.base / "config/coder-agents/roles.json")
-        self.assertEqual([r["id"] for r in data["roles"]], ["coder", "tester"])
+        self.assertEqual([r["id"] for r in data["roles"]], ["architect", "coder", "tester", "reviewer"])
+        for role in data["roles"]:
+            self.assertIsNone(role["provider"])
+            with self.assertRaisesRegex(ValueError, "选择 CLI"):
+                self.store.get(role["id"], executable=True)
         self.assertFalse(self.store.path.exists())
         with mock.patch.dict(os.environ, {"XDG_CONFIG_HOME": ""}):
             self.assertEqual(agent_roles.roles_path(), self.base / ".config/coder-agents/roles.json")
@@ -108,7 +125,7 @@ class RoleTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "停用"):
             self.store.get("docs", executable=True)
         self.store.mutate({"action": "delete", "id": "docs", "revision": saved["revision"]})
-        self.assertEqual(len(self.store.snapshot()["roles"]), 2)
+        self.assertEqual(len(self.store.snapshot()["roles"]), 4)
         self.assertEqual(set(json.loads(self.store.path.read_text())), {"version", "roles"})
 
     def test_invalid_and_stale_updates_never_replace_saved_data(self):
@@ -139,11 +156,11 @@ class RoleTests(unittest.TestCase):
         def cli(*args):
             return subprocess.run([sys.executable, "-m", "coder_agents", "roles", *args],
                                   cwd=ROOT, capture_output=True, text=True, env=self.env, timeout=10)
-        self.assertEqual([r["id"] for r in json.loads(cli("list").stdout)["roles"]], ["coder", "tester"])
+        self.assertEqual([r["id"] for r in json.loads(cli("list").stdout)["roles"]], ["architect", "coder", "tester", "reviewer"])
         role = self.store.get("tester"); role["enabled"] = False
         self.store.mutate({"action": "save", "role": role, "revision": self.store.snapshot()["revision"]})
-        self.assertEqual(len(json.loads(cli("list").stdout)["roles"]), 1)
-        self.assertEqual(len(json.loads(cli("list", "--all").stdout)["roles"]), 2)
+        self.assertEqual(len(json.loads(cli("list").stdout)["roles"]), 3)
+        self.assertEqual(len(json.loads(cli("list", "--all").stdout)["roles"]), 4)
         self.assertFalse(json.loads(cli("show", "tester").stdout)["enabled"])
         self.assertNotEqual(cli("show", "missing").returncode, 0)
 
@@ -165,6 +182,12 @@ class RoleTests(unittest.TestCase):
         capture = self.base / "capture.json"
         env = {**self.env, "PATH": str(self.base) + os.pathsep + self.env["PATH"], "CAPTURE": str(capture),
                "CODER_AGENTS_CONFIG": str(self.base / "state/config.json")}
+        with mock.patch.dict(os.environ, env):
+            connections = run_agent.Connections()
+            connections.save({"version": 1, "default_provider": "claude",
+                              "providers": {"claude": {"enabled": True, "path": str(binary)}}})
+            connections.set_defaults("claude", "sonnet", "medium")
+        self.choose_cli("tester")
         directory = self.base / "run"
         done = subprocess.run([sys.executable, "-m", "coder_agents", "run", "--role", "tester",
                                "--cwd", str(self.base), "--run-dir", str(directory)], input="准备阶段：编写登录测试，不运行。",
@@ -196,13 +219,13 @@ class RoleTests(unittest.TestCase):
             return response.status, json.loads(raw) if raw.startswith(b'{') else None
         self.assertEqual(request("GET")[0], 401)
         status, data = request("GET", hdrs=headers)
-        self.assertEqual(status, 200); self.assertEqual(len(data["roles"]), 2)
+        self.assertEqual(status, 200); self.assertEqual(len(data["roles"]), 4)
         payload = {"action": "save", "role": self.custom(), "revision": data["revision"]}
         self.assertEqual(request("POST", payload)[0], 401)
         self.assertEqual(request("POST", payload, {"Cookie": "panel=value", "Content-Type": "application/json"})[0], 403)
         self.assertFalse(self.store.path.exists())
         status, data = request("POST", payload, headers)
-        self.assertEqual(status, 200); self.assertEqual(len(data["roles"]), 3)
+        self.assertEqual(status, 200); self.assertEqual(len(data["roles"]), 5)
         before = self.store.path.read_bytes()
         self.assertEqual(request("POST", payload, headers)[0], 400)
         self.assertEqual(self.store.path.read_bytes(), before)

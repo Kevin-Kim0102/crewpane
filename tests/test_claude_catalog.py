@@ -163,7 +163,7 @@ class ClaudeCatalogTests(unittest.TestCase):
             models, _ = self.catalog([{"data": [{"id": "claude-sonnet-new"}]}])
             models.snapshot(force=True)
             store = agent_roles.RoleStore()
-            role = store.get("coder")
+            role = {**store.get("coder"), "provider": "claude", "model": "sonnet", "effort": "medium"}
             store.mutate({"action": "save", "role": role, "revision": store.snapshot()["revision"]})
             self.assertEqual(store.get("coder")["model"], "sonnet")
             self.assertEqual(models.validate("sonnet", "medium"), ("sonnet", "medium"))
@@ -181,7 +181,9 @@ class ClaudeCatalogTests(unittest.TestCase):
         self.assertEqual(store.defaults("claude")["model"], "claude-sonnet-new")
         self.assertFalse((self.home / ".claude/settings.json").exists())
         with self.assertRaises(ValueError): store.set_defaults("claude", "--bad", "high")
-        with self.assertRaises(ValueError): store.set_defaults("kiro", "anything", "high")
+        store.set_defaults("kiro", "a-kiro-model", "high")
+        self.assertEqual(store.defaults("kiro"), {"model": "a-kiro-model", "effort": "high"})
+        self.assertEqual(store.defaults("claude")["model"], "claude-sonnet-new")
 
 
 if __name__ == "__main__": unittest.main()

@@ -188,6 +188,7 @@ class DirectReview(unittest.TestCase):
         rename = kiro_review.git_diff(self.cwd, "staged", "new_name.txt")
         self.assertEqual(rename["code"], "R")
         self.assertIn("rename from old_name.txt", rename["diff"])
+        self.assertEqual(rename["unchanged"], (self.fx.repo / "new_name.txt").read_text())
         deleted = kiro_review.git_diff(self.cwd, "staged", "del.txt")
         self.assertIn("-gone", deleted["diff"])
         untracked = kiro_review.git_diff(self.cwd, "untracked", "u.txt")
@@ -196,6 +197,31 @@ class DirectReview(unittest.TestCase):
         binary = kiro_review.git_diff(self.cwd, "unstaged", "bin.dat")
         self.assertTrue(binary["binary"])
         self.assertEqual(binary["diff"], "")
+
+    def test_diff_keeps_the_entire_file_in_staged_and_unstaged_views(self):
+        root = self.fx.base / "whole-diff"
+        root.mkdir()
+        git(root, "init", "-q", "-b", "main")
+        lines = ["context %04d\n" % i for i in range(7200)]
+        write(root / "complete.txt", "".join(lines))
+        git(root, "add", "complete.txt")
+        git(root, "commit", "-qm", "complete", "--", "complete.txt")
+        lines[3400] = "staged change\n"
+        write(root / "complete.txt", "".join(lines))
+        git(root, "add", "complete.txt")
+        lines[3900] = "unstaged change\n"
+        write(root / "complete.txt", "".join(lines))
+        staged = kiro_review.git_diff(str(root), "staged", "complete.txt")
+        unstaged = kiro_review.git_diff(str(root), "unstaged", "complete.txt")
+        for result in (staged, unstaged):
+            self.assertFalse(result["truncated"])
+            self.assertIn("\n context 0000\n", result["diff"])
+            self.assertTrue(result["diff"].endswith("\n context 7199\n"))
+            self.assertEqual((result["added"], result["deleted"]), (1, 1))
+        self.assertIn("\n+staged change\n", staged["diff"])
+        self.assertNotIn("unstaged change", staged["diff"])
+        self.assertIn("\n staged change\n", unstaged["diff"])
+        self.assertIn("\n+unstaged change\n", unstaged["diff"])
 
     def test_diff_only_for_listed_files(self):
         self.assertEqual(kiro_review.git_diff(self.cwd, "staged", "b.txt")["state"], "missing")  # only unstaged
@@ -280,7 +306,7 @@ class DirectReview(unittest.TestCase):
         write(big / "f.txt", "a\n")
         git(big, "add", "-A")
         git(big, "commit", "-qm", "i")
-        write(big / "f.txt", "".join("line %d some padding text to make it long\n" % i for i in range(60000)))
+        write(big / "f.txt", "".join("line %d some padding text to make it long\n" % i for i in range(130000)))
         result = kiro_review.git_diff(str(big), "unstaged", "f.txt")
         self.assertTrue(result["truncated"])
         self.assertLessEqual(len(result["diff"].encode()), kiro_review.MAX_DIFF_BYTES)

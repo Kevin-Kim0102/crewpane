@@ -346,7 +346,7 @@ def judge(record, status, selection_failed, result):
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     parser.add_argument("--cwd", required=True, type=Path)
     parser.add_argument("--cli-path", help="Executable path from saved CLI connection")
     parser.add_argument("--timeout", type=float, default=3600, help="Overall task deadline in seconds")

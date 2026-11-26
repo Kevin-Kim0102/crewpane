@@ -7,7 +7,7 @@ Coder-Agents 的方向是通用的本地 CLI Agent 可视化面板：Python 标�
 ## Provider 架构
 
 ```text
-Codex skill / 终端 → coder_agents run --provider claude|kiro
+Codex skill / 终端 → coder_agents run --role ID
 浏览器 → watch_kiro.py → 按对话 provider 选择 runner
                             ├─ run_claude.py → claude -p（stream-json）
                             └─ run_kiro.py → ACP relay → kiro-cli
@@ -23,7 +23,7 @@ Claude 用独立 POSIX 进程组运行。取消和超时先发 SIGTERM，必要�
 
 Claude 模型目录来自当前生效的 API 地址，主动读取并按请求配置隔离缓存。`claude_catalog.py` 解析 CLI 配置并查询有界、禁止重定向的模型接口；思考强度选项来自 CLI 规则，实际支持由执行时校验。只支持可复用 API Key/Auth Token 的目录认证，不读取私有订阅凭据。产品默认模型和强度保存在连接配置中，角色调用仍以最新角色配置为准。用量和报告费用来自当前 result 事件；`claude_usage.py` 可主动从当前 Claude API 地址的 `/v1/usage` 读取 Sub2API 兼容额度，按配置指纹隔离缓存，不固定域名。未返回重置时间时不推算；不支持协议的 API 明确提示。Kiro 的实际模型目录、强度门禁和额度接口保留原行为。
 
-`agent_tasks.py` 共用任务进程身份、异常恢复、单任务停止及全局日志来源登记。两个 runner 都记录启动周期、进程出生标识和独立 CLI 进程组，并支持整体执行超时。`tasks list/show/stop` 与面板共用能力，身份不确定时不误杀其他进程。`agent_diagnostics.py` 统一错误分类及有界脱敏摘要。任务只记录角色 ID/名称，不保留角色配置快照；面板续聊重新读取角色并检查后端是否一致。
+`agent_tasks.py` 共用任务进程身份、异常恢复、单任务停止及全局日志来源登记。两个 runner 都记录启动周期、进程出生标识和独立 CLI 进程组，并支持整体执行超时。`tasks list/show/stop` 与面板共用能力，身份不确定时不误杀其他进程。`agent_diagnostics.py` 统一错误分类及有界脱敏摘要。任务记录角色 ID 和名称，不保留角色配置快照。面板标记手动调整执行配置的对话；续聊读取最新角色职责，并沿用这类对话记录的 CLI、模型和强度。其他角色对话跟随角色配置并检查后端是否一致。
 
 ## Kiro 内部架构
 
@@ -48,11 +48,14 @@ Claude 模型目录来自当前生效的 API 地址，主动读取并按请求�
 | `kiro_catalog.py` | 账户模型目录与强度缓存 |
 | `kiro_usage.py` | 只读账户额度 |
 | `kiro_review.py` | 只读文件/Git 审查 |
+| `project_workspace.py` | 按项目列目录、读取带版本的文本、创建、保存和移到回收站 |
 | `kiro_temp.py` | 任务临时目录的归属校验与显式清理 |
 | `coder_agents/` | 新增：统一 CLI 与服务安装器，不改变上述模块的行为边界 |
 
 安全约束保持不变：只监听回环；浏览器只拿 HttpOnly cookie，token 不出现在页面；模型与强度由后端对照真实目录校验；
 自动清理由 `auto_cleanup_enabled` 控制：`serve`/`service install` 新建的配置写入 `false`，但缺少该键的旧配置按开启处理；没有明确请求不会删除任何对话或日志。
+
+项目浏览使用 Codex 项目列表中的主根目录，文件树按层加载。写操作使用同源 JSON 和现有登录 cookie，校验项目根目录与文件版本；保存通过同目录临时文件原子替换，Git 查询仍只读。Monaco 和两个 Web Worker 随包发布，首次打开文本时从面板同源加载。
 
 ## 数据位置
 

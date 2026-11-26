@@ -281,7 +281,7 @@ def build_parser():
     serve.add_argument("--port", type=int, help="仅在首次创建配置时使用，默认 %d" % service.DEFAULT_PORT)
     start = sub.add_parser("start", help="后台启动面板，已运行时复用，确认就绪后返回地址")
     start.add_argument("--port", type=int, help="仅在首次创建配置时使用，默认 %d" % service.DEFAULT_PORT)
-    sub.add_parser("run", help="运行 CLI 任务：--role ID 或 --provider kiro|claude --cwd DIR（默认 Claude）",
+    sub.add_parser("run", help="派发任务：--role ID --cwd DIR；诊断：--provider kiro|claude --check",
                    add_help=False)
     tasks = sub.add_parser("tasks", help="查询任务、读取结果或停止单个任务")
     task_sub = tasks.add_subparsers(dest="action", required=True)
