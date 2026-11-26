@@ -14,7 +14,7 @@ import sys
 from . import ROOT
 
 UNIT = "coder-agents"
-LEGACY_UNIT = "codex-kiro-panel"  # the installer shipped before Coder-Agents; this module never edits it
+LEGACY_UNIT = "codex-kiro-panel"  # the installer shipped before crewpane; this module never edits it
 DEFAULT_PORT = 47831
 ACTIVE_STATUSES = {"checking", "running"}
 TOKEN_RE = re.compile(r"[A-Za-z0-9_-]{24,}")
@@ -53,10 +53,10 @@ def service_path_value(environment=None):
 
 def render_units(python, root, config, port, path_value):
     watch = Path(root) / "scripts/watch_kiro.py"
-    socket_text = (f"[Unit]\nDescription=Coder-Agents fixed local entry (loopback only)\n\n"
+    socket_text = (f"[Unit]\nDescription=crewpane fixed local entry (loopback only)\n\n"
                    f"[Socket]\nListenStream=127.0.0.1:{int(port)}\nAccept=no\nNoDelay=true\nService={UNIT}.service\n\n"
                    f"[Install]\nWantedBy=sockets.target\n")
-    service_text = (f"[Unit]\nDescription=Coder-Agents panel on demand\nRequires={UNIT}.socket\nAfter={UNIT}.socket\n\n"
+    service_text = (f"[Unit]\nDescription=crewpane panel on demand\nRequires={UNIT}.socket\nAfter={UNIT}.socket\n\n"
                     f"[Service]\nType=simple\n"
                     f"ExecStart={_quote(python)} {_quote(watch)} {_quote('--serve')} {_quote('--systemd-socket')} "
                     f"{_quote('--config')} {_quote(config)}\n"
@@ -268,7 +268,7 @@ def plan_uninstall(environment=None):
         blockers.append(str(error))
     present = [n for n in (f"{UNIT}.socket", f"{UNIT}.service") if (units / n).exists()]
     if not present:
-        blockers.append("没有找到 Coder-Agents 的服务单元")
+        blockers.append("没有找到 crewpane 的服务单元")
     return {"unit_dir": str(units), "config": str(config_path(environment)), "remove": present, "blockers": blockers,
             "systemctl": [["disable", "--now", f"{UNIT}.socket"], ["stop", f"{UNIT}.service"]]}
 

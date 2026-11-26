@@ -1,28 +1,28 @@
 ---
-name: coder-agents
-description: Start, open or close the Coder-Agents panel, or delegate coding and testing to configurable global roles using local Claude Code or Kiro CLI. Use when the user requests this workbench or a task benefits from CLI subagent delegation; inspect actual results and coordinate fixes.
+name: crewpane
+description: Start, open or close the crewpane panel, or delegate coding and testing to configurable global roles using local Claude Code or Kiro CLI. Use when the user requests this workbench or a task benefits from CLI subagent delegation; inspect actual results and coordinate fixes.
 ---
 
-# Coder-Agents
+# crewpane
 
-Template. Replace `{{CODER_AGENTS_ROOT}}` with the absolute path of your Coder-Agents checkout when you install it
+Template. Replace `{{CODER_AGENTS_ROOT}}` with the absolute path of your crewpane checkout when you install it
 (see `docs/codex-integration.md`). Do not commit the rendered file.
 
-Coder-Agents is a subagent workbench for tasks delegated by a primary agent. It is not recommended for standalone development as the primary agent. Codex owns scoping, delegation, coordination, review and final acceptance; use direct panel messages for task follow-ups and diagnostics.
+crewpane is a subagent workbench for tasks delegated by a primary agent. It is not recommended for standalone development as the primary agent. Codex owns scoping, delegation, coordination, review and final acceptance; use direct panel messages for task follow-ups and diagnostics.
 
 ## Commands
 
-All commands run as `PYTHONPATH="{{CODER_AGENTS_ROOT}}" python3 -m coder_agents <command>`. When rendering this template, shell-quote the path appropriately if it contains shell metacharacters.
+All commands run as `PYTHONPATH="{{CODER_AGENTS_ROOT}}" python3 -m crewpane <command>`. When rendering this template, shell-quote the path appropriately if it contains shell metacharacters.
 
 ## Start, open and close the panel
 
-When the user says “启动 Coder-Agents，打开面板” or asks to open this workbench:
+When the user says “启动 crewpane，打开面板” or asks to open this workbench:
 
 1. Run `start` using the absolute checkout entry above, from any project. It starts the Python server in the background, verifies readiness, and returns the public localhost URL. If already running, it reuses the verified instance. Do not use foreground `serve`, shell `&`, `nohup`, or install a system service for this request.
 2. Only after `start` succeeds, open the returned URL in Codex's browser using the available browser/open-panel tool. If unavailable, return a clickable URL. Do not claim that the browser opened unless the tool succeeded. Never put the private config token in the browser URL or output.
 3. On a startup failure, report the error and log location. If the command was denied specifically by sandbox permissions, request the normal execution approval for that command. Do not silently switch ports or kill another listener.
 
-When the user says “关闭 Coder-Agents 面板”, run `stop`. It closes only the panel server; CLI tasks and history remain. Do not kill runners or delete logs. Use `status` if asked whether it is running; a listening port alone does not prove service identity, while a successful `start` does.
+When the user says “关闭 crewpane 面板”, run `stop`. It closes only the panel server; CLI tasks and history remain. Do not kill runners or delete logs. Use `status` if asked whether it is running; a listening port alone does not prove service identity, while a successful `start` does.
 
 The panel is optional for delegation. Do not start it just to run a coding/testing task unless the user asks to see it. A stopped or idle-exited panel can be reopened by repeating `start`. Ordinary role edits do not require reinstalling this skill.
 

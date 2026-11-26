@@ -1,4 +1,4 @@
-"""Coder-Agents: a local browser panel for Kiro CLI and Claude Code sessions."""
+"""crewpane: a local browser panel for Kiro CLI and Claude Code sessions."""
 from pathlib import Path
 
 __version__ = "0.1.0"

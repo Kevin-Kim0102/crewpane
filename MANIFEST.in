@@ -6,6 +6,7 @@ include assets/vendor/*
 include examples/settings.example.json
 include docs/*.md
 recursive-include coder_agents *.py
+recursive-include crewpane *.py
 
 # Never ship run output, caches or personal configuration.
 prune work

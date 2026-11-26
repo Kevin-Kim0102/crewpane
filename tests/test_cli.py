@@ -42,9 +42,9 @@ class Env(unittest.TestCase):
         self.config.write_text(json.dumps(data))
         return data
 
-    def run_cli(self, *args, extra_env=None):
+    def run_cli(self, *args, extra_env=None, module="crewpane"):
         env = {**self.env, **(extra_env or {}), "PYTHONDONTWRITEBYTECODE": "1"}
-        return subprocess.run([sys.executable, "-m", "coder_agents", *args], cwd=ROOT, env=env, capture_output=True,
+        return subprocess.run([sys.executable, "-m", module, *args], cwd=ROOT, env=env, capture_output=True,
                               text=True, timeout=60)
 
     def make_run(self, status, boot_id=None):
@@ -66,6 +66,9 @@ class CliTests(Env):
             self.assertEqual(done.returncode, 0, done.stderr)
         self.assertIn("Linux", self.run_cli("--help").stdout)
         self.assertIn("未找到", self.run_cli("status").stdout)
+        legacy = self.run_cli("--version", module="coder_agents")
+        self.assertEqual(legacy.returncode, 0, legacy.stderr)
+        self.assertEqual(legacy.stdout, self.run_cli("--version").stdout)
 
     def test_status_hides_token(self):
         self.write_config()
@@ -177,7 +180,7 @@ class ServiceTests(Env):
         self.assertIn(str(ROOT / "scripts/watch_kiro.py"), service_unit)
         self.assertIn(str(self.config), service_unit)
         self.assertEqual(set(plan["units"]), {"coder-agents.socket", "coder-agents.service"})  # no cleanup timer
-        self.assertNotIn("cleanup", service_unit.replace("Coder-Agents panel", ""))
+        self.assertNotIn("cleanup", service_unit)
 
     def test_dry_run_changes_nothing(self):
         done = self.run_cli("service", "install", "--port", str(free_port()))

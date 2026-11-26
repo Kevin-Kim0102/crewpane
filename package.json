@@ -1,8 +1,8 @@
 {
-  "name": "coder-agents-tests",
+  "name": "crewpane-tests",
   "version": "0.1.0",
   "private": true,
-  "description": "DOM tests for the Coder-Agents browser viewer (assets/viewer.html). No runtime npm dependencies.",
+  "description": "DOM tests for the crewpane browser viewer (assets/viewer.html). No runtime npm dependencies.",
   "scripts": {
     "test": "node tests/dom_review.cjs"
   },

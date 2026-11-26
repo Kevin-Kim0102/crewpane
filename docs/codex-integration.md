@@ -1,34 +1,34 @@
 # Codex 集成（可选）
 
-Coder-Agents 定位为 Subagent 工作台，仅用于执行主 Agent 委派的任务，不建议直接作为主 Agent 独立完成开发。建议由 Codex 等主 Agent 拆解需求、协调编码与测试，并审核和最终验收。技术上不依赖 Codex，但面板中的直接消息主要用于补充指令和排查问题。本页介绍 Codex 的集成方式，基本使用见 [README](../README.md)。
+crewpane 定位为 Subagent 工作台，仅用于执行主 Agent 委派的任务，不建议直接作为主 Agent 独立完成开发。建议由 Codex 等主 Agent 拆解需求、协调编码与测试，并审核和最终验收。技术上不依赖 Codex，但面板中的直接消息主要用于补充指令和排查问题。本页介绍 Codex 的集成方式，基本使用见 [README](../README.md)。
 
 模板支持 **Claude Code 与 Kiro CLI**。委派必须使用 `run --role ID` 动态读取用户角色；`--provider` 仅用于 `--check` 诊断。无需先启动面板，也无需 MCP 服务。CLI 使用本机已有登录状态。
 
-在面板“设置 → Codex 技能”复制安装提示词，在此项目的 Codex 对话中执行即可配置全局 `coder-agents` Skill。提示词仅指导 Codex 定位项目、自行查找全局技能目录、按模板安装并校验，不展示本机源码路径或硬编码安装地址。角色读取、调度与验收规则统一维护在 Skill 模板中。该页面只复制提示词，不会直接写入个人技能目录。
+在面板“设置 → Codex 技能”复制安装提示词，在此项目的 Codex 对话中执行即可配置全局 `crewpane` Skill。提示词仅指导 Codex 定位项目、自行查找全局技能目录、按模板安装并校验，不展示本机源码路径或硬编码安装地址。角色读取、调度与验收规则统一维护在 Skill 模板中。该页面只复制提示词，不会直接写入个人技能目录。
 
 也可以用模板生成**你自己的**全局 skill；渲染结果含个人绝对路径，不要提交到仓库。已有同名技能时先检查并保留自定义内容。
 
 ```bash
-ROOT="$(pwd)"                                  # Coder-Agents 源码目录
-DEST="${CODEX_HOME:-$HOME/.codex}/skills/coder-agents"
+ROOT="$(pwd)"                                  # crewpane 源码目录
+DEST="${CODEX_HOME:-$HOME/.codex}/skills/crewpane"
 mkdir -p "$DEST/agents"
 python3 -c 'import pathlib,sys; src=pathlib.Path(sys.argv[1]); dest=pathlib.Path(sys.argv[2]); dest.write_text((src/"integrations/codex/SKILL.md.template").read_text().replace("{{CODER_AGENTS_ROOT}}",str(src)))' "$ROOT" "$DEST/SKILL.md"
 cp integrations/codex/openai.yaml.template "$DEST/agents/openai.yaml"
 ```
 
 - 使用这个 skill **不需要修改全局 `AGENTS.md`**，本仓库也没有为此提供 setup 命令。只有你希望在所有项目里都默认委派时，才自行手动往个人偏好里添加规则；本仓库不会替你改。
-- 模板中的命令统一为 `PYTHONPATH=<ROOT> python3 -m coder_agents ...`。
+- 模板中的命令统一为 `PYTHONPATH=<ROOT> python3 -m crewpane ...`。
 - 面板读取 Codex 项目列表是只读的，缺少 Codex 时自动降级为“其他对话”。
 - 不要在启用本 skill 的同时让旧 `kiro-coding`/`kiro-panel` skill 去操作同一端口的另一份服务；切换前先完成 [迁移](architecture.md#从旧安装迁移)。
 - 直接调用保留 Kiro 默认模型门禁；角色调用采用用户保存的模型/思考强度。模型与工具权限由对应 CLI 验证，不接受静默回退。
 
 ## 一句话打开和关闭面板
 
-安装或更新 Skill 后，直接告诉 Codex：“启动 Coder-Agents，打开面板”或“关闭 Coder-Agents 面板”。Skill 调用 `start` 等待服务就绪，再通过 Codex 的浏览器工具打开返回地址；关闭时调用 `stop`。后台启动不依赖终端持续打开，重复调用复用已有面板。面板服务的空闲退出行为不变，需要时再说一句打开即可。
+安装或更新 Skill 后，直接告诉 Codex：“启动 crewpane，打开面板”或“关闭 crewpane 面板”。Skill 调用 `start` 等待服务就绪，再通过 Codex 的浏览器工具打开返回地址；关闭时调用 `stop`。后台启动不依赖终端持续打开，重复调用复用已有面板。面板服务的空闲退出行为不变，需要时再说一句打开即可。
 
 ```bash
-PYTHONPATH="<ROOT>" python3 -m coder_agents start
-PYTHONPATH="<ROOT>" python3 -m coder_agents stop
+PYTHONPATH="<ROOT>" python3 -m crewpane start
+PYTHONPATH="<ROOT>" python3 -m crewpane stop
 ```
 
 启动失败不会打开页面；端口被其他程序或无法验证的旧服务占用时明确报告，不自动换端口或结束其他进程。后台日志位于面板配置旁的 `panel.log`。仅执行角色任务不需要启动面板。
@@ -46,10 +46,10 @@ PYTHONPATH="<ROOT>" python3 -m coder_agents stop
 - Codex 负责分工、时序、反馈协调、审核与最终验收，不是本产品的角色。
 
 ```bash
-PYTHONPATH="<ROOT>" python3 -m coder_agents roles list
-PYTHONPATH="<ROOT>" python3 -m coder_agents roles show tester
-PYTHONPATH="<ROOT>" python3 -m coder_agents roles list --all
-PYTHONPATH="<ROOT>" python3 -m coder_agents run --role coder \
+PYTHONPATH="<ROOT>" python3 -m crewpane roles list
+PYTHONPATH="<ROOT>" python3 -m crewpane roles show tester
+PYTHONPATH="<ROOT>" python3 -m crewpane roles list --all
+PYTHONPATH="<ROOT>" python3 -m crewpane run --role coder \
   --cwd /绝对路径/项目 --agent-id coder --title "实现任务" < task.txt
 ```
 
@@ -59,12 +59,12 @@ PYTHONPATH="<ROOT>" python3 -m coder_agents run --role coder \
 
 ## Claude 委派与续聊
 
-安装后在新对话中加载。Skill 允许自动选用，读取用户的当前全局角色；是否委派由 Codex 根据任务判断。也可用 `$coder-agents` 明确调用，例如：“使用 coder-agents，让编码和测试角色完成这个功能，由你审核并验收”。仅在实际请求中授权的范围内运行工具。
+安装后在新对话中加载。Skill 允许自动选用，读取用户的当前全局角色；是否委派由 Codex 根据任务判断。也可用 `$crewpane` 明确调用，例如：“使用 crewpane，让编码和测试角色完成这个功能，由你审核并验收”。仅在实际请求中授权的范围内运行工具。
 
 ```bash
 # 在任意目录调用源码 checkout 中的入口；用实际路径替换 <ROOT>。
 printf '%s\n' '阅读项目并总结，不修改文件' | \
-  PYTHONPATH=<ROOT> python3 -m coder_agents run --role reviewer \
+  PYTHONPATH=<ROOT> python3 -m crewpane run --role reviewer \
     --cwd /绝对路径/项目 --agent-id reviewer --title "Claude 审阅" \
     --run-dir /绝对路径/新的运行日志目录
 ```
@@ -93,4 +93,4 @@ macOS 和 Linux 日常使用 `start` 后台启动，`serve` 留给前台调试�
 
 在面板设置中连接后，终端和 Codex 委派会优先使用 `connections.json` 中的路径；断开的 CLI 不会静默回退到 PATH。尚无该后端的连接记录时，显式 CLI 调用仍可通过 PATH 使用本机 CLI。面板本身始终要求显式连接。连接检查不会请求模型，测试调用会消耗额度。
 
-Claude 任务和「测试调用」使用 Claude CLI 自身的 API 配置，并继承启动环境中已有的代理变量。Coder-Agents 用户设置中的 `proxy_defaults` 只用于 Kiro，不会注入 Claude，因此无需为 Claude 网关维护 `NO_PROXY` 域名名单。
+Claude 任务和「测试调用」使用 Claude CLI 自身的 API 配置，并继承启动环境中已有的代理变量。crewpane 用户设置中的 `proxy_defaults` 只用于 Kiro，不会注入 Claude，因此无需为 Claude 网关维护 `NO_PROXY` 域名名单。

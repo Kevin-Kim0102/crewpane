@@ -3,7 +3,7 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "coder-agents"
+name = "crewpane"
 version = "0.1.0"
 description = "Local browser panel for Kiro CLI and Claude Code coding sessions."
 requires-python = ">=3.9"
@@ -12,8 +12,9 @@ readme = "README.md"
 dependencies = []
 
 [project.scripts]
+crewpane = "coder_agents.cli:main"
 coder-agents = "coder_agents.cli:main"
 
 [tool.setuptools]
-packages = ["coder_agents"]
+packages = ["coder_agents", "crewpane"]
 # scripts/ and assets/ are added to the wheel by setup.py (coder_agents/_runtime/).

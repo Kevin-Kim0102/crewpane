@@ -2,12 +2,12 @@
 
 ## 产品方向
 
-Coder-Agents 的方向是通用的本地 CLI Agent 可视化面板：Python 标准库服务 + 浏览器页面 + 本机已安装的 CLI Agent。已接入 Kiro CLI 与 Claude Code。
+crewpane 的方向是通用的本地 CLI Agent 可视化面板：Python 标准库服务 + 浏览器页面 + 本机已安装的 CLI Agent。已接入 Kiro CLI 与 Claude Code。
 
 ## Provider 架构
 
 ```text
-Codex skill / 终端 → coder_agents run --role ID
+Codex skill / 终端 → crewpane run --role ID
 浏览器 → watch_kiro.py → 按对话 provider 选择 runner
                             ├─ run_claude.py → claude -p（stream-json）
                             └─ run_kiro.py → ACP relay → kiro-cli
@@ -76,9 +76,9 @@ Claude 模型目录来自当前生效的 API 地址，主动读取并按请求�
 
 旧安装由 `~/.codex/skills/kiro-coding` 与 `codex-kiro-panel.*` 用户单元组成。本阶段**不**改动它们：
 
-1. 并行使用：旧服务继续占用 47831，新仓库可用 `python3 -m coder_agents status`、`run`、`settings` 等。
-2. 设置迁移（可选）：`python3 -m coder_agents settings migrate-legacy --apply`。
-3. 代码来源统一（无需改 systemd）：`python3 -m coder_agents legacy link --apply`，见 [legacy-link.md](legacy-link.md)。
+1. 并行使用：旧服务继续占用 47831，新仓库可用 `python3 -m crewpane status`、`run`、`settings` 等。
+2. 设置迁移（可选）：`python3 -m crewpane settings migrate-legacy --apply`。
+3. 代码来源统一（无需改 systemd）：`python3 -m crewpane legacy link --apply`，见 [legacy-link.md](legacy-link.md)。
 4. 服务切换（后续阶段，需人工执行）：在没有活跃任务时，确认旧服务已按计划停用后再运行 `service install --apply`。
    安装器沿用旧 `config.json`/注册表，所以历史、端口和 token 保持不变；旧单元文件与清理定时器由使用者自行处理。
 5. `~/.local/state/kiro-panel` 及其中的历史、`work/kiro-runs` 不会被迁移或删除。
@@ -92,7 +92,7 @@ Claude 模型目录来自当前生效的 API 地址，主动读取并按请求�
 
 ## 打包说明
 
-除源码克隆外，也支持 `pip install -e .` 和普通安装，但文档主路径是源码克隆。wheel 内含 `coder_agents/_runtime/{scripts,assets,examples}`，由 `setup.py` 在从 sdist 构建时打入，源码树缺文件时构建失败；`MANIFEST.in` 精确列出 sdist 内容（排除 work、缓存、个人配置）。安装后用 `python3 -m coder_agents selfcheck` 验证。
+除源码克隆外，也支持 `pip install -e .` 和普通安装，但文档主路径是源码克隆。wheel 内含 `coder_agents/_runtime/{scripts,assets,examples}`，由 `setup.py` 在从 sdist 构建时打入，源码树缺文件时构建失败；`MANIFEST.in` 精确列出 sdist 内容（排除 work、缓存、个人配置）。安装后用 `python3 -m crewpane selfcheck` 验证。
 
 ## CLI 连接设置
 

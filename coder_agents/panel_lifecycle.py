@@ -40,7 +40,7 @@ def start_panel(config_path, config, timeout=10):
         if panel_ready(config):
             return url
         if service.port_in_use(config["port"]):
-            raise ValueError("面板端口已被占用，但无法确认是当前 Coder-Agents 服务；不会启动第二个实例。")
+            raise ValueError("面板端口已被占用，但无法确认是当前 crewpane 服务；不会启动第二个实例。")
         log_path = config_path.parent / "panel.log"
         fd = os.open(log_path, os.O_CREAT | os.O_WRONLY | os.O_APPEND, 0o600)
         with os.fdopen(fd, "ab") as log:

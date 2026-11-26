@@ -1,4 +1,4 @@
-"""Command line: python3 -m coder_agents <command>. Runs from a source checkout, no pip install needed."""
+"""Command line: python3 -m crewpane <command>. Runs from a source checkout, no pip install needed."""
 import argparse
 import json
 import os
@@ -46,7 +46,7 @@ def cmd_status(args):
     config, problem = service.read_config(config_file)
     settings = settings_file()
     active, stale = service.find_active_tasks(config_file)
-    print(f"Coder-Agents {__version__}（源码目录 {ROOT}）")
+    print(f"crewpane {__version__}（源码目录 {ROOT}）")
     print(f"平台: {sys.platform}（前台面板支持 macOS / Linux；systemd 服务仅 Linux）  Python: {sys.version.split()[0]}")
     for binary in ("kiro-cli", "claude"):
         print(f"{binary}: {shutil.which(binary) or '未在 PATH 中找到'}")
@@ -272,9 +272,9 @@ def cmd_tasks(args):
 
 
 def build_parser():
-    parser = argparse.ArgumentParser(prog="python3 -m coder_agents",
-                                     description="Coder-Agents：本机 Kiro / Claude Code 编码面板（macOS / Linux；systemd 仅 Linux）。")
-    parser.add_argument("--version", action="version", version=f"coder-agents {__version__}")
+    parser = argparse.ArgumentParser(prog="python3 -m crewpane",
+                                     description="crewpane：本机 Kiro / Claude Code 编码面板（macOS / Linux；systemd 仅 Linux）。")
+    parser.add_argument("--version", action="version", version=f"crewpane {__version__}")
     sub = parser.add_subparsers(dest="command", metavar="<命令>")
     sub.add_parser("status", help="只读：显示路径、配置、端口、活跃任务与服务单元状态")
     serve = sub.add_parser("serve", help="前台启动面板（无需 systemd），用浏览器打开 http://127.0.0.1:<端口>/")

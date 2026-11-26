@@ -1,4 +1,4 @@
-# Coder-Agents
+# crewpane
 
 让 Codex 调用本机 Claude Code 或 Kiro CLI 完成编码和测试，并通过网页面板查看任务、对话和执行结果。
 
@@ -9,12 +9,14 @@
 需要 macOS 或 Linux、Python 3.9+，以及 Claude Code 或 Kiro CLI。CLI 的安装方法也可在面板的“CLI 连接”中查看。
 
 ```bash
-git clone https://github.com/Kevin-Kim0102/Coder-Agents.git
-cd Coder-Agents
-python3 -m coder_agents start
+git clone https://github.com/Kevin-Kim0102/crewpane.git
+cd crewpane
+python3 -m crewpane start
 ```
 
 打开命令返回的地址，默认是 [http://127.0.0.1:47831/](http://127.0.0.1:47831/)。服务在后台运行，可以关闭终端；已启动时会复用现有面板。
+
+旧版的 `coder-agents` 命令和 `python3 -m coder_agents` 入口仍可使用，已有配置会继续沿用。
 
 ## 2. 连接 CLI
 
@@ -51,7 +53,7 @@ Claude 额度栏可点击“刷新”，从当前项目生效的 CLI API 地址�
 
 例如，对 Codex 说：
 
-> 使用 $coder-agents，让编码和测试角色完成登录功能，由你协调并验收。
+> 使用 $crewpane，让编码和测试角色完成登录功能，由你协调并验收。
 
 面板中的直接消息用于补充任务指令、排查问题和查看执行结果；完整开发任务建议交给主 Agent 统一协调。
 
@@ -62,9 +64,9 @@ Claude 额度栏可点击“刷新”，从当前项目生效的 CLI API 地址�
 Codex 也可以通过统一命令管理任务：
 
 ```bash
-python3 -m coder_agents tasks list
-python3 -m coder_agents tasks show --run-dir /path/to/run
-python3 -m coder_agents tasks stop --run-dir /path/to/run
+python3 -m crewpane tasks list
+python3 -m crewpane tasks show --run-dir /path/to/run
+python3 -m crewpane tasks stop --run-dir /path/to/run
 ```
 
 任务启动时自动登记项目和日志目录，因此独立 worktree 或自定义日志位置的任务也能在面板中查看。
@@ -87,17 +89,17 @@ python3 -m coder_agents tasks stop --run-dir /path/to/run
 
 安装 Skill 后，可以直接对 Codex 说：
 
-> 关闭 Coder-Agents 面板。
+> 关闭 crewpane 面板。
 
-> 启动 Coder-Agents，打开面板。
+> 启动 crewpane，打开面板。
 
 也可在 **设置 → 服务与资源** 中关闭服务。
 
 也可以在项目目录终端中手动执行：
 
 ```bash
-python3 -m coder_agents start   # 后台启动
-python3 -m coder_agents stop    # 关闭服务
+python3 -m crewpane start   # 后台启动
+python3 -m crewpane stop    # 关闭服务
 ```
 
 关闭面板服务会保留 CLI 连接、角色配置和历史记录，正在运行的 CLI 任务继续执行。

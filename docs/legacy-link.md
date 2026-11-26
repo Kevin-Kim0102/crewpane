@@ -21,11 +21,11 @@
 ## 命令
 
 ```bash
-cd /path/to/Coder-Agents
-python3 -m coder_agents legacy link                 # 预演，查看计划
-python3 -m coder_agents legacy link --apply         # 执行
-python3 -m coder_agents selfcheck                   # 检查资源
-python3 -m coder_agents status
+cd /path/to/crewpane
+python3 -m crewpane legacy link                 # 预演，查看计划
+python3 -m crewpane legacy link --apply         # 执行
+python3 -m crewpane selfcheck                   # 检查资源
+python3 -m crewpane status
 ```
 
 ## 回滚
@@ -33,8 +33,8 @@ python3 -m coder_agents status
 推荐（同样默认预演，且同样拒绝活跃任务）：
 
 ```bash
-python3 -m coder_agents legacy unlink               # 预演；有多个备份时加 --backup <备份目录>
-python3 -m coder_agents legacy unlink --apply
+python3 -m crewpane legacy unlink               # 预演；有多个备份时加 --backup <备份目录>
+python3 -m crewpane legacy unlink --apply
 ```
 
 它会删除两个符号链接（只在它们指向本仓库时），把备份里的目录改回原位，并把备份里的 `MANIFEST.json` 改名为 `MANIFEST.restored.json`；备份目录本身保留。

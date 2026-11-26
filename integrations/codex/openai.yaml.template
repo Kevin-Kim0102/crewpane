@@ -1,6 +1,6 @@
 interface:
-  display_name: "Coder-Agents"
+  display_name: "crewpane"
   short_description: "Delegate coding and testing through configurable CLI roles."
-  default_prompt: "Use $coder-agents to read the current global roles, coordinate coding and testing tasks, and inspect the actual changes and test results before final acceptance."
+  default_prompt: "Use $crewpane to read the current global roles, coordinate coding and testing tasks, and inspect the actual changes and test results before final acceptance."
 policy:
   allow_implicit_invocation: true

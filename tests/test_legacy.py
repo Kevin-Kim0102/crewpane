@@ -242,7 +242,7 @@ class PackagingTests(unittest.TestCase):
         cls.tmp = tmpdirs.TemporaryDirectory(prefix="coder-agents-wheel-")
         cls.src = Path(cls.tmp.name) / "src"
         cls.src.mkdir()
-        for name in ("coder_agents", "scripts", "assets", "examples"):
+        for name in ("coder_agents", "crewpane", "scripts", "assets", "examples"):
             shutil.copytree(ROOT / name, cls.src / name, ignore=shutil.ignore_patterns("__pycache__"))
         shutil.copytree(ROOT / "docs", cls.src / "docs")
         for name in ("setup.py", "pyproject.toml", "README.md", "MANIFEST.in", "THIRD_PARTY_NOTICES.md", ".env.example"):
@@ -265,7 +265,7 @@ class PackagingTests(unittest.TestCase):
             names = set(archive.namelist())
             for rel in ("coder_agents/_runtime/scripts/watch_kiro.py", "coder_agents/_runtime/assets/viewer.html",
                         "coder_agents/_runtime/assets/vendor/purify.min.js", "coder_agents/_runtime/assets/vendor/marked.LICENSE.txt",
-                        "coder_agents/_runtime/examples/settings.example.json"):
+                        "coder_agents/_runtime/examples/settings.example.json", "crewpane/__main__.py"):
                 self.assertIn(rel, names)
             from coder_agents import MODULES
             self.assertEqual(len([n for n in names if n.startswith("coder_agents/_runtime/scripts/") and n.endswith(".py")]), len(MODULES))
@@ -277,7 +277,7 @@ class PackagingTests(unittest.TestCase):
                 if info.external_attr >> 16 & 0o111:
                     os.chmod(target / info.filename, 0o755)
         env = {"PATH": os.environ.get("PATH", ""), "PYTHONPATH": str(target), "PYTHONDONTWRITEBYTECODE": "1", "HOME": self.tmp.name}
-        check = subprocess.run([sys.executable, "-m", "coder_agents", "selfcheck"], cwd=self.tmp.name, env=env,
+        check = subprocess.run([sys.executable, "-m", "crewpane", "selfcheck"], cwd=self.tmp.name, env=env,
                                capture_output=True, text=True, timeout=60)
         self.assertEqual(check.returncode, 0, check.stdout + check.stderr)
         self.assertIn(str(target), check.stdout)  # it used the installed copy, not the checkout
@@ -299,7 +299,7 @@ class PackagingTests(unittest.TestCase):
         for rel in ("scripts/watch_kiro.py", "scripts/kiro_acp_relay.py", "assets/viewer.html", "assets/vendor/marked.umd.js",
                     "assets/vendor/purify.min.js", "assets/vendor/marked.LICENSE.txt", "assets/vendor/dompurify.LICENSE-Apache-2.0.txt",
                     "assets/vendor/dompurify.LICENSE-MPL-2.0.txt", "assets/vendor/README.md", "examples/settings.example.json",
-                    "README.md", "THIRD_PARTY_NOTICES.md", "docs/architecture.md", "coder_agents/cli.py", "MANIFEST.in"):
+                    "README.md", "THIRD_PARTY_NOTICES.md", "docs/architecture.md", "coder_agents/cli.py", "crewpane/__main__.py", "MANIFEST.in"):
             self.assertIn(rel, names)
         from coder_agents import MODULES
         self.assertEqual(len([n for n in names if n.startswith("scripts/") and n.endswith(".py")]), len(MODULES))
