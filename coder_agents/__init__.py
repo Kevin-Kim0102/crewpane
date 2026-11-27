@@ -11,7 +11,7 @@ SCRIPTS = ROOT / "scripts"
 ASSETS = ROOT / "assets"
 MODULES = ("kiro_acp", "kiro_acp_relay", "kiro_catalog", "kiro_review", "kiro_temp", "kiro_usage", "run_kiro", "watch_kiro",
            "agent_providers", "run_agent", "run_claude", "cli_connections", "agent_roles", "agent_tasks", "agent_diagnostics", "claude_catalog", "claude_usage",
-           "project_workspace")
+           "project_workspace", "project_git", "project_remote", "github_auth")
 RESOURCES = tuple(f"scripts/{m}.py" for m in MODULES) + (
     "assets/viewer.html", "assets/vendor/marked.umd.js", "assets/vendor/purify.min.js",
     "assets/vendor/marked.LICENSE.txt", "assets/vendor/dompurify.LICENSE-Apache-2.0.txt",

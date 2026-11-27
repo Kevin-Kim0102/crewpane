@@ -23,6 +23,7 @@ from urllib.parse import urlencode
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import watch_kiro  # noqa: E402
+import project_remote  # noqa: E402
 
 TMP_BASE = Path(tmpdirs.mkdtemp("coder-agents-workspace-"))
 atexit.register(shutil.rmtree, TMP_BASE, ignore_errors=True)
@@ -469,6 +470,17 @@ class HTTPWorkspace(WorkspaceCase):
         return self.request("/api/workspace", **options)
 
     # --- read routes ----------------------------------------------------------------------------------
+    def test_github_auth_requires_same_origin_and_cookie(self):
+        path = "/api/github/auth"
+        self.assertEqual(self.request(path, cookie=False)[0], 401)
+        payload = {"action": "login"}
+        self.assertEqual(self.request(path, "POST", payload, cookie=False, origin=self.origin,
+                                      content_type="application/json")[0], 401)
+        self.assertEqual(self.request(path, "POST", payload, origin="http://other.example",
+                                      content_type="application/json")[0], 403)
+        self.assertEqual(self.request(path, "POST", payload, content_type="application/json")[0], 403)
+        self.assertEqual(self.request(path), (200, {"state": "unknown"}))
+
     def test_http_tree_and_file(self):
         status, body = self.request(self.api("tree", group=self.group))
         self.assertEqual(status, 200, body)
@@ -498,6 +510,137 @@ class HTTPWorkspace(WorkspaceCase):
         self.assertEqual(self.request(self.api("unknown", group=self.group))[0], 404)
 
     # --- write route ----------------------------------------------------------------------------------
+    def test_http_git_stage_unstage_and_commit_only_the_index(self):
+        root = self.fx.root
+        git(root, "config", "user.name", "Panel test")
+        git(root, "config", "user.email", "panel@example.test")
+        write(root / "tracked.txt", "stage this\n")
+        route = "/api/workspace/git"
+
+        def state():
+            return self.request("/api/review?" + urlencode({"scope": "project", "group": self.group}))[1]
+
+        def operation(data, action, **params):
+            return {"group": self.group, "action": action, "root_revision": data["controls"]["root_revision"],
+                    "head": data["repo"]["head"], "branch": data["repo"]["branch"], **params}
+
+        def post(payload):
+            return self.request(route, "POST", payload, origin=self.origin, content_type="application/json")
+
+        payload = operation(state(), "stage", area="unstaged", paths=["tracked.txt"])
+        self.assertEqual(self.request(route, "POST", payload, cookie=False, origin=self.origin)[0], 401)
+        self.assertEqual(self.request(route, "POST", payload, origin="http://evil.example")[0], 403)
+        reply = post(payload)
+        self.assertEqual(reply[0], 200, reply)
+        data = state()
+        undo = operation(data, "unstage", area="staged", paths=["tracked.txt"])
+        self.assertEqual(post(undo)[0], 200)
+        self.assertEqual(git(root, "diff", "--cached", "--name-only").stdout, "")
+        self.assertEqual(post(payload)[0], 200)
+        data = state()
+        write(root / "tracked.txt", "unstaged version\n")
+        commit = operation(data, "commit", message="Commit staged only", index=data["controls"]["index"])
+        git(root, "add", "-f", ".env")
+        self.assertEqual(post(commit)[0], 409)
+        git(root, "reset", "-q", "--", ".env")
+        status, reply = post(commit)
+        self.assertEqual(status, 200, reply)
+        self.assertEqual(git(root, "show", "HEAD:tracked.txt").stdout, "stage this\n")
+        self.assertEqual((root / "tracked.txt").read_text(), "unstaged version\n")
+
+    def test_git_switch_protects_dirty_files_and_accepts_local_branch(self):
+        root = self.fx.root
+        git(root, "switch", "-qc", "feature")
+        write(root / "tracked.txt", "feature contents\n")
+        git(root, "commit", "-qam", "feature")
+        git(root, "switch", "-q", "main")
+        _, state = self.panel.review("status", {"scope": "project", "group": self.group})
+        self.assertIn("feature", state["controls"]["branches"])
+        args = {"action": "switch", "head": state["repo"]["head"], "branch": "main",
+                "root_revision": state["controls"]["root_revision"], "name": "feature"}
+        write(root / "tracked.txt", "unsaved to Git\n")
+        status, reply = self.call("git", **args)
+        self.assertEqual(status, 409, reply)
+        self.assertEqual((root / "tracked.txt").read_text(), "unsaved to Git\n")
+        write(root / "tracked.txt", "line one\n")
+        status, reply = self.call("git", **args)
+        self.assertEqual(status, 200, reply)
+        self.assertEqual((root / "tracked.txt").read_text(), "feature contents\n")
+        self.assertEqual(self.call("git", **args)[0], 409)
+        _, state = self.panel.review("status", {"scope": "project", "group": self.group})
+        args.update(action="create_branch", branch="feature", head=state["repo"]["head"], name="new-branch")
+        self.assertEqual(self.call("git", **args)[0], 200)
+        self.assertEqual(git(root, "branch", "--show-current").stdout.strip(), "new-branch")
+
+    def test_github_publish_fetch_fast_forward_and_divergence(self):
+        root = self.fx.root
+        remote = self.fx.base / "remote.git"
+        remote.mkdir()
+        git(remote, "init", "--bare", "-b", "main")
+        git(root, "remote", "add", "origin", "https://github.com/demo/example.git")
+        def sync_state():
+            return self.panel.review("status", {"scope": "project", "group": self.group})[1]
+
+        def operation(action, **overrides):
+            state = sync_state()
+            sync = state["controls"]["sync"]
+            params = dict(action=action, head=state["repo"]["head"], branch=state["repo"]["branch"],
+                          root_revision=state["controls"]["root_revision"],
+                          target=[sync["url"], sync["remote"], sync["branch"], sync["upstream"]])
+            return self.call("git", **{**params, **overrides})
+
+        def local_transport(cwd, url, args):
+            self.assertEqual(url, "https://github.com/demo/example.git")
+            git(cwd, *args(str(remote)))
+
+        with unittest.mock.patch.object(project_remote, "transport", side_effect=local_transport) as transport:
+            self.assertEqual(operation("push", target=["https://github.com/other/changed", "origin", "main", False])[0], 409)
+            transport.assert_not_called()
+            status, reply = operation("push")
+            self.assertEqual(status, 200, reply)
+            self.assertTrue(sync_state()["controls"]["sync"]["upstream"])
+            self.assertEqual(git(remote, "rev-parse", "main").stdout, git(root, "rev-parse", "HEAD").stdout)
+            peer = self.fx.other / "peer"
+            git(self.fx.other, "clone", str(remote), str(peer))
+            write(peer / "tracked.txt", "from GitHub\n")
+            git(peer, "commit", "-qam", "peer update")
+            git(peer, "push")
+            status, reply = operation("fetch")
+            self.assertEqual(status, 200, reply)
+            self.assertEqual(sync_state()["controls"]["sync"]["behind"], 1)
+            self.assertEqual((root / "tracked.txt").read_text(), "line one\n")
+            write(root / "tracked.txt", "local work\n")
+            self.assertEqual(operation("pull")[0], 409)
+            self.assertEqual((root / "tracked.txt").read_text(), "local work\n")
+            write(root / "tracked.txt", "line one\n")
+            status, reply = operation("pull")
+            self.assertEqual(status, 200, reply)
+            self.assertTrue(reply["updated"])
+            self.assertEqual((root / "tracked.txt").read_text(), "from GitHub\n")
+            write(root / "tracked.txt", "local commit\n")
+            git(root, "commit", "-qam", "local change")
+            write(peer / "tracked.txt", "different change\n")
+            git(peer, "commit", "-qam", "remote change")
+            git(peer, "push")
+            status, reply = operation("pull")
+            self.assertEqual(status, 409, reply)
+            self.assertIn("分叉", reply["error"])
+            self.assertEqual((root / "tracked.txt").read_text(), "local commit\n")
+            self.assertEqual(operation("push")[0], 409)
+
+    def test_github_never_accepts_url_credentials_or_push_url_override(self):
+        root = self.fx.root
+        git(root, "remote", "add", "origin", "https://user:secret@github.com/demo/example.git")
+        query = {"scope": "project", "group": self.group}
+        _, state = self.panel.review("status", query)
+        self.assertNotIn("secret", json.dumps(state["controls"]))
+        self.assertIn("error", state["controls"]["sync"])
+        git(root, "remote", "set-url", "origin", "https://github.com/demo/example.git")
+        git(root, "remote", "set-url", "--push", "origin", "https://github.com/elsewhere/example.git")
+        _, state = self.panel.review("status", query)
+        self.assertEqual(state["controls"]["sync"]["url"], "https://github.com/demo/example")
+        self.assertFalse(state["controls"]["sync"]["push_ok"])
+
     def test_http_access_protection_for_writes(self):
         revision = self.request(self.api("tree", group=self.group))[1]["root_revision"]
         payload = {"group": self.group, "action": "new_file", "path": "x.txt", "root_revision": revision}

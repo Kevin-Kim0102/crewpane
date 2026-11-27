@@ -52,6 +52,7 @@ function boot(w, options = {}) {
       return respond(w.connections||{providers:[],default_provider:null});
     }
     if (u.pathname === '/api/models') return respond(w.models?w.models(q):{ status: 'unavailable', models: [], default: null });
+    if (u.pathname === '/api/github/auth' && w.githubAuth) return w.githubAuth(init?.body ? JSON.parse(init.body).action : null);
     if (u.pathname.startsWith('/api/workspace') && w.workspace) return w.workspace(u, init);
     if (u.pathname.startsWith('/api/review')) {
       const project = q.get('scope') === 'project';
@@ -297,7 +298,8 @@ test('view file from a card: lines, safe text, copy, missing/too-large/outside s
   t.click(t.$('rv-copy')); await settle(); t.click(t.$('rv-copy-path')); await settle();
   assert.deepEqual(t.copied, ['line1\n<b>line2</b>\n\nline4', '/p/new.py']);
   // read-only: no editing controls
-  assert.equal(t.document.querySelector('#review textarea,#review input,#review [contenteditable]'), null);
+  assert.equal([...t.$('review').querySelectorAll('textarea,input,[contenteditable]')].some(
+    node => !node.closest('[hidden],.pf-only')), false);
   t.key('Escape'); assert.equal(t.$('review').hidden, true);
   t.ev("openFileView('missing.txt')"); await settle();
   assert.match(t.$('rv-status').textContent, /文件不存在/);
@@ -462,6 +464,94 @@ test('project Diff can show the whole file past the old row limit in both layout
   await settle();
   assert.deepEqual(t.errors,[]);
   t.dom.window.close();
+});
+
+test('project Git actions move the selected diff, commit the index and update the branch label', async () => {
+  const w = newWorld({}, review());
+  const get = w.review['/api/review'];
+  let staged = false, committed = false, branch = 'main';
+  w.review['/api/review'] = () => {
+    const state = get();
+    const { body } = state;
+    body.repo.branch = branch;
+    body.controls = { root_revision: 'root', branches: ['feature','main'], index: staged ? 'index' : '' };
+    const entry = body.areas.unstaged.entries[0];
+    for (const [area, group] of Object.entries(body.areas)) {
+      group.entries = !committed&&area===(staged?'staged':'unstaged')?[entry]:[];
+      group.hidden = 0;
+    }
+    return state;
+  };
+  w.workspace = (url, init) => {
+    if (url.pathname.endsWith('/git')) {
+      const {action, name} = JSON.parse(init.body);
+      if (action==='stage') staged = true;
+      if (action==='commit') { committed = true; staged = false; }
+      if (action==='switch') branch = name;
+    }
+    return respond({ok:true,group:'g',cwd:'/p',root_revision:'root',entries:[],head:'def1234'});
+  };
+  const t = await boot(w).ready();
+  t.document.querySelector('[data-browse="g"]').click(); await settle();
+  t.$('pf-tab-git').click(); await settle();
+  t.$('rv-list').querySelector('.cl-row').click(); await settle();
+  t.$('rv-list').querySelector('li [data-git-index="stage"]').click(); await settle();
+  const posts = () => t.calls.filter(call=>call.path==='/api/workspace/git').map(call=>call.body);
+  assert.deepEqual(posts()[0], {group:'g',root_revision:'root',action:'stage',head:'abc1234',branch:'main',area:'unstaged',paths:['a.txt'],all:false});
+  assert.match(t.$('rv-meta').textContent,/已暂存/);
+  assert.ok(t.$('rv-list').querySelector('li [data-git-index="unstage"]'));
+  const message = t.$('pf-commit-message');
+  assert.equal(t.$('pf-commit').disabled,true);
+  message.value='Commit staged only';
+  message.dispatchEvent(new t.window.Event('input',{bubbles:true}));
+  t.$('pf-commit').click(); await settle();
+  assert.equal(posts()[1].index,'index');
+  assert.equal(posts()[1].message,'Commit staged only');
+  assert.equal(message.value,'');
+  t.$('pf-git-branches').click();
+  const branchSelect=t.$('pf-branch-select');
+  branchSelect.value='feature';
+  branchSelect.dispatchEvent(new t.window.Event('change',{bubbles:true}));
+  t.$('pf-branch-switch').click(); await settle();
+  assert.equal(posts()[2].name,'feature');
+  assert.equal(t.$('pf-branch').textContent,'feature');
+  assert.deepEqual(t.errors,[]);
+});
+
+test('the Git toolbar confirms publication and updates the upstream counts', async () => {
+  const w = newWorld({}, review());
+  const get = w.review['/api/review'];
+  let upstream = false;
+  const url = 'https://github.com/demo/example';
+  w.review['/api/review'] = () => {
+    const state = get();
+    state.body.controls = { root_revision:'root', branches:['main'], sync:{
+      url, remote:'origin', branch:'main', upstream, ahead:upstream?0:null, behind:upstream?1:null, push_ok:true
+    }};
+    return state;
+  };
+  w.workspace = (request, init) => {
+    if (request.pathname.endsWith('/git')) upstream = true;
+    return respond({ok:true, group:'g', cwd:'/p', root_revision:'root', entries:[]});
+  };
+  const t = await boot(w).ready();
+  t.document.querySelector('[data-browse="g"]').click(); await settle();
+  t.$('pf-tab-git').click(); await settle();
+  assert.equal(t.$('pf-git-web').href,url);
+  assert.equal(t.$('pf-git-pull').disabled,true);
+  assert.match(t.$('pf-sync-target').textContent,/未发布/);
+  const posts = () => t.calls.filter(call=>call.path==='/api/workspace/git');
+  t.window.confirm = question => { assert.match(question,/demo\/example.*main/); return false; };
+  t.$('pf-git-push').click(); await settle();
+  assert.equal(posts().length,0);
+  t.window.confirm = () => true;
+  t.$('pf-git-push').click(); await settle();
+  assert.deepEqual(posts()[0].body.target,[url,'origin','main',false]);
+  assert.equal(posts()[0].body.action,'push');
+  assert.equal(t.$('pf-git-pull').disabled,false);
+  assert.equal(t.$('pf-git-push').disabled,true);
+  assert.match(t.$('pf-sync-target').textContent,/↓1 ↑0/);
+  assert.deepEqual(t.errors,[]);
 });
 
 test('the file tree shows Git changes, marks parent folders, and refreshes ignored entries', async () => {
@@ -822,6 +912,27 @@ test('narrow settings use horizontal tab semantics', async () => {
   assert.equal(t.$('settings-nav').getAttribute('aria-orientation'),'horizontal');
   t.click(t.$('settings-open'));t.key('ArrowRight',t.$('settings-tab-cli'));
   assert.equal(t.$('settings-page-skill').hidden,false);
+});
+
+test('GitHub settings check only when opened and show only the active device code', async () => {
+  const w = newWorld({});
+  w.githubAuth = action => respond(action==='check'?{state:'signed_out'}:
+    action==='login'?{state:'waiting',code:'ABCD-1234'}:{state:'connected',login:'demo-user'});
+  const t = await boot(w).ready();
+  t.click(t.$('settings-open'));
+  assert.equal(t.calls.some(call=>call.path==='/api/github/auth'),false);
+  t.click(t.$('settings-tab-github')); await settle();
+  assert.equal(t.$('github-login').hidden,false);
+  t.click(t.$('github-login')); await settle();
+  assert.equal(t.$('github-device').hidden,false);
+  assert.equal(t.$('github-device').querySelector('a').href,'https://github.com/login/device');
+  t.click(t.$('github-copy-code')); await settle();
+  assert.equal(t.copied.at(-1),'ABCD-1234');
+  await t.ev('githubAuth()');
+  assert.match(t.$('github-status').textContent,/demo-user/);
+  assert.equal(t.$('github-device').hidden,true);
+  assert.equal(t.$('github-code').textContent,'');
+  assert.deepEqual(t.errors,[]);
 });
 
 test('CLI cards group connections and pause without opening configuration', async () => {

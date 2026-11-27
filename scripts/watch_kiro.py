@@ -27,6 +27,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import kiro_catalog
 import kiro_review
 import project_workspace
+import project_git
+import github_auth
 import kiro_temp
 import kiro_usage
 import agent_providers
@@ -818,6 +820,7 @@ class Panel:
         self.catalog = Catalog(codex_state or config.get("codex_state") or CODEX_STATE)
         self.fixture = config.get("fixture") if isinstance(config.get("fixture"), dict) else None
         self.connections = cli_connections.Connections(config_path.parent / "connections.json")
+        self.github = github_auth.GitHubAuth()
         self.roles = agent_roles.RoleStore(connections=self.connections)
         self.default_provider = self.connections.snapshot()["default_provider"]
         self.connection_slots = threading.BoundedSemaphore(1)
@@ -1182,7 +1185,7 @@ class Panel:
                             "source": default_source.id if default_source else ""},
                 "catalog": {"status": snapshot.status, "message": snapshot.message}, "viewer": viewer}
 
-    # -- Read-only review: file viewing and Git working-tree changes ----------------------------------
+    # -- Project workspace and read-only conversation review ----------------------------------------
     def workspace_root(self, group, *, write=False):
         snapshot = self.catalog.refresh()
         if write and snapshot.status != "ok":
@@ -1201,10 +1204,15 @@ class Panel:
         if not self.review_slots.acquire(blocking=False):
             return 429, {"error": "文件请求过多，请稍后重试"}
         try:
-            if kind == "write":
+            if kind in ("write", "git"):
                 with self.workspace_writer:
                     root = self.workspace_root(group, write=True)
-                    result = project_workspace.mutate(root, params)
+                    if kind == "git":
+                        if self.fixture and params.get("action") in ("fetch", "pull", "push"):
+                            raise kiro_review.ReviewError(409, "预览模式无法同步远端")
+                        result = project_git.mutate(root, params)
+                    else:
+                        result = project_workspace.mutate(root, params)
             else:
                 root = self.workspace_root(group)
                 result = project_workspace.read(root, kind, params)
@@ -1215,7 +1223,7 @@ class Panel:
             status, message = project_workspace.os_error(error)
             return status, {"error": message}
         except ValueError:
-            return 400, {"error": "文件名称或内容无效"}
+            return 400, {"error": "Git 操作参数无效" if kind == "git" else "文件名称或内容无效"}
         finally:
             self.review_slots.release()
 
@@ -1254,6 +1262,8 @@ class Panel:
                 cwd, logical = self.review_target(echo["group"], echo["source"], echo["agent"])
             if kind == "status":
                 body = kiro_review.git_status(cwd)
+                if project_scope and body.get("repo"):
+                    body["controls"] = project_git.controls(cwd, body["repo"])
             elif kind == "file":
                 rel = (project_workspace.project_path(cwd, query.get("path", "")) if project_scope
                        else kiro_review.clean_relative(cwd, query.get("path", ""), logical))
@@ -2000,12 +2010,14 @@ def make_handler(panel):
                         self.send_body({"url": panel.address + "/", "project_id": source.id})
                     else:
                         self.send_error(404)
-                elif path == "/api/workspace":
+                elif path in {"/api/workspace", "/api/workspace/git"}:
                     if not self.browser_post_ok():
                         return
-                    status, result = panel.workspace("write", self.payload(6 * kiro_review.MAX_FILE_BYTES + 32768))
+                    is_git = path.endswith("/git")
+                    status, result = panel.workspace("git" if is_git else "write",
+                                                     self.payload() if is_git else self.payload(6 * kiro_review.MAX_FILE_BYTES + 32768))
                     self.send_body(result, status=status)
-                elif path in {"/api/send", "/api/delete", "/api/stop", "/api/tasks/stop", "/api/usage/refresh", "/api/temp", "/api/temp/bulk", "/api/connections", "/api/roles"}:
+                elif path in {"/api/send", "/api/delete", "/api/stop", "/api/tasks/stop", "/api/usage/refresh", "/api/temp", "/api/temp/bulk", "/api/connections", "/api/roles", "/api/github/auth"}:
                     if not self.browser_post_ok():
                         return
                     if path == "/api/stop":
@@ -2019,6 +2031,14 @@ def make_handler(panel):
                         self.send_body(result, status=status)
                         return
                     payload = self.payload()
+                    if path == "/api/github/auth":
+                        action = payload.get("action")
+                        if panel.fixture and action == "login":
+                            self.send_body({"error": "预览模式无法登录 GitHub"}, status=409)
+                            return
+                        status, result = panel.github.action(action)
+                        self.send_body(result, status=status)
+                        return
                     if path == "/api/roles":
                         self.send_body(panel.roles.mutate(payload))
                         return
@@ -2084,11 +2104,11 @@ def make_handler(panel):
                     self.send_body(panel.roles.snapshot())
                 except (OSError, ValueError) as error:
                     self.send_body({"error": str(error)}, status=400)
-            elif path == "/api/connections":
+            elif path in {"/api/connections", "/api/github/auth"}:
                 if not self.authenticated():
                     self.send_body({"error": "需要面板登录状态"}, status=401)
                     return
-                self.send_body(panel.connections.snapshot())
+                self.send_body(panel.github.snapshot() if path == "/api/github/auth" else panel.connections.snapshot())
             elif path == "/api/models":
                 if not self.authenticated():
                     self.send_body({"error": "登录状态已失效，请重新打开固定入口 http://127.0.0.1:%d/" % panel.port}, status=401)
@@ -2184,11 +2204,14 @@ def main():
     try:
         while not panel.stopping.is_set() and time.monotonic() < deadline:
             server.handle_request()
-            if time.monotonic() - panel.last_seen > config.get("idle_timeout", 120) and not panel.active_tasks():
+            if (time.monotonic() - panel.last_seen > config.get("idle_timeout", 120)
+                    and panel.github.snapshot()["state"] not in {"starting", "waiting", "checking", "cancelling"}
+                    and not panel.active_tasks()):
                 break
     except KeyboardInterrupt:
         pass
     finally:
+        panel.github.close()
         server.server_close()
 
 

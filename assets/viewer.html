@@ -241,7 +241,18 @@
 .pf-statusbar{display:flex;justify-content:space-between;align-items:center;min-height:27px;padding:4px 12px;background:var(--wb-top);border-top:1px solid var(--wb-line);color:var(--wb-muted);font-size:11px}.pf-statusbar>span:first-child{display:flex;align-items:center;gap:5px}
 .review[data-mode=project] .rv-list{padding:0;border:0}.review[data-mode=project] .rv-repo{padding:10px 12px;border-bottom:1px solid var(--wb-line)}.review[data-mode=project] .rv-repo .rv-branch{display:flex;align-items:center;gap:7px}
 .review[data-mode=project] .cl-group summary{display:flex;align-items:center;gap:7px;min-height:30px;padding:4px 9px;font-size:12px;list-style:none;cursor:pointer}
-.review[data-mode=project] .cl-group summary::-webkit-details-marker{display:none}.review[data-mode=project] .cl-group[open] summary i{transform:rotate(90deg)}
+.review[data-mode=project] .cl-group summary::-webkit-details-marker{display:none}.review[data-mode=project] .cl-group[open] summary>i{transform:rotate(90deg)}
+.pf-git-box{padding:8px 10px;border-bottom:1px solid var(--wb-line);display:grid;gap:6px}.pf-git-box[hidden],.pf-branch-picker[hidden],#pf-commit-form[hidden]{display:none}
+.pf-git-box form,.pf-branch-picker{display:grid;gap:5px}.pf-git-box :is(textarea,input,select){min-width:0;width:100%;padding:5px 7px;border:1px solid var(--wb-line);border-radius:4px;background:var(--wb-code);color:var(--wb-text);font:inherit;font-size:12px}
+.pf-git-box textarea{resize:vertical;min-height:48px;max-height:150px}.pf-git-box .pf-input-line :is(select,input){flex:1}
+.pf-commit{display:flex;gap:6px;align-items:center;justify-content:center;padding:4px;border:1px solid var(--wb-line);border-radius:4px;background:var(--wb-selected);color:var(--wb-text);font-size:12px}
+.pf-commit:disabled{opacity:.5}.pf-git-box .pf-note{padding:0}.pf-git-line{display:flex;align-items:center;gap:4px}
+.pf-sync{display:flex;align-items:center;gap:4px;padding-bottom:5px;border-bottom:1px solid var(--wb-line)}
+.pf-sync[hidden]{display:none}.pf-sync>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:var(--wb-muted);flex:1}
+.pf-sync a{align-self:center;text-decoration:none}
+.pf-git-entry{display:flex;align-items:center}.pf-git-entry .cl-row{flex:1;min-width:0}.pf-git-entry:hover{background:var(--wb-hover)}
+.pf-git-entry .pf-icon{width:25px;opacity:0}.pf-git-entry:hover .pf-icon,.pf-git-entry:focus-within .pf-icon,.pf-git-entry .pf-icon:focus-visible{opacity:1}
+@media (hover:none){.pf-git-entry .pf-icon{opacity:1}}
 .pf-area-count{margin-left:auto;min-width:17px;padding:0 4px;border-radius:8px;background:var(--wb-hover);color:var(--wb-muted);text-align:center;font-size:11px}
 .review[data-mode=project] .cl-group p,.review[data-mode=project] .rv-clean{margin:4px 12px;color:var(--wb-muted)}.review[data-mode=project] .cl-row{padding:6px 9px 6px 25px;gap:7px;border:0;border-radius:0}.review[data-mode=project] .cl-row[aria-pressed=true]{background:var(--wb-selected);box-shadow:inset 2px 0 var(--wb-accent)}
 .review[data-mode=project] .cl-name{font:12px system-ui,sans-serif}.cl-parent{display:block;color:var(--wb-muted);font-size:11px}.review[data-mode=project] .cl-code{background:transparent}
@@ -330,6 +341,7 @@
   <button id="settings-tab-skill" type="button" role="tab" aria-selected="false" aria-controls="settings-page-skill" tabindex="-1">Codex 技能</button>
   <button id="settings-tab-roles" type="button" role="tab" aria-selected="false" aria-controls="settings-page-roles" tabindex="-1">Subagent 角色</button>
   <button id="settings-tab-storage" type="button" role="tab" aria-selected="false" aria-controls="settings-page-storage" tabindex="-1">存储与清理</button>
+  <button id="settings-tab-github" type="button" role="tab" aria-selected="false" aria-controls="settings-page-github" tabindex="-1">GitHub</button>
   <button id="settings-tab-service" type="button" role="tab" aria-selected="false" aria-controls="settings-page-service" tabindex="-1">服务与资源</button>
   <button id="settings-tab-help" type="button" role="tab" aria-selected="false" aria-controls="settings-page-help" tabindex="-1">帮助</button>
  </div>
@@ -353,6 +365,24 @@
     </section>
    </div>
    <p id="cli-overview-error" role="alert" hidden></p>
+  </div>
+  <div id="settings-page-github" class="settings-page" role="tabpanel" aria-labelledby="settings-tab-github" tabindex="0" hidden>
+   <header class="settings-page-head"><h3>GitHub</h3><p>使用当前系统用户的 GitHub CLI 账号，登录后可在本机各项目复用。</p></header>
+   <section class="settings-sec">
+    <h4>github.com</h4>
+    <p id="github-status" role="status" aria-live="polite">尚未检查登录状态</p>
+    <p id="github-install" hidden><a href="https://cli.github.com/" target="_blank" rel="noopener noreferrer">安装 GitHub CLI</a> 后再刷新状态。</p>
+    <div id="github-device" hidden>
+     <p>复制设备码，在 GitHub 网页确认账号并授权。在这里发起登录后才应使用此设备码。</p>
+     <p><code id="github-code"></code> <button id="github-copy-code" type="button" class="secondary">复制设备码</button></p>
+     <p><a href="https://github.com/login/device" target="_blank" rel="noopener noreferrer">打开 GitHub 授权页 ↗</a></p>
+    </div>
+    <div class="cli-actions">
+     <button id="github-login" type="button" class="primary" hidden>登录 GitHub</button>
+     <button id="github-check" type="button" class="secondary">刷新状态</button>
+     <button id="github-cancel" type="button" class="secondary" hidden>取消登录</button>
+    </div>
+   </section>
   </div>
   <div id="settings-page-storage" class="settings-page" role="tabpanel" aria-labelledby="settings-tab-storage" tabindex="0" hidden>
    <header class="settings-page-head"><h3>存储与清理</h3><p>统一清理 Claude 和 Kiro 的任务结果、日志与临时文件。</p></header>
@@ -426,7 +456,24 @@
  </div>
  <p id="review-note" class="rv-note" hidden></p>
  <p id="pf-stale" class="rv-note" role="alert" hidden>项目目录已变化（可能被切换或替换），已停止新建、保存和删除。请关闭后重新打开项目浏览。</p>
- <div id="rv-body" class="rv-body"><div class="rv-side"><div class="pf-side-head pf-only"><strong>源代码管理</strong><button id="pf-git-refresh" class="pf-icon" type="button" title="刷新 Git 改动" aria-label="刷新 Git 改动"><i data-pf-icon="refresh"></i></button></div><nav id="rv-list" class="rv-list" aria-label="改动文件"></nav></div>
+ <div id="rv-body" class="rv-body"><div class="rv-side"><div class="pf-side-head pf-only"><strong>源代码管理</strong><div class="pf-tools"><button id="pf-git-branches" class="pf-icon" type="button" title="管理本地分支" aria-label="管理本地分支" aria-expanded="false" aria-controls="pf-branch-picker"><i data-pf-icon="branch"></i></button><button id="pf-git-refresh" class="pf-icon" type="button" title="刷新 Git 改动" aria-label="刷新 Git 改动"><i data-pf-icon="refresh"></i></button></div></div>
+  <div id="pf-git-box" class="pf-only pf-git-box" hidden>
+   <div id="pf-sync" class="pf-sync" hidden>
+    <span id="pf-sync-target"></span>
+    <button id="pf-git-fetch" class="pf-icon" type="button" aria-label="获取远端更新" title="获取远端更新"><i data-pf-icon="cloud"></i></button>
+    <button id="pf-git-pull" class="pf-icon" type="button" aria-label="拉取" title="拉取"><i data-pf-icon="pull"></i></button>
+    <button id="pf-git-push" class="pf-icon" type="button" aria-label="推送" title="推送"><i data-pf-icon="push"></i></button>
+    <a id="pf-git-web" class="pf-icon" target="_blank" rel="noopener noreferrer" aria-label="在 GitHub 打开" title="在 GitHub 打开"><i data-pf-icon="external"></i></a>
+   </div>
+   <p id="pf-sync-note" class="pf-note"></p>
+   <div id="pf-branch-picker" class="pf-branch-picker" hidden>
+    <div class="pf-input-line"><select id="pf-branch-select" aria-label="本地分支"></select><button id="pf-branch-switch" class="pf-icon" type="button" aria-label="切换到所选分支" title="切换到所选分支"><i data-pf-icon="check"></i></button></div>
+    <form id="pf-branch-create" class="pf-git-line"><input id="pf-branch-name" aria-label="新分支名称" placeholder="新分支名称" autocomplete="off" maxlength="255"><button id="pf-branch-add" class="pf-icon" type="submit" aria-label="创建并切换到新分支" title="创建并切换到新分支"><i data-pf-icon="plus"></i></button></form>
+    <p id="pf-branch-note" class="pf-note"></p>
+   </div>
+   <form id="pf-commit-form"><textarea id="pf-commit-message" aria-label="提交说明" placeholder="提交说明（Ctrl / ⌘ + Enter）" maxlength="16384" rows="2"></textarea><button id="pf-commit" class="pf-commit" type="submit"><i data-pf-icon="check"></i>提交</button></form>
+   <p id="pf-git-message" class="pf-note" role="status" aria-live="polite"></p><p id="pf-git-note" class="pf-note"></p>
+  </div><nav id="rv-list" class="rv-list" aria-label="改动文件"></nav></div>
   <div class="rv-view"><div class="rv-viewhead"><strong id="rv-name"></strong><span id="rv-meta" class="rv-meta"></span><span class="rv-viewtools"><span id="rv-tabs" hidden><button id="rv-tab-diff" type="button" aria-pressed="true">Diff</button> <button id="rv-tab-text" type="button" aria-pressed="false">当前文本</button></span><button id="pf-split" class="pf-only pf-icon" type="button" title="切换左右对照 / 行内 Diff" aria-label="左右对照" aria-pressed="true" hidden><i data-pf-icon="columns"></i></button><button id="pf-copy-diff" class="pf-only pf-icon" type="button" title="复制内容" aria-label="复制内容" hidden><i data-pf-icon="copy"></i></button><button id="rv-copy-path" type="button" hidden>复制路径</button><button id="rv-copy" type="button" hidden>复制内容</button></span><p id="rv-path" class="rv-path"></p></div>
    <p id="rv-status" class="rv-status" role="status" aria-live="polite"></p><div class="rv-code-area"><div id="rv-code" class="rv-code" tabindex="0" role="region" aria-label="只读内容"></div><button id="rv-diff-overview" class="rv-diff-overview" type="button" aria-controls="rv-code" aria-label="改动概览，跳转到下一处改动" title="红色：删除；绿色：新增。点击跳转。" hidden></button></div></div></div>
  <div id="pf-body" class="pf-body" hidden>
@@ -1215,8 +1262,9 @@ async function reviewFetch(path,params,kind){
  try{
   const base=target.scope==='project'?{scope:'project',group:target.group}:target;
   const response=await fetch(path+'?'+new URLSearchParams({...base,...params}),{cache:'no-store',signal:ctl.signal});
-  const data=await response.json().catch(()=>({error:'返回内容无法解析'}));
-  const fresh=token===(kind==='list'?review.listToken:review.viewToken)&&reviewOpen()&&review.target===target&&sameTarget(data,target);
+  const data=await response.json().catch(()=>({error:'项目接口返回了无法识别的内容（HTTP '+response.status+'）'}));
+  const fresh=token===(kind==='list'?review.listToken:review.viewToken)&&reviewOpen()&&review.target===target&&
+   (sameTarget(data,target)||(!response.ok&&data?.group===undefined));
   if(!fresh)return null;
   return {ok:response.ok,status:response.status,data};
  }catch(error){
@@ -1469,6 +1517,7 @@ function renderChanges(){
   if(entries.length){const s=elt('span','cl-total');s.append(elt('span','stat-add','+'+add),elt('span','stat-del','−'+del));title.append(s)}
   if(ws){
    const summary=elt('summary');summary.append(workspaceIcon('right'),elt('span',null,PROJECT_AREAS[area]),elt('span','pf-area-count',entries.length+(group.truncated?'+':'')));
+   if(entries.length&&!group.truncated&&!group.error&&data.controls?.root_revision)summary.append(gitIndexButton(ws,area,entries,true));
    section.open=!ws.collapsed.has(area);section.ontoggle=()=>{if(section.isConnected){if(section.open)ws.collapsed.delete(area);else ws.collapsed.add(area)}};
    section.append(summary);
   }else section.append(title);
@@ -1490,21 +1539,38 @@ function renderChanges(){
     if(ws){for(const row of box.querySelectorAll('.cl-row'))row.setAttribute('aria-pressed',String(row===b))}
     else renderChanges();
     paintTabs();loadDiff()};
-   li.append(b);list.append(li);
+   li.append(b);
+   if(ws&&data.controls?.root_revision&&!group.error){
+    li.classList.add('pf-git-entry');li.append(gitIndexButton(ws,area,[entry],false));
+   }
+   list.append(li);
   }
   section.append(list);box.append(section);
  }
  if(!total)box.append(elt('p','muted rv-clean','当前工作区没有未提交的改动。'));
 }
-async function loadChanges(quiet=false){
+async function loadChanges(quiet=false,follow=false){
+ const ws=review.mode==='project'?pw.ws:null;
+ if(ws){ws.gitLoading=true;paintGitControls()}
  if(!quiet)$('rv-list').replaceChildren(elt('p','muted','正在读取 Git 改动…'));
  const result=await reviewFetch('/api/review',{},'list');if(!result)return;
- if(!result.ok){if(!quiet||!review.list)$('rv-list').replaceChildren(elt('p','rv-warn',result.data.error||'读取失败'));return}
+ if(ws){ws.gitLoading=false;ws.gitReady=result.ok}
+ if(!result.ok){if(!quiet||!review.list)$('rv-list').replaceChildren(elt('p','rv-warn',result.data.error||'读取失败'));if(ws)paintGitControls();return}
  const keep=review.sel;
  review.list=result.data;
  if(review.mode==='project'){paintGitBadge(result.data);updateTreeGit(result.data)}
- if(keep){const found=(review.list.areas&&review.list.areas[keep.area]||{entries:[]}).entries.find(e=>e.path===keep.path);if(!found)review.sel=null}
+ if(keep){
+  const found=review.list.areas?.[keep.area]?.entries.find(e=>e.path===keep.path);
+  if(!found){
+   review.sel=null;
+   if(follow)for(const [area,group] of Object.entries(review.list.areas||{})){
+    const moved=group.entries.find(e=>e.path===keep.path);
+    if(moved){review.sel={area,path:moved.path,code:moved.code};break}
+   }
+  }
+ }
  renderChanges();
+ if(ws)paintGitControls();
  if(review.sel){paintTabs();if(!quiet){if(review.tab==='diff')loadDiff();else loadCurrentText()}}
  else if(keep)paintViewer({kind:'none',message:'之前选中的文件已不在改动列表中'});
 }
@@ -1533,7 +1599,7 @@ function openToolDiff(file){
  openLocalView({title:'本次修改（工具自带的前后内容）',name:baseName(file.path),path:file.path,kind:'diff',text:unifiedFromOps(file.path,d.ops),meta:'+'+d.added+' −'+d.deleted+(file.created?' · 新建文件':'')});
 }
 
-// ---- 项目浏览：Git 改动（只读）+ 文件（Monaco 编辑） ----
+// ---- 项目浏览：Git 源代码管理 + 文件（Monaco 编辑） ----
 const pw={ws:null,monaco:null,monacoLoad:null,editor:null,openerGroup:'',splitDiff:true};
 const PROJECT_AREAS={staged:'已暂存',unstaged:'未暂存',untracked:'未跟踪'};
 const PF_DRAW={
@@ -1553,6 +1619,10 @@ const PF_DRAW={
  save:'M5 3h12l4 4v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm2 0v6h10V3M7 21v-8h10v8',
  more:'M5 12h.01M12 12h.01M19 12h.01',copy:'M8 16H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2m-4 0h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z',
  trash:'M4 7h16m-10 4v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3',check:'m5 12 4 4L19 6',close:'m6 6 12 12M6 18 18 6',
+ plus:'M12 5v14M5 12h14',minus:'M5 12h14',
+ cloud:'M7 18H6a4 4 0 0 1 0-8h1a5 5 0 0 1 9.5-1.5A4 4 0 0 1 18 18h-1m-5-6v8m-3-3 3 3 3-3',
+ pull:'M12 4v15m-5-5 5 5 5-5',push:'M12 20V5m-5 5 5-5 5 5',
+ external:'M13 4h7v7m0-7-9 9m7 0v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6',
  columns:'M12 4v16M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z'
 };
 function workspaceIcon(name,cls){
@@ -1636,18 +1706,113 @@ async function wsGet(ws,kind,params){
   return {ok:false,status:0,data:{error:'暂时无法连接面板服务'}};
  }
 }
-async function wsPost(ws,body){
- if(!ws.rootRev)return {ok:false,status:0,data:{error:'项目目录尚未读取成功，请先点“刷新”'}};
+async function wsPost(ws,body,gitRevision){
+ const revision=gitRevision||ws.rootRev;
+ if(!revision)return {ok:false,status:0,data:{error:'项目目录尚未读取成功，请先点“刷新”'}};
  try{
-  const response=await fetch('/api/workspace',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({group:ws.group,root_revision:ws.rootRev,...body})});
+  const response=await fetch('/api/workspace'+(gitRevision?'/git':''),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({group:ws.group,root_revision:revision,...body})});
   const data=await workspaceResponse(response);
   const result={ok:response.ok&&!data.error&&data.ok===true,status:response.status,data};
   if(!result.ok&&!data.error)data.error='操作失败（HTTP '+response.status+'）';
   if(!result.ok&&response.status===409&&/重新打开/.test(data.error)&&!ws.stale){ws.stale=true;paintProject()}
   return result;
- }catch{return {ok:false,status:0,data:{error:'暂时无法连接面板服务，操作未完成'}}}
+ }catch{return {ok:false,status:0,data:{error:gitRevision?'连接中断，请刷新 Git 改动确认操作结果。':'暂时无法连接面板服务，操作未完成'}}}
 }
 function setMsg(text,warn){const node=$('pf-msg');node.textContent=text||'';node.className='rv-status'+(warn?' warn':'')}
+function setGitMessage(text,warn=false){
+ const node=$('pf-git-message');node.textContent=text;node.classList.toggle('warn',warn);
+}
+function showGitBranches(show){
+ $('pf-branch-picker').hidden=!show;$('pf-git-branches').setAttribute('aria-expanded',String(show));
+}
+function gitControls(ws){
+ const data=review.list;
+ return !ws?.stale&&ws?.gitReady&&data?.controls?.root_revision&&(!ws.rootRev||data.controls.root_revision===ws.rootRev)?data.controls:null;
+}
+function paintGitControls(){
+ const ws=pw.ws,info=gitControls(ws),repo=review.list?.repo,off=!info||ws.busy||ws.gitLoading;
+ $('pf-git-box').hidden=!ws||(!repo&&!$('pf-git-message').textContent);
+ $('pf-git-refresh').disabled=!!ws?.busy;
+ $('pf-git-branches').disabled=!!off;
+ $('pf-commit-form').hidden=!info;
+ $('pf-commit-message').disabled=!!off;
+ $('pf-commit').disabled=!!off||!info?.index||!$('pf-commit-message').value.trim();
+ const sync=info?.sync||repo&&review.list?.controls?.sync;
+ const web=$('pf-git-web'),url=sync?.url;
+ const validUrl=typeof url==='string'&&/^https:\/\/github\.com\/[A-Za-z0-9-]+\/[A-Za-z0-9_.-]+$/.test(url);
+ $('pf-sync').hidden=!validUrl;
+ if(validUrl)web.href=url;else web.removeAttribute('href');
+ const name=sync?.remote+(sync?.branch?'/'+sync.branch:'');
+ const counts=sync?.ahead==null?(sync?.upstream?' · 待获取':' · 未发布'):' · ↓'+sync.behind+' ↑'+sync.ahead;
+ $('pf-sync-target').textContent=sync?.remote?name+counts:'';
+ $('pf-sync-target').title=sync?.remote?url+' · '+name+counts:'';
+ $('pf-sync-note').textContent=sync?.error||(sync?.push_ok===false?'该项目使用自定义推送目标，请在终端推送。':'');
+ $('pf-git-fetch').disabled=!!off||!validUrl||!!sync?.error;
+ $('pf-git-pull').disabled=$('pf-git-fetch').disabled||!sync?.upstream;
+ $('pf-git-push').disabled=$('pf-git-fetch').disabled||!sync?.push_ok||sync?.behind>0;
+ const pushLabel=!sync?.upstream?'发布分支并设置上游':sync.behind>0?'请先处理远端更新':'推送';
+ $('pf-git-push').title=pushLabel;$('pf-git-push').setAttribute('aria-label',pushLabel);
+ $('pf-git-note').textContent=review.list?.controls?.error||(
+  info&&!info.index&&review.list.areas.staged.hidden?'暂存区包含隐藏文件，请在终端提交。':'');
+ if(!info)showGitBranches(false);
+ const select=$('pf-branch-select'),signature=JSON.stringify([repo?.branch,info?.branches||[]]);
+ if(select.dataset.signature!==signature){
+  select.dataset.signature=signature;
+  const options=(info?.branches||[]).map(name=>{
+   const option=elt('option',null,name+(name===repo?.branch?'（当前）':''));option.value=name;return option;
+  });
+  if(!options.some(option=>option.value===repo?.branch)){
+   const placeholder=elt('option',null,repo?.branch||'选择本地分支');placeholder.value='';options.unshift(placeholder);
+  }
+  select.replaceChildren(...options);select.value=repo?.branch||'';
+ }
+ select.disabled=!!off||!(info?.branches?.length);
+ $('pf-branch-switch').disabled=select.disabled||!select.value||select.value===repo?.branch;
+ $('pf-branch-name').disabled=!!off;
+ $('pf-branch-add').disabled=!!off||!$('pf-branch-name').value.trim();
+ $('pf-branch-note').textContent=info?.more_branches?'分支较多，仅显示前 300 个。':'';
+ for(const action of $('rv-list').querySelectorAll('[data-git-index]'))action.disabled=!!off;
+ if(ws&&ws.tab==='git')$('pf-editor-status').textContent=ws.busy?'正在执行 Git 操作…':'';
+}
+function gitIndexButton(ws,area,entries,all){
+ const staged=area==='staged',action=staged?'unstage':'stage';
+ const label=(staged?'取消暂存':'暂存')+(all?'全部'+PROJECT_AREAS[area]+'改动':' '+entries[0].path);
+ const b=button('',e=>{
+  e.preventDefault();e.stopPropagation();
+  runProjectGit(ws,action,{area,paths:entries.map(entry=>entry.path),all});
+ },'pf-icon');
+ b.dataset.gitIndex=action;b.title=label;b.setAttribute('aria-label',label);
+ b.append(workspaceIcon(staged?'minus':'plus'));
+ return b;
+}
+async function runProjectGit(ws,action,params){
+ const info=gitControls(ws);
+ if(!info||pw.ws!==ws||ws.busy||ws.gitLoading)return;
+ const changesBranch=action==='switch'||action==='create_branch';
+ if((['switch','pull'].includes(action)&&dirtyFiles().length)||(action==='stage'&&params.paths.some(path=>pwDirty(ws.files.get(path)||null)))){
+  setGitMessage('请先保存编辑器中的相关修改。',true);return;
+ }
+ const repo=review.list.repo;
+ ws.busy=true;paintProject();setGitMessage('正在执行 Git 操作…');
+ const result=await wsPost(ws,{action,head:repo.head,branch:repo.branch,...params},info.root_revision);
+ if(ws.closed||pw.ws!==ws)return;
+ if(result.ok){
+  if(action==='commit')$('pf-commit-message').value='';
+  if(changesBranch){$('pf-branch-name').value='';showGitBranches(false);review.sel=null;paintViewer({kind:'none',message:'选择左侧文件查看改动'});}
+  const message={stage:'已暂存',unstage:'已取消暂存',commit:'已提交 '+(result.data.head||''),switch:'已切换到 '+params.name,create_branch:'已创建并切换到 '+params.name,
+   fetch:'已获取远端状态',pull:result.data.updated?'已快进到远端提交':'本地已经包含上游提交',push:'已推送到 '+params.target?.[1]+'/'+params.target?.[2]};
+  setGitMessage(result.data.warning||message[action],!!result.data.warning);
+ }else setGitMessage(result.data.error||'Git 操作失败',true);
+ await loadChanges(false,result.ok&&!changesBranch);
+ if(ws.closed)return;
+ ws.busy=false;
+ if(result.ok&& (action==='switch'||action==='pull'&&result.data.updated)){
+   for(const f of ws.files.values())openFile(f.path,{force:true,background:true});
+   refreshTreeDirs(ws,[...ws.open]);
+ }
+ paintProject();
+ if(changesBranch&&result.ok)$('pf-git-branches').focus();
+}
 function setProjectMenu(open,restore=false){
  $('pf-menu').hidden=!open;$('pf-more').setAttribute('aria-expanded',String(open));
  if(restore)$('pf-more').focus();
@@ -1668,7 +1833,8 @@ function openProject(group,opener){
  showReview('project',group.name);
  review.opener=opener||review.opener;
  $('pf-tabs').hidden=false;$('pf-stale').hidden=true;$('pf-new').hidden=true;$('pf-tree').replaceChildren();$('pf-tree-note').textContent='';$('pf-git-tree-note').textContent='';$('pf-root').textContent='';
- paintGitBadge(null);setMsg('');paintFile();
+ paintGitBadge(null);setMsg('');setGitMessage('');showGitBranches(false);
+ $('pf-commit-message').value='';$('pf-branch-name').value='';paintFile();
  $('rv-name').textContent='';paintViewer({kind:'none',message:'选择左侧文件查看 diff 与当前文本'});
  setProjectTab('files');
  loadChanges(true);
@@ -1689,7 +1855,7 @@ function setProjectTab(tab,focus){
  $('rv-body').hidden=tab!=='git';$('pf-body').hidden=tab!=='files';
  $('review-refresh').hidden=true;
  if(focus)$('pf-tab-'+tab).focus();
- if(tab==='git'){$('pf-editor-status').textContent='Git 只读';loadChanges()}
+ if(tab==='git'){loadChanges()}
  else{
   paintProject();
   if(!ws.nodes.has(''))loadDir(ws,'');
@@ -1708,6 +1874,7 @@ function paintProject(){
  $('pf-new-file').disabled=off;$('pf-new-dir').disabled=off;
  $('pf-root-copy').disabled=ws.stale||!ws.rootRev;
  for(const item of $('pf-tree').querySelectorAll('[data-tree-action]'))item.disabled=item.dataset.treeAction==='copy'?ws.stale||!ws.rootRev:off;
+ paintGitControls();
  paintFile();
 }
 // -- tree --
@@ -2003,16 +2170,18 @@ async function openFile(path,options={}){
   if(options.pinned)f.pinned=true;
   activateFile(ws,f);return true;
  }
+ const active=!!f&&ws.file===f;
  if(f){
   const {pinned}=f;
+  const viewState=f.model&&pw.editor?.getModel()===f.model?pw.editor.saveViewState():f.viewState;
   if(f.model){if(pw.editor?.getModel()===f.model)pw.editor.setModel(null);f.model.dispose()}
-  f={path,loading:true,pinned};
+  f={path,loading:true,pinned,viewState};
  }else{
   const preview=[...ws.files.values()].find(file=>!file.pinned&&!pwDirty(file));
   if(preview)releaseFile(ws,preview);
   f={path,loading:true,pinned:!!options.pinned};
  }
- ws.files.set(path,f);activateFile(ws,f);
+ ws.files.set(path,f);if(active||!options.background)activateFile(ws,f);
  const current=()=>!ws.closed&&ws.files.get(path)===f;
  const fail=(error,meta='')=>{
   Object.assign(f,{loading:false,error,meta,note:error,warn:true});
@@ -2201,6 +2370,36 @@ $('pf-root-copy').onclick=()=>copyWorkspacePath('');
 $('pf-copy-file').onclick=()=>{setProjectMenu(false,true);copyWorkspacePath(pw.ws?.file?.path)};
 $('pf-trash').onclick=()=>{setProjectMenu(false,true);trashPath(pw.ws?.file?.path)};
 $('pf-git-refresh').onclick=()=>loadChanges();
+for(const action of ['fetch','pull','push']){
+ const control=$('pf-git-'+action);
+ control.onclick=()=>{
+  const ws=pw.ws,sync=gitControls(ws)?.sync;
+  if(!sync||control.disabled)return;
+  if(action==='push'&&!sync.upstream&&!confirm('发布到 '+sync.url+' 的 '+sync.branch+' 分支，并将它设为上游？'))return;
+  runProjectGit(ws,action,{target:[sync.url,sync.remote,sync.branch,sync.upstream]});
+ };
+}
+$('pf-git-branches').onclick=()=>{
+ const show=$('pf-branch-picker').hidden;showGitBranches(show);
+ if(show)($('pf-branch-select').disabled?$('pf-branch-name'):$('pf-branch-select')).focus();
+};
+$('pf-branch-select').onchange=paintGitControls;
+$('pf-branch-name').oninput=paintGitControls;
+$('pf-branch-switch').onclick=()=>runProjectGit(pw.ws,'switch',{name:$('pf-branch-select').value});
+$('pf-branch-create').onsubmit=event=>{
+ event.preventDefault();
+ if(!$('pf-branch-add').disabled)runProjectGit(pw.ws,'create_branch',{name:$('pf-branch-name').value.trim()});
+};
+$('pf-commit-message').oninput=paintGitControls;
+$('pf-commit-message').onkeydown=event=>{
+ if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)&&!event.isComposing){
+  event.preventDefault();if(!$('pf-commit').disabled)$('pf-commit-form').requestSubmit();
+ }
+};
+$('pf-commit-form').onsubmit=event=>{
+ event.preventDefault();
+ if(!$('pf-commit').disabled)runProjectGit(pw.ws,'commit',{message:$('pf-commit-message').value,index:gitControls(pw.ws)?.index});
+};
 $('pf-split').onclick=()=>{if(review.view?.kind==='diff'){pw.splitDiff=!pw.splitDiff;paintViewer(review.view)}};
 $('pf-copy-diff').onclick=async()=>{
  const ws=pw.ws,view=review.view;if(!ws||typeof view?.copy!=='string')return;
@@ -3375,14 +3574,61 @@ function renderSkillSetup(){
 }
 renderSkillSetup();
 $('skill-copy').onclick=()=>copyWithFeedback($('skill-copy'),()=>$('skill-prompt').value,'复制提示词','配置提示词');
-const settingsTabs=['cli','skill','roles','storage','service','help'];let settingsTab='cli';
+const settingsTabs=['cli','skill','roles','storage','github','service','help'];let settingsTab='cli';
+const githubStates={
+ unknown:'尚未检查登录状态',checking:'正在检查 GitHub 登录状态…',missing:'未找到 GitHub CLI（gh）。',
+ signed_out:'当前没有可用的 GitHub 登录。',starting:'正在向 GitHub 请求设备码…',waiting:'等待你在 GitHub 网页完成授权。',
+ cancelling:'正在取消登录…',cancelled:'已取消本次登录。',expired:'登录请求已超时，请重新获取设备码。',
+ unavailable:'无法验证 GitHub 登录状态。请检查网络后刷新。',
+ environment_error:'当前环境提供的 GitHub 令牌不再有效。请更新或移除该环境变量后重启面板。',
+ start_failed:'无法获取设备码。请检查网络和 GitHub CLI 版本，或在终端运行 gh auth login --web。',
+ login_failed:'GitHub 授权未完成或设备码已过期，请重试。'
+};
+let githubState='unknown',githubBusy=false,githubTimer=0;
+const githubVisible=()=>settingsOpen()&&settingsTab==='github';
+const githubPending=()=>['checking','starting','waiting','cancelling'].includes(githubState);
+function paintGithubAuth(data){
+ githubState=data.state;
+ const device=githubState==='waiting'&&/^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(data.code||'');
+ $('github-status').textContent=githubState==='connected'?'当前账号：'+data.login:githubStates[githubState]||'无法读取 GitHub 状态。';
+ $('github-code').textContent=device?data.code:'';
+ $('github-device').hidden=!device;
+ $('github-install').hidden=githubState!=='missing';
+ $('github-login').hidden=!['signed_out','cancelled','expired','start_failed','login_failed'].includes(githubState);
+ $('github-check').hidden=githubPending();
+ $('github-cancel').hidden=!['starting','waiting'].includes(githubState);
+}
+async function githubAuth(action){
+ if(githubBusy)return;
+ clearTimeout(githubTimer);githubBusy=true;
+ for(const id of ['github-login','github-check','github-cancel'])$(id).disabled=true;
+ try{
+  const opts=action?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action})}:{cache:'no-store'};
+  const response=await fetch('/api/github/auth',opts);
+  const data=await response.json().catch(()=>null);
+  if(!response.ok||!data?.state){
+   paintGithubAuth({state:'unknown'});
+   $('github-status').textContent=data?.error||(response.status===404?'当前服务不支持 GitHub 登录，请重启面板再刷新。':'无法读取 GitHub 登录状态。');
+  }else paintGithubAuth(data);
+ }catch{paintGithubAuth({state:'unknown'});$('github-status').textContent='无法连接面板服务，请刷新状态。'}
+ finally{
+  githubBusy=false;
+  for(const id of ['github-login','github-check','github-cancel'])$(id).disabled=false;
+  if(githubPending()&&githubVisible())githubTimer=setTimeout(()=>githubAuth(),1200);
+ }
+}
+$('github-check').onclick=()=>githubAuth('check');
+$('github-login').onclick=()=>githubAuth('login');
+$('github-cancel').onclick=()=>githubAuth('cancel');
+$('github-copy-code').onclick=()=>copyWithFeedback($('github-copy-code'),()=>$('github-code').textContent,'复制设备码','设备码');
 function selectSettingsTab(name,focus=false){
  if(!settingsTabs.includes(name))return;
  settingsTab=name;
  for(const id of settingsTabs){const active=id===name,tab=$('settings-tab-'+id);tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;$('settings-page-'+id).hidden=!active}
  $('settings-content').scrollTop=0;
  if(focus)$('settings-tab-'+name).focus({preventScroll:true});
- if(settingsOpen()){if(name==='cli')loadConnections();if(name==='roles'&&!rolesData)loadRoles();if(name==='storage')loadTempOverview(true)}
+ clearTimeout(githubTimer);
+ if(settingsOpen()){if(name==='cli')loadConnections();if(name==='roles'&&!rolesData)loadRoles();if(name==='storage')loadTempOverview(true);if(name==='github')githubAuth('check')}
 }
 for(const name of settingsTabs){
  const tab=$('settings-tab-'+name);tab.onclick=()=>selectSettingsTab(name);
@@ -3403,7 +3649,7 @@ function renderRetention(viewer){
 // Settings cover the whole app. The sidebar keeps its open/closed state underneath; it is only hidden (CSS) and inert.
 function setSettings(open){
  const panel=$('settings');if(panel.hidden===!open)return;
- if(!open)closePicker();
+ if(!open){closePicker();clearTimeout(githubTimer)}
  panel.hidden=!open;$('app').classList.toggle('settings-on',open);$('settings-open').setAttribute('aria-expanded',String(open));
  for(const node of [$('sidebar'),$('overlay'),document.querySelector('main')]){if(open)node.setAttribute('inert','');else node.removeAttribute('inert')}
  if(open){tempResult=null;renderTemp();selectSettingsTab(settingsTab);$('settings-tab-'+settingsTab).focus({preventScroll:true})}
@@ -3427,14 +3673,14 @@ $('composer-role').onchange=event=>chooseComposerRole(event.target.value);
 $('model-select').onchange=event=>chooseModel(event.target.value);$('effort-select').onchange=event=>chooseEffort(event.target.value);
 $('history').onclick=()=>sidebar($('sidebar').classList.contains('closed'));$('overlay').onclick=()=>sidebar(false);
 $('settings-open').onclick=()=>setSettings($('settings').hidden);$('settings-close').onclick=()=>setSettings(false);
-document.addEventListener('keydown',event=>{if(event.key!=='Escape'||$('cli-model-dialog').open)return;if(pickOpen()){event.preventDefault();closePicker()}else if(settingsOpen()){event.preventDefault();setSettings(false)}else if(reviewOpen()){if(review.mode==='project'){if(!$('pf-menu').hidden){event.preventDefault();setProjectMenu(false,true);return}if(event.target.closest?.('#pf-editor'))return}event.preventDefault();closeReview()}});
+document.addEventListener('keydown',event=>{if(event.key!=='Escape'||$('cli-model-dialog').open)return;if(pickOpen()){event.preventDefault();closePicker()}else if(settingsOpen()){event.preventDefault();setSettings(false)}else if(reviewOpen()){if(review.mode==='project'){if(pw.ws?.tab==='git'&&!$('pf-branch-picker').hidden){event.preventDefault();showGitBranches(false);$('pf-git-branches').focus();return}if(!$('pf-menu').hidden){event.preventDefault();setProjectMenu(false,true);return}if(event.target.closest?.('#pf-editor'))return}event.preventDefault();closeReview()}});
 $('review-open').onclick=()=>openReview('changes');$('review-close').onclick=()=>closeReview();$('review-refresh').onclick=()=>{if(review.mode!=='file')loadChanges()};
 $('rv-tab-diff').onclick=()=>setTab('diff');$('rv-tab-text').onclick=()=>setTab('text');
 $('rv-copy-path').onclick=()=>copyWithFeedback($('rv-copy-path'),()=>review.view&&review.view.path||'','复制路径','路径');
 $('rv-copy').onclick=()=>copyWithFeedback($('rv-copy'),()=>review.view&&review.view.copy||'','复制内容','内容');
 $('review').addEventListener('keydown',event=>{
  if(event.key!=='Tab')return;
- const items=[...$('review').querySelectorAll('button,input,summary,[tabindex="0"]')].filter(node=>!node.disabled&&(node.tabIndex>=0||node.tagName==='SUMMARY')&&!node.closest('[hidden]')&&(!node.closest('details:not([open])')||node.tagName==='SUMMARY'));
+ const items=[...$('review').querySelectorAll('button,a[href],input,textarea,select,summary,[tabindex="0"]')].filter(node=>!node.disabled&&(node.tabIndex>=0||node.tagName==='SUMMARY')&&!node.closest('[hidden]')&&(!node.closest('details:not([open])')||node.closest('summary')));
  if(!items.length){event.preventDefault();return}
  const first=items[0],last=items[items.length-1];
  if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}

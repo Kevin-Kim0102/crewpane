@@ -200,18 +200,26 @@ class GitResult:
         self.code, self.out, self.truncated, self.timed_out, self.err = code, out, truncated, timed_out, err
 
 
-def run_git(cwd, args, cap=None, timeout=GIT_TIMEOUT, extra=(), *, stdin=None):
+def run_git(cwd, args, cap=None, timeout=GIT_TIMEOUT, extra=(), *, stdin=None, read_user_config=False, network_env=None):
     """Run git with an argument array (never a shell). Output is capped and the whole process group is killed on overrun."""
     if GIT is None:
         raise ReviewError(409, GIT_ERRORS["git_missing"])
     cap = MAX_LIST_BYTES if cap is None else cap
     argv = [GIT, "--no-pager", "--no-optional-locks", "-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false",
             "-c", "protocol.allow=never", "-c", "diff.external=", *extra, *args]
+    env = git_environment()
+    if network_env is not None:
+        env.update(network_env)
+    if read_user_config:
+        if args[0] != "config":
+            raise ValueError("User configuration is read only by git config")
+        env.pop("GIT_CONFIG_GLOBAL")
+        env.update({key: os.environ[key] for key in ("HOME", "XDG_CONFIG_HOME", "GIT_CONFIG_GLOBAL") if key in os.environ})
     with (tempfile.TemporaryFile() if stdin is not None else nullcontext(subprocess.DEVNULL)) as source:
         if stdin is not None:
             source.write(stdin)
             source.seek(0)
-        process = subprocess.Popen(argv, cwd=cwd, env=git_environment(), stdin=source, stdout=subprocess.PIPE,
+        process = subprocess.Popen(argv, cwd=cwd, env=env, stdin=source, stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE, start_new_session=True, close_fds=True)
     selector = selectors.DefaultSelector()
     selector.register(process.stdout, selectors.EVENT_READ, "out")
@@ -238,6 +246,11 @@ def run_git(cwd, args, cap=None, timeout=GIT_TIMEOUT, extra=(), *, stdin=None):
                     err += chunk
             if truncated:
                 break
+        if not truncated and not timed_out:
+            try:
+                process.wait(timeout=max(0, deadline - time.monotonic()))
+            except subprocess.TimeoutExpired:
+                timed_out = True
     finally:
         selector.close()
         if process.poll() is None:
@@ -260,13 +273,14 @@ def run_git(cwd, args, cap=None, timeout=GIT_TIMEOUT, extra=(), *, stdin=None):
 MAX_FILTERS = 200   # more filter drivers than this cannot all be neutralised: Git is not run at all
 
 
-def filter_overrides(cwd):
+def filter_overrides(cwd, *, read_user_config=False):
     """`-c filter.<name>.clean=` for every configured filter driver, so status/diff cannot launch repo commands.
 
     Fails closed: if the configuration cannot be read completely (error, timeout, truncated output), has more than
     MAX_FILTERS drivers, or has a driver name that cannot be passed safely through `-c`, a ReviewError is raised and the
     caller must not run any further Git command for this request."""
-    result = run_git(cwd, ["config", "-z", "--name-only", "--get-regexp", r"^filter\."], cap=65536)
+    result = run_git(cwd, ["config", "-z", "--name-only", "--get-regexp", r"^filter\."], cap=65536,
+                     read_user_config=read_user_config)
     if result.timed_out:
         raise ReviewError(409, "读取仓库的过滤器配置超时，为避免执行未覆盖的过滤器，已停止读取 Git 改动")
     if result.truncated:
